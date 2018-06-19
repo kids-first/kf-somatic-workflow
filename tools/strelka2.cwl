@@ -36,3 +36,4 @@ outputs:
     outputBinding:
       glob: 'results/variants/*.indels.vcf.gz'
     secondaryFiles: [.tbi]
+
