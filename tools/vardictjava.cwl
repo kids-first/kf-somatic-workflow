@@ -35,4 +35,3 @@ outputs:
     type: File
     outputBinding:
       glob: '*.vcf'
-      
