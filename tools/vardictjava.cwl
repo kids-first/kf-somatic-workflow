@@ -7,7 +7,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: 10000
   - class: DockerRequirement
-    dockerPull: 'cgrlab/vardictjava'
+    dockerPull: 'jinh2/vardictjava'
 
 baseCommand: [/opt/VarDictJava/build/install/VarDict/bin/VarDict]
 arguments:
@@ -22,7 +22,7 @@ arguments:
       | /opt/VarDictJava/VarDict/testsomatic.R
       | /opt/VarDictJava/VarDict/var2vcf_paired.pl
       -N '$(inputs.input_tumor_bam.nameroot)|$(inputs.input_normal_bam.nameroot)'
-      -E -f 0.01 > $(inputs.output_basename).vcf
+      -f 0.01 > $(inputs.output_basename).vcf
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
