@@ -27,21 +27,22 @@ inputs:
   reference: { type: File,  secondaryFiles: [.fai] }
   input_align:
     type: File
-    secondaryFiles:
-      - engine: node-engine.cwl
-        script: |
-        {
-          var original_file = $(inputs.input_align.path)
-          var fn = original_file + ".crai";
-          var fs = require('fs');
-          var filename = fn;
-          fs.stat(filename, function(err, stats){
-            if(err){
-              fn = original_file + ".bai";
-            }
-          return {"path": fn, "class": "File"};
-          });
-        }
+    inputBinding:
+      secondaryFiles:
+        - engine: node-engine.cwl
+          script: |
+          {
+            var original_file = $(inputs.input_align.path);
+            var fn = original_file + ".crai";
+            var fs = require('fs');
+            var filename = fn;
+            fs.stat(filename, function(err, stats){
+              if(err){
+                fn = original_file + ".bai";
+              }
+            return {"path": fn, "class": "File"};
+            });
+          }
   output_basename: string
 
 outputs:
