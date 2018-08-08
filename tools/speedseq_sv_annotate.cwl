@@ -30,13 +30,15 @@ inputs:
     secondaryFiles:
       valueFrom: |
         ${
-          var fn = $(inputs.inputs.input_align.path).crai;
-          var crai = require('fs', filename = $fn);
-          crai.stat(filename, function(err, stats){
+          var original_file = $(inputs.input_align.path)
+          var fn = original_file + ".crai";
+          var fs = require('fs');
+          var filename = fn;
+          fs.stat(filename, function(err, stats){
             if(err){
-              var fn = $(inputs.inputs.input_align.path).bai;
+              fn = original_file + ".bai";
             }
-          return $fn;
+          return fn;
         });
         }
   output_basename: string
