@@ -28,6 +28,7 @@ inputs:
   input_align:
     type: File
     secondaryFiles:
+      type: File
       valueFrom: |
         ${
           var original_file = $(inputs.input_align.path)
