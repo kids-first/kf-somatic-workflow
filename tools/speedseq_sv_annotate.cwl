@@ -36,7 +36,7 @@ inputs:
             if(err){
               var fn = $(inputs.inputs.input_align.path).bai;
             }
-          return fn;
+          return $fn;
         });
         }
   output_basename: string
