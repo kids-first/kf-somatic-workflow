@@ -25,8 +25,9 @@ arguments:
 
 inputs:
   reference: { type: File,  secondaryFiles: [.fai] }
-  input_align: { type: File,  secondaryFiles: [^.crai|^.bai] }
+  input_align: { type: File,secondaryFiles: [$(inputs.input_align.name).$(/crai|bai/)] }
   output_basename: string
+
 outputs:
   output:
     type: File
