@@ -7,15 +7,16 @@ requirements:
   - class: ResourceRequirement
     ramMin: 24000
   - class: DockerRequirement
-    dockerPull: 'speedseq:latest'
-baseCommand: [/speedseq/src/samtools-1.3.1/misc/seq_cache_populate.pl ]
+    dockerPull: 'speedseq:mod'
+baseCommand: [/speedseq/src/samtools-1.8/misc/seq_cache_populate.pl ]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -root ref_cache
+      -root $PWD/ref_cache
       $(inputs.reference.path)
-      && export REF_CACHE=$PWD/ref_cache
+      && export REF_CACHE=$PWD/ref_cache/%2s/%2s/%s
+      && export REF_PATH=$(inputs.reference.path)
       && /speedseq/bin/speedseq sv
       -B $(inputs.input_align.path)
       -R $(inputs.reference.path)
@@ -29,13 +30,11 @@ inputs:
     type: File
     secondaryFiles: |
       ${
-        var in_align = inputs.input_align.path;
-        if (inputs.input_align.namext == ".cram"){
-          return{"path": in_align+".crai"};
+        var path = inputs.input_align.location+".crai";
+        if (inputs.input_align.nameext == ".bam"){
+          path = inputs.input_align.location+".bai";
         }
-        else{
-          return{"path": in_align+".bai"};
-        }
+        return { "location": path, "class": "File"};
       }
 
   output_basename: string
