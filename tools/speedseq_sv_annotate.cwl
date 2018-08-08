@@ -25,7 +25,19 @@ arguments:
 
 inputs:
   reference: { type: File,  secondaryFiles: [.fai] }
-  input_align: { type: File,secondaryFiles: [$(inputs.input_align.basename).$(/crai|bai/)] }
+  input_align:
+    type: File
+    secondaryFiles:
+      valueFrom: |
+        ${
+          var fn = $(inputs.inputs.input_align.path).crai;
+          var crai = require('fs', filename = $fn);
+          crai.stat(filename, function(err, stats){
+            if(err){
+              var fn = $(inputs.inputs.input_align.path).bai;
+            }
+          return fn;
+        }
   output_basename: string
 
 outputs:
