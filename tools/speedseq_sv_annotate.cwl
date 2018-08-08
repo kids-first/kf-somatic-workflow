@@ -28,9 +28,9 @@ inputs:
   input_align:
     type: File
     secondaryFiles:
-      type: File
-      valueFrom: |
-        ${
+      - engine: node-engine.cwl
+        script: |
+        {
           var original_file = $(inputs.input_align.path)
           var fn = original_file + ".crai";
           var fs = require('fs');
@@ -39,8 +39,8 @@ inputs:
             if(err){
               fn = original_file + ".bai";
             }
-          return fn;
-        });
+          return {"path": fn, "class": "File"};
+          });
         }
   output_basename: string
 
