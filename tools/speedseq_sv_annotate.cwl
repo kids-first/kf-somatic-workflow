@@ -7,7 +7,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: 24000
   - class: DockerRequirement
-    dockerPull: 'migbro/bixtools:latest'
+    dockerPull: 'kfdrc/speedseq:latest'
 baseCommand: [/speedseq/src/samtools-1.8/misc/seq_cache_populate.pl ]
 arguments:
   - position: 1
