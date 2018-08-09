@@ -1,13 +1,13 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: speedseq_sv_annotate
+id: kf-speedseq-sv-annotate
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 24000
   - class: DockerRequirement
-    dockerPull: 'speedseq:mod'
+    dockerPull: 'migbro/bixtoools:latest'
 baseCommand: [/speedseq/src/samtools-1.8/misc/seq_cache_populate.pl ]
 arguments:
   - position: 1
