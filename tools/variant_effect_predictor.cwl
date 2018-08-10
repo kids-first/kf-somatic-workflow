@@ -53,6 +53,6 @@ outputs:
     outputBinding:
       glob: '*.html'
   warn_txt:
-    type: File
+    type: ["null", File]
     outputBinding:
       glob: '*.txt'
