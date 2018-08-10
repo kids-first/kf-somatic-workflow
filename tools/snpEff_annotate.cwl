@@ -24,8 +24,8 @@ arguments:
       | bgzip -c > $(inputs.output_basename).snpEff.vcf.gz
       && tabix $(inputs.output_basename).snpEff.vcf.gz
 inputs:
-  ref_tar_gz: File
-  input_vcf: { type: File,  secondaryFiles: [.tbi]}
+  ref_tar_gz: { type: File, label: tar gzipped snpEff reference}
+  input_vcf: { type: File,  secondaryFiles: [.tbi] }
   output_basename: string
 outputs:
   output:

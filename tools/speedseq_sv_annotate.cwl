@@ -25,7 +25,7 @@ arguments:
       -v
 
 inputs:
-  reference: { type: File,  secondaryFiles: [.fai] }
+  reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
   input_align:
     type: File
     secondaryFiles: |

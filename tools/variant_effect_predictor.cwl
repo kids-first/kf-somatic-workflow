@@ -8,12 +8,13 @@ requirements:
     ramMin: 24000
   - class: DockerRequirement
     dockerPull: 'migbro/vep:r93'
-baseCommand: [tar, -xzfv ]
+baseCommand: [tar, -xzf ]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      perl /ensembl-vep/vep
+      $(inputs.cache.path)
+      && perl /ensembl-vep/vep
       --cache --dir_cache $PWD
       --cache_version 93
       --vcf
@@ -26,20 +27,32 @@ arguments:
       --fork 7
       --sift b
       -i $(inputs.input_vcf.path)
-      -o $(inputs.output_basename).vep.vcf
-      --fasta Homo_sapiens_assembly38.fasta
+      -o STDOUT
+      --stats_file $(inputs.output_basename)_stats.html
+      --warning_file $(inputs.output_basename)_warnings.txt
+      --fasta $(inputs.reference.path) |
+      /ensembl-vep/htslib/bgzip -c > $(inputs.output_basename).vep.vcf.gz
+      && /ensembl-vep/htslib/tabix $(inputs.output_basename).vep.vcf.gz
 
 inputs:
-  reference: { type: File,  secondaryFiles: [.fai] }
+  reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
   input_vcf:
     type: File
-    secondaryFiles: [tbi]
+    secondaryFiles: [.tbi]
   output_basename: string
-  cache: {type: File }
+  cache: { type: File, label: tar gzipped cache from ensembl/local converted cache }
 
 outputs:
-  output:
+  output_vcf:
     type: File
     outputBinding:
       glob: '*.vcf.gz'
     secondaryFiles: [.tbi]
+  output_html:
+    type: File
+    outputBinding:
+      glob: '*.html'
+  warn_txt:
+    type: File
+    outputBinding:
+      glob: '*.txt'
