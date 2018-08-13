@@ -26,6 +26,7 @@ arguments:
       --hgvsg
       --fork 7
       --sift b
+      --vcf_info_field ANN
       -i $(inputs.input_vcf.path)
       -o STDOUT
       --stats_file $(inputs.output_basename)_stats.html
