@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: kf-lumpy-sv-annotate
+id: kf-lumpy-sv-somatic
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -18,23 +18,37 @@ arguments:
       && export REF_CACHE=$PWD/ref_cache/%2s/%2s/%s
       && export REF_PATH=$(inputs.reference.path)
       && lumpyexpress
-      -B $(inputs.input_align.path)
+      -B $(inputs.input_tumor_align.path).$(inputs.input_normal_align.path)
       -R $(inputs.reference.path)
-      -o $(inputs.output_basename)
+      -o unsorted_results.vcf
       -v
+      && cat unsorted_results.vcf | awk '$0~"^#" { print $0; next } { print $0 | "LC_ALL=C sort -k1,1V -k2,2n" }' \
+      | /lumpy-sv/lib/htslib/bgzip -c > $(inputs.output_basename).vcf.gz
+      && /lumpy-sv/lib/htslib/tabix $(inputs.output_basename).vcf.gz
 
 inputs:
   reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
-  input_align:
+  input_tumor_align:
     type: File
     secondaryFiles: |
       ${
-        var path = inputs.input_align.location+".crai";
-        if (inputs.input_align.nameext == ".bam"){
-          path = inputs.input_align.location+".bai";
+        var path = inputs.input_tumor_align.location+".crai";
+        if (inputs.input_tumor_align.nameext == ".bam"){
+          path = inputs.input_tumor_align.location+".bai";
         }
         return { "location": path, "class": "File"};
       }
+
+  input_normal_align:
+      type: File
+      secondaryFiles: |
+        ${
+          var path = inputs.input_normal_align.location+".crai";
+          if (inputs.input_normal_align.nameext == ".bam"){
+            path = inputs.input_normal_align.location+".bai";
+          }
+          return { "location": path, "class": "File"};
+        }
 
   output_basename: string
 
