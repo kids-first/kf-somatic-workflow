@@ -18,11 +18,11 @@ arguments:
       && export REF_CACHE=$PWD/ref_cache/%2s/%2s/%s
       && export REF_PATH=$(inputs.reference.path)
       && lumpyexpress
-      -B $(inputs.input_tumor_align.path).$(inputs.input_normal_align.path)
+      -B $(inputs.input_tumor_align.path),$(inputs.input_normal_align.path)
       -R $(inputs.reference.path)
       -o unsorted_results.vcf
       -v
-      && cat unsorted_results.vcf | awk '$0~"^#" { print $0; next } { print $0 | "LC_ALL=C sort -k1,1V -k2,2n" }' \
+      && cat unsorted_results.vcf | awk '$0~"^#" { print $0; next } { print $0 | "LC_ALL=C sort -k1,1V -k2,2n" }'
       | /lumpy-sv/lib/htslib/bgzip -c > $(inputs.output_basename).vcf.gz
       && /lumpy-sv/lib/htslib/tabix $(inputs.output_basename).vcf.gz
 

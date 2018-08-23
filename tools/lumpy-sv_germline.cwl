@@ -22,7 +22,7 @@ arguments:
       -R $(inputs.reference.path)
       -o unsorted_results.vcf
       -v
-      && cat unsorted_results.vcf | awk '$0~"^#" { print $0; next } { print $0 | "LC_ALL=C sort -k1,1V -k2,2n" }' \
+      && cat unsorted_results.vcf | awk '$0~"^#" { print $0; next } { print $0 | "LC_ALL=C sort -k1,1V -k2,2n" }'
       | /lumpy-sv/lib/htslib/bgzip -c > $(inputs.output_basename).vcf.gz
       && /lumpy-sv/lib/htslib/tabix $(inputs.output_basename).vcf.gz
 
