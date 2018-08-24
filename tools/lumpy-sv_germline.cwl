@@ -7,7 +7,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: 24000
   - class: DockerRequirement
-    dockerPull: 'migbro/lumpy:latest'
+    dockerPull: 'kfdrc/lumpy:latest'
 baseCommand: [/samtools-1.8/misc/seq_cache_populate.pl ]
 arguments:
   - position: 1
