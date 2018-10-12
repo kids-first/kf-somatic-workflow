@@ -6,6 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
+    cpuMin: 8
   - class: DockerRequirement
     dockerPull: 'migbro/manta:latest'
 
