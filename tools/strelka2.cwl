@@ -6,6 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
+    coresMin: 8
   - class: DockerRequirement
     dockerPull: 'obenauflab/strelka'
 
