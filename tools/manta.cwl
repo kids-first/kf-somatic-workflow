@@ -22,8 +22,8 @@ arguments:
       -m local
       -j 8
       --quiet
-      && mv results/variants/somaticSV.vcf.gz $(output_basename).somaticSV.vcf.gz
-      && mv results/variants/somaticSV.vcf.gz.tbi $(output_basename).somaticSV.vcf.gz.tbi
+      && mv results/variants/somaticSV.vcf.gz $(inputs.output_basename).somaticSV.vcf.gz
+      && mv results/variants/somaticSV.vcf.gz.tbi $(inputs.output_basename).somaticSV.vcf.gz.tbi
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
