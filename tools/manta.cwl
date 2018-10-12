@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: kf-manta
+id: kf-manta-sv
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
