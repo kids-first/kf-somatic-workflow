@@ -33,8 +33,8 @@ inputs:
     input_normal_cram: {type: File, secondaryFiles: [.crai]}
     output_basename: string
 outputs:
-  - id: output_SV
+  - id: output_sv
     type: File
     outputBinding:
-      glob: 'somaticSV.vcf.gz'
+      glob: '*.somaticSV.vcf.gz'
     secondaryFiles: [.tbi]
