@@ -26,7 +26,6 @@ arguments:
           return "--tumorBam ".concat(inputs.input_tumor_cram.path, " --normalBam ", inputs.input_normal_cram.path)
         }
       }
-
       --ref $(inputs.reference.path)
       --callRegions $(inputs.ref_bed.path)
       --runDir=./ && ./runWorkflow.py
