@@ -6,6 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 24000
+    coresMin: 8
   - class: DockerRequirement
     dockerPull: 'kfdrc/vep:r93'
 baseCommand: [tar, -xzf ]
