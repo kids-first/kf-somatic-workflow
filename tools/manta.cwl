@@ -15,8 +15,17 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      --normalBam $(inputs.input_normal_cram.path)
-      --tumorBam $(inputs.input_tumor_cram.path)
+      ${
+        if (typeof inputs.input_tumor_cram === 'undefined' || inputs.input_tumor_cram === null){
+          return "--bam ".concat(inputs.input_normal_cram.path);
+        }
+        else if (typeof inputs.input_normal_cram === 'undefined' || inputs.input_normal_cram === null){
+          return "--tumorBam ".concat(inputs.input_tumor_cram.path)
+        }
+        else:
+          return "--tumorBam ".concat(inputs.input_tumor_cram.path, " --normalBam ", inputs.input_normal_cram.path)
+      }
+
       --ref $(inputs.reference.path)
       --callRegions $(inputs.ref_bed.path)
       --runDir=./ && ./runWorkflow.py
