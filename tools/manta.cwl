@@ -22,8 +22,9 @@ arguments:
         else if (typeof inputs.input_normal_cram === 'undefined' || inputs.input_normal_cram === null){
           return "--tumorBam ".concat(inputs.input_tumor_cram.path)
         }
-        else:
+        else{
           return "--tumorBam ".concat(inputs.input_tumor_cram.path, " --normalBam ", inputs.input_normal_cram.path)
+        }
       }
 
       --ref $(inputs.reference.path)
@@ -38,8 +39,8 @@ arguments:
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
     ref_bed: {type: File, secondaryFiles: [.tbi]}
-    input_tumor_cram: {type: File, secondaryFiles: [.crai]}
-    input_normal_cram: {type: File, secondaryFiles: [.crai]}
+    input_tumor_cram: {type: ["null", File], secondaryFiles: [.crai]}
+    input_normal_cram: {type: ["null", File], secondaryFiles: [.crai]}
     output_basename: string
 outputs:
   - id: output_sv
