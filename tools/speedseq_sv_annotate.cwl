@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: kf-speedseq-sv-annotate
+id: kfdrc-speedseq-sv-annotate
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
