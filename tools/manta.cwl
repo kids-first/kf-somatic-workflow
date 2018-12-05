@@ -8,7 +8,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
-    coresMin: 8
+    coresMin: 16
   - class: DockerRequirement
     dockerPull: 'kfdrc/manta:latest'
 
@@ -18,7 +18,7 @@ arguments:
     shellQuote: false
     valueFrom: >-
       ${
-        var std = " --ref " + inputs.reference.path + " --callRegions " + inputs.ref_bed.path + " --runDir=./ && ./runWorkflow.py -m local -j 8 --quiet ";
+        var std = " --ref " + inputs.reference.path + " --callRegions " + inputs.ref_bed.path + " --runDir=./ && ./runWorkflow.py -m local -j 16 --quiet ";
         var mv = " && mv results/variants/";
         if (typeof inputs.input_tumor_cram === 'undefined' || inputs.input_tumor_cram === null){
           var mv_cmd = mv + "diploidSV.vcf.gz " +  inputs.output_basename + ".diploidSV.vcf.gz" + mv + "diploidSV.vcf.gz.tbi " + inputs.output_basename + ".diploidSV.vcf.gz.tbi";
