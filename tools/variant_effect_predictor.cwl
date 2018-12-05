@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: kf-vep-somatic-annotate
+id: kfdrc-vep-somatic-annotate
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
