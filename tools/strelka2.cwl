@@ -6,7 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
-    coresMin: 8
+    coresMin: 36
   - class: DockerRequirement
     dockerPull: 'obenauflab/strelka'
 
@@ -18,14 +18,16 @@ arguments:
       --normalBam $(inputs.input_normal_cram.path)
       --tumorBam $(inputs.input_tumor_cram.path)
       --ref $(inputs.reference.path)
+      --callRegions $(inputs.hg38_strelka_bed.path)
       --runDir=./ && ./runWorkflow.py
       -m local
-      -j 8
+      -j 36
 
 inputs:
-    reference: {type: File, secondaryFiles: [^.dict, .fai]}
-    input_tumor_cram: {type: File, secondaryFiles: [.crai]}
-    input_normal_cram: {type: File, secondaryFiles: [.crai]}
+    reference: { type: File, secondaryFiles: [^.dict, .fai] }
+    hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: bed file of hg38 chrs without contigs }
+    input_tumor_cram: { type: File, secondaryFiles: [.crai] }
+    input_normal_cram: { type: File, secondaryFiles: [.crai] }
 outputs:
   - id: output_snv
     type: File

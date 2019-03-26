@@ -5,36 +5,68 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.0.3.0'
+    dockerPull: 'kfdrc/gatk:4.0.12.0'
   - class: ResourceRequirement
-    ramMin: 8000
+    ramMin: 6000
+    coresMin: 4
+  - class: InitialWorkDirRequirement
+    listing: |
+      ${
+        var listing = []
+        listing.push(inputs.input_tumor_aligned);
+        listing.push(inputs.input_normal_aligned);
+        return listing;
+      }
 baseCommand: [/gatk, Mutect2]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xms8000m"
+      --java-options "-Xmx6000m"
       -R $(inputs.reference.path)
-      -I $(inputs.input_tumor_bam.path)
-      -I $(inputs.input_normal_bam.path)
+      -I $(inputs.input_tumor_aligned.path)
+      -I $(inputs.input_normal_aligned.path)
       -tumor $(inputs.input_tumor_name)
       -normal $(inputs.input_normal_name)
       --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter
       -L $(inputs.interval_list.path)
-      -O $(inputs.input_tumor_bam.nameroot).vcf.gz
-      -bamout $(inputs.input_tumor_bam.nameroot)_tumor_normal.bam
+      -O $(inputs.input_tumor_aligned.nameroot).$(inputs.interval_list.nameroot).Mutect2.vcf.gz
+      && echo '{"tool_name": "Mutect2"}'
 
 inputs:
   reference: {type: File, secondaryFiles: [^.dict, .fai]}
-  input_tumor_bam: {type: File, secondaryFiles: [^.bai]}
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        if(self.nameext == '.bam'){
+          return {"path": self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"path": self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor SAM, BAM, or CRAM"
   input_tumor_name: string
-  input_normal_bam: {type: File, secondaryFiles: [^.bai]}
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        if(self.nameext == '.bam'){
+          return {"path": self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"path": self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor SAM, BAM, or CRAM"
   input_normal_name: string
   interval_list: File
 
 outputs:
-  output:
+  mutect2_vcf:
     type: File
     outputBinding:
       glob: '*.vcf.gz'
     secondaryFiles: [.tbi]
+  tool_name: string
