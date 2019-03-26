@@ -6,7 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 24000
-    coresMin: 8
+    coresMin: 16
   - class: DockerRequirement
     dockerPull: 'kfdrc/vep:r93'
 baseCommand: [tar, -xzf ]
@@ -25,7 +25,7 @@ arguments:
       --offline
       --hgvs
       --hgvsg
-      --fork 7
+      --fork 15
       --sift b
       --vcf_info_field ANN
       -i $(inputs.input_vcf.path)
