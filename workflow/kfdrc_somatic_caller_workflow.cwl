@@ -7,6 +7,7 @@ requirements:
 
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
+  reference_dict: File
   wgs_calling_interval_list: File
   input_tumor_aligned: File
   input_normal_aligned: File
@@ -14,8 +15,8 @@ inputs:
   output_basename: string
 
 outputs:
-  seurat_vcf: {type: File, outputSource: vep_annot_seurat/output_vcf}
-  seurat_html: {type: File, outputSource: vep_annot_seurat/output_html}
+  seurat_vep_vcf: {type: File, outputSource: vep_annot_seurat/output_vcf}
+  seurat_vep_html: {type: File, outputSource: vep_annot_seurat/output_html}
 
 steps:
   gatk_intervallisttools:
@@ -27,7 +28,7 @@ steps:
   seurat_somatic:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: c5.4xlarge;ebs-gp2;500
     run: ../tools/seurat.cwl
     in:
       input_tumor_bam: input_tumor_aligned
@@ -42,6 +43,7 @@ steps:
     in:
       input_vcfs: seurat_somatic/seurat_vcf
       output_basename: output_basename
+      reference_dict: reference_dict
       tool_name:
         valueFrom: ${ return "seurat"}
     out: [merged_vcf]

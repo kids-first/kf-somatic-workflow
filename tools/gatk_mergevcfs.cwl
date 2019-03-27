@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: gatk4_Mutect2
+id: gatk4_mergevcfs
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -16,6 +16,7 @@ arguments:
       --java-options "-Xmx2000m"
       --TMP_DIR=./TMP
       --CREATE_INDEX=true
+      --SEQUENCE_DICTIONARY=$(inputs.reference_dict.path)
       --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).vcf.gz
 
 inputs:
@@ -28,6 +29,7 @@ inputs:
     secondaryFiles: [.tbi]
     inputBinding:
       position: 1
+  reference_dict: File
   tool_name: string
   output_basename: string
 outputs:
