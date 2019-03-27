@@ -17,13 +17,11 @@ arguments:
       --SCATTER_COUNT=50
       --SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW
       --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=1000000
-      --INPUT=$(inputs.interval_list.path) --OUTPUT=$(runtime.outdir)
-
-      sed -ri '/^@/d' temp*/*.interval_list
+      --INPUT=$(inputs.interval_list.path) --OUTPUT=.
 inputs:
   interval_list: File
 outputs:
   output:
     type: 'File[]'
     outputBinding:
-      glob: '*temp*/*.interval_list'
+      glob: 'temp*/*.interval_list'

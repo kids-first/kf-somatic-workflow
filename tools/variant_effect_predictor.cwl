@@ -30,8 +30,8 @@ arguments:
       --vcf_info_field ANN
       -i $(inputs.input_vcf.path)
       -o STDOUT
-      --stats_file $(inputs.output_basename)_stats.html
-      --warning_file $(inputs.output_basename)_warnings.txt
+      --stats_file $(inputs.output_basename)_stats.$(inputs.tool_name).html
+      --warning_file $(inputs.output_basename)_warnings.$(inputs.tool_name).txt
       --fasta $(inputs.reference.path) |
       /ensembl-vep/htslib/bgzip -c > $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz
       && /ensembl-vep/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz
