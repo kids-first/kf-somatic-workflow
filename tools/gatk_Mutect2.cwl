@@ -31,7 +31,6 @@ arguments:
       --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter
       -L $(inputs.interval_list.path)
       -O $(inputs.input_tumor_aligned.nameroot).$(inputs.interval_list.nameroot).Mutect2.vcf.gz
-      && echo '{"tool_name": "Mutect2"}'
 
 inputs:
   reference: {type: File, secondaryFiles: [^.dict, .fai]}
@@ -39,11 +38,12 @@ inputs:
     type: File
     secondaryFiles: |
       ${
+        var dpath = self.location.replace(self.basename, "")
         if(self.nameext == '.bam'){
-          return {"path": self.nameroot+".bai", "class": "File"}
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
         }
         else{
-          return {"path": self.basename+".crai", "class": "File"}
+          return {"location": dpath+self.basename+".crai", "class": "File"}
         }
       }
     doc: "tumor SAM, BAM, or CRAM"
@@ -52,14 +52,15 @@ inputs:
     type: File
     secondaryFiles: |
       ${
+        var dpath = self.location.replace(self.basename, "")
         if(self.nameext == '.bam'){
-          return {"path": self.nameroot+".bai", "class": "File"}
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
         }
         else{
-          return {"path": self.basename+".crai", "class": "File"}
+          return {"location": dpath+self.basename+".crai", "class": "File"}
         }
       }
-    doc: "tumor SAM, BAM, or CRAM"
+    doc: "normal SAM, BAM, or CRAM"
   input_normal_name: string
   interval_list: File
 
@@ -69,4 +70,3 @@ outputs:
     outputBinding:
       glob: '*.vcf.gz'
     secondaryFiles: [.tbi]
-  tool_name: string
