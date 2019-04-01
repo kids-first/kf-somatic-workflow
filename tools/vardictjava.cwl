@@ -6,10 +6,11 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
+    coresMin: 8
   - class: DockerRequirement
-    dockerPull: 'jinh2/vardictjava'
+    dockerPull: 'migbro/VarDictJava:1.5.8'
 
-baseCommand: [/opt/VarDictJava/build/install/VarDict/bin/VarDict]
+baseCommand: [/VarDict-1.5.8/bin/VarDict]
 arguments:
   - position: 1
     shellQuote: false
@@ -19,8 +20,8 @@ arguments:
       -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
       -z -c 1 -S 2 -E 3 -g 4 $(inputs.bed.path)
-      | /opt/VarDictJava/VarDict/testsomatic.R
-      | /opt/VarDictJava/VarDict/var2vcf_paired.pl
+      | /VarDict-1.5.8/bin/testsomatic.R
+      | /VarDict-1.5.8/bin/var2vcf_paired.pl
       -N '$(inputs.input_tumor_bam.nameroot)|$(inputs.input_normal_bam.nameroot)'
       -f 0.01 > $(inputs.output_basename).vcf
 
