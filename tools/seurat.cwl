@@ -5,9 +5,10 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/seurat:2.6'
+    dockerPull: 'kfdrc/seurat:latest'
   - class: ResourceRequirement
     ramMin: 3000
+    coresMin: 4
 baseCommand: [java]
 arguments:
   - position: 1
@@ -17,6 +18,7 @@ arguments:
       -jar
       /Seurat-2.6.jar
       -T Seurat
+      --filter_mismatching_base_and_quals
       -R $(inputs.reference.path)
       -I:dna_tumor $(inputs.input_tumor_bam.path)
       -I:dna_normal $(inputs.input_normal_bam.path)
