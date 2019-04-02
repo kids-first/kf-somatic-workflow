@@ -11,7 +11,9 @@ inputs:
   wgs_calling_interval_list: File
   hg38_strelka_bed: File
   input_tumor_aligned: File
+  input_tumor_name: string
   input_normal_aligned: File
+  input_normal_name: string
   exome_flag: string
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
@@ -21,8 +23,28 @@ outputs:
   vardict_vep_html: {type: File, outputSource: vep_annot_vardict/output_html}
   strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
   strelka2_vep_html: {type: File, outputSource: vep_annot_strelka2/output_html}
+  mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
+  mutect2_vep_html: {type: File, outputSource: vep_annot_mutect2/output_html}
 
 steps:
+  samtools_tumor_cram2bam:
+    run: ../tools/samtools_cram2bam.cwl
+    in:
+      input_reads: input_tumor_aligned
+      threads:
+        valueFrom: ${return 36}
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
+  samtools_normal_cram2bam:
+    run: ../tools/samtools_cram2bam.cwl
+    in:
+      input_reads: input_normal_aligned
+      threads:
+        valueFrom: ${return 36}
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -30,6 +52,7 @@ steps:
     out: [output]
 
   strelka2:
+    run: ../tools/strelka2.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
@@ -37,7 +60,6 @@ steps:
       hg38_strelka_bed: hg38_strelka_bed
       exome_flag: exome_flag
     out: [output]
-    run: ../tools/strelka2.cwl
 
   vardict_somatic:
     hints:
@@ -45,19 +67,35 @@ steps:
         value: c5.4xlarge;ebs-gp2;500
     run: ../tools/vardictjava.cwl
     in:
-      input_tumor_bam: input_tumor_aligned
-      input_normal_bam: input_normal_aligned
+      input_tumor_bam: samtools_tumor_cram2bam/bam_file
+      input_tumor_name: input_tumor_name
+      input_normal_bam: samtools_normal_cram2bam/bam_file
+      input_normal_name: input_normal_name
       bed: gatk_intervallisttools/output
       reference: indexed_reference_fasta
       output_basename: output_basename
-    scatter: [interval_list]
+    scatter: [bed]
     out: [vardict_vcf]
+
+  mutect2:
+    run: ../tools/gatk_Mutect2.cwl
+    in:
+      input_tumor_aligned: input_tumor_aligned
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: input_normal_aligned
+      input_normal_name: input_normal_name
+      reference: indexed_reference_fasta
+      interval_list: gatk_intervallisttools/output
+    scatter: [interval_list]
+    out: [mutect2_vcf]
   
   merge_vardict_vcf:
     run: ../tools/gatk_mergevcfs_pass_filter.cwl
     label: Merge & pass filter VarDict
     in:
-      input_vcfs: vardict_somatic/output
+      input_vcfs: vardict_somatic/vardict_vcf
+      input_tumor_name: input_tumor_name
+      input_normal_name: input_normal_name
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
@@ -74,6 +112,25 @@ steps:
       tool_name:
         valueFrom: ${ return "strelka2"}
     out: [merged_vcf]
+
+  rename_strelka_samples:
+    run: ../tools/bcftools_reheader_vcf.cwl
+    in:
+      input_vcf: merge_strelka2_vcf/merged_vcf
+      input_normal_name: input_normal_name
+      input_tumor_name: input_tumor_name
+    out: [reheadered_vcf]
+
+  merge_mutect2_vcf:
+    run: ../tools/gatk_mergevcfs_pass_filter.cwl
+    label: Merge & pass filter mutect2
+    in:
+      input_vcfs: mutect2/mutect2_vcf
+      output_basename: output_basename
+      reference_dict: reference_dict
+      tool_name:
+        valueFrom: ${ return "mutect"}
+    out: [merged_vcf]
   
   vep_annot_vardict:
     run: ../tools/variant_effect_predictor.cwl
@@ -89,10 +146,21 @@ steps:
   vep_annot_strelka2:
     run: ../tools/variant_effect_predictor.cwl
     in:
-      input_vcf: merge_strelka2_vcf/merged_vcf
+      input_vcf: rename_strelka_samples/reheadered_vcf
       output_basename: output_basename
       tool_name:
         valueFrom: ${ return "strelka2"}
+      reference: indexed_reference_fasta
+      cache: vep_cache
+    out: [output_vcf, output_html, warn_txt]
+
+  vep_annot_mutect2:
+    run: ../tools/variant_effect_predictor.cwl
+    in:
+      input_vcf: merge_mutect2_vcf/merged_vcf
+      output_basename: output_basename
+      tool_name:
+        valueFrom: ${ return "mutect2"}
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_html, warn_txt]
