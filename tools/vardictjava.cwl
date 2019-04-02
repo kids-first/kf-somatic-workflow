@@ -23,16 +23,19 @@ arguments:
       | /VarDict-1.5.8/bin/testsomatic.R
       | /VarDict-1.5.8/bin/var2vcf_paired.pl
       -N '$(inputs.input_tumor_bam.nameroot)|$(inputs.input_normal_bam.nameroot)'
-      -f 0.01 > $(inputs.output_basename).vcf
+      -f 0.01 > $(inputs.output_basename).vcf &&
+      bgzip  $(inputs.output_basename).vcf &&
+      tabix  $(inputs.output_basename).vcf.gz
 
 inputs:
-    reference: {type: File, secondaryFiles: [^.dict, .fai]}
-    input_tumor_bam: {type: File, secondaryFiles: [.bai]}
-    input_normal_bam: {type: File, secondaryFiles: [.bai]}
-    output_basename: {type: string}
-    bed: {type: File}
+  reference: {type: File, secondaryFiles: [^.dict, .fai]}
+  input_tumor_bam: {type: File, secondaryFiles: [.bai]}
+  input_normal_bam: {type: File, secondaryFiles: [.bai]}
+  output_basename: {type: string}
+  bed: {type: File}
 outputs:
-  - id: output
+  vardict_vcf:
     type: File
     outputBinding:
-      glob: '*.vcf'
+      glob: '*.vcf.gz'
+    secondaryFiles: [.tbi]

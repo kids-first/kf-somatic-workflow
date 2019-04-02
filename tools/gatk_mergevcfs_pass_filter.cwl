@@ -1,6 +1,8 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: gatk4_mergevcfs
+id: gatk4_mergevcfs_selectvcfs
+label: GATK Merge and PASS
+doc: "Merge input vcfs and output only PASS"
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -17,7 +19,12 @@ arguments:
       --TMP_DIR=./TMP
       --CREATE_INDEX=true
       --SEQUENCE_DICTIONARY=$(inputs.reference_dict.path)
-      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).vcf.gz
+      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).vcf.gz &&
+      /gatk SelectVariants
+      --java-options "-Xmx2000m"
+      -V $(inputs.output_basename).$(inputs.tool_name).vcf.gz
+      -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
+      --select 'vc.isNotFiltered()'
 
 inputs:
   input_vcfs:
@@ -36,5 +43,5 @@ outputs:
   merged_vcf:
     type: File
     outputBinding:
-      glob: '*.vcf.gz'
+      glob: '*PASS.vcf.gz'
     secondaryFiles: [.tbi]
