@@ -23,8 +23,8 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      --normalBam $(inputs.input_normal_cram.path)
-      --tumorBam $(inputs.input_tumor_cram.path)
+      --normalBam $(inputs.input_normal_aligned.path)
+      --tumorBam $(inputs.input_tumor_aligned.path)
       --ref $(inputs.reference.path)
       --callRegions $(inputs.hg38_strelka_bed.path)
       ${
@@ -38,35 +38,35 @@ arguments:
       -j 36
 
 inputs:
-    reference: { type: File, secondaryFiles: [^.dict, .fai] }
-    hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: gzipped bed file }
-    exome_flag: { type: ['null', string], doc: "Y if exome/capture, N if WGS"}
-    input_tumor_aligned:
-      type: File
-      secondaryFiles: |
-        ${
-          var dpath = self.location.replace(self.basename, "")
-          if(self.nameext == '.bam'){
-            return {"location": dpath+self.nameroot+".bai", "class": "File"}
-          }
-          else{
-            return {"location": dpath+self.basename+".crai", "class": "File"}
-          }
+  reference: { type: File, secondaryFiles: [^.dict, .fai] }
+  hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: gzipped bed file }
+  exome_flag: { type: ['null', string], doc: "Y if exome/capture, N if WGS"}
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
         }
-      doc: "tumor SAM, BAM, or CRAM"
-    input_normal_aligned:
-      type: File
-      secondaryFiles: |
-        ${
-          var dpath = self.location.replace(self.basename, "")
-          if(self.nameext == '.bam'){
-            return {"location": dpath+self.nameroot+".bai", "class": "File"}
-          }
-          else{
-            return {"location": dpath+self.basename+".crai", "class": "File"}
-          }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
         }
-      doc: "normal SAM, BAM, or CRAM"
+      }
+    doc: "tumor SAM, BAM, or CRAM"
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "normal SAM, BAM, or CRAM"
 outputs:
   output_snv:
     type: File
