@@ -8,7 +8,7 @@ requirements:
     ramMin: 10000
     coresMin: 8
   - class: DockerRequirement
-    dockerPull: 'migbro/VarDictJava:1.5.8'
+    dockerPull: 'migbro/vardict:1.5.8'
 
 baseCommand: [/VarDict-1.5.8/bin/VarDict]
 arguments:
