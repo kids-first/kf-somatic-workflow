@@ -14,7 +14,7 @@ inputs:
   input_tumor_name: string
   input_normal_aligned: File
   input_normal_name: string
-  exome_flag: string
+  exome_flag: ['null', string]
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
 
