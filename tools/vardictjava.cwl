@@ -5,18 +5,21 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 10000
+    ramMin: 8000
     coresMin: 8
   - class: DockerRequirement
     dockerPull: 'migbro/vardict:1.5.8'
 
-baseCommand: [/VarDict-1.5.8/bin/VarDict]
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
+      /VarDict-1.5.8/bin/VarDict
       -G $(inputs.reference.path)
-      -f 0.01 -th 8
+      -f 0.01 -th 8 --nosv
       -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
       -z -c 1 -S 2 -E 3 -g 4 $(inputs.bed.path)
@@ -29,9 +32,9 @@ arguments:
 
 inputs:
   reference: {type: File, secondaryFiles: [^.dict, .fai]}
-  input_tumor_bam: {type: File, secondaryFiles: [.bai]}
+  input_tumor_bam: {type: File, secondaryFiles: [^.bai]}
   input_tumor_name: string
-  input_normal_bam: {type: File, secondaryFiles: [.bai]}
+  input_normal_bam: {type: File, secondaryFiles: [^.bai]}
   input_normal_name: string
   output_basename: {type: string}
   bed: {type: File}
