@@ -64,7 +64,7 @@ steps:
   vardict_somatic:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge;ebs-gp2;500
+        value: c5.9xlarge
     run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: samtools_tumor_cram2bam/bam_file
@@ -78,6 +78,9 @@ steps:
     out: [vardict_vcf]
 
   mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../tools/gatk_Mutect2.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
@@ -169,4 +172,4 @@ $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 3
+    value: 4
