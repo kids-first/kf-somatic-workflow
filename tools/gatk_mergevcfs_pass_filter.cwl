@@ -12,15 +12,18 @@ requirements:
     ramMin: 2000
 baseCommand: [/gatk, MergeVcfs]
 arguments:
-  - position: 1
+  - position: 0
     shellQuote: false
     valueFrom: >-
       --java-options "-Xmx2000m"
       --TMP_DIR=./TMP
       --CREATE_INDEX=true
       --SEQUENCE_DICTIONARY=$(inputs.reference_dict.path)
-      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).vcf.gz &&
-      /gatk SelectVariants
+      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).vcf.gz 
+  - position: 2
+    shellQuote: false
+    valueFrom: >-
+      && /gatk SelectVariants
       --java-options "-Xmx2000m"
       -V $(inputs.output_basename).$(inputs.tool_name).vcf.gz
       -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
