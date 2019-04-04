@@ -21,15 +21,19 @@ arguments:
       -t
       hg38
       $(inputs.input_vcf.path)
-      | bgzip -c > $(inputs.output_basename).snpEff.vcf.gz
-      && tabix $(inputs.output_basename).snpEff.vcf.gz
+      | bgzip -c > $(inputs.output_basename).$(inputs.tool_name).snpEff.vcf.gz
+      && tabix $(inputs.output_basename).$(inputs.tool_name).snpEff.vcf.gz
 inputs:
   ref_tar_gz: { type: File, label: tar gzipped snpEff reference}
   input_vcf: { type: File,  secondaryFiles: [.tbi] }
   output_basename: string
+  tool_name: string
 outputs:
-  output:
+  output_vcf:
     type: File
     outputBinding:
       glob: '*.vcf.gz'
-    secondaryFiles: [.tbi]
+  output_tbi:
+    type: File
+    outputBinding:
+      glob: '*.vcf.gz.tbi'
