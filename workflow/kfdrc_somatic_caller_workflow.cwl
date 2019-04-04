@@ -111,6 +111,9 @@ steps:
     in:
       input_vcf: rename_strelka_samples/reheadered_vcf
       output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+
       tool_name:
         valueFrom: ${return "strelka2"}
       reference: indexed_reference_fasta
