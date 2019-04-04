@@ -19,31 +19,33 @@ inputs:
   output_basename: string
 
 outputs:
-  vardict_vep_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
-  vardict_vep_html: {type: File, outputSource: vep_annot_vardict/output_html}
   strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
+  strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
+  strekla2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
   strelka2_vep_html: {type: File, outputSource: vep_annot_strelka2/output_html}
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
+  mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
+  mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
   mutect2_vep_html: {type: File, outputSource: vep_annot_mutect2/output_html}
 
 steps:
-  samtools_tumor_cram2bam:
-    run: ../tools/samtools_cram2bam.cwl
-    in:
-      input_reads: input_tumor_aligned
-      threads:
-        valueFrom: ${return 36}
-      reference: indexed_reference_fasta
-    out: [bam_file]
+  #samtools_tumor_cram2bam:
+  #  run: ../tools/samtools_cram2bam.cwl
+  #  in:
+  #    input_reads: input_tumor_aligned
+  #    threads:
+  #      valueFrom: ${return 36}
+  #    reference: indexed_reference_fasta
+  #  out: [bam_file]
 
-  samtools_normal_cram2bam:
-    run: ../tools/samtools_cram2bam.cwl
-    in:
-      input_reads: input_normal_aligned
-      threads:
-        valueFrom: ${return 36}
-      reference: indexed_reference_fasta
-    out: [bam_file]
+  #samtools_normal_cram2bam:
+  #  run: ../tools/samtools_cram2bam.cwl
+  #  in:
+  #    input_reads: input_normal_aligned
+  #    threads:
+  #      valueFrom: ${return 36}
+  #    reference: indexed_reference_fasta
+  #  out: [bam_file]
 
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
@@ -61,22 +63,6 @@ steps:
       exome_flag: exome_flag
     out: [output]
 
-  vardict_somatic:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
-    run: ../tools/vardictjava.cwl
-    in:
-      input_tumor_bam: samtools_tumor_cram2bam/bam_file
-      input_tumor_name: input_tumor_name
-      input_normal_bam: samtools_normal_cram2bam/bam_file
-      input_normal_name: input_normal_name
-      bed: gatk_intervallisttools/output
-      reference: indexed_reference_fasta
-      output_basename: output_basename
-    scatter: [bed]
-    out: [vardict_vcf]
-
   mutect2:
     hints:
       - class: 'sbg:AWSInstanceType'
@@ -92,19 +78,6 @@ steps:
     scatter: [interval_list]
     out: [mutect2_vcf]
   
-  merge_vardict_vcf:
-    run: ../tools/gatk_mergevcfs_pass_filter.cwl
-    label: Merge & pass filter VarDict
-    in:
-      input_vcfs: vardict_somatic/vardict_vcf
-      input_tumor_name: input_tumor_name
-      input_normal_name: input_normal_name
-      output_basename: output_basename
-      reference_dict: reference_dict
-      tool_name:
-        valueFrom: ${ return "vardict"}
-    out: [merged_vcf]
-
   merge_strelka2_vcf:
     run: ../tools/gatk_mergevcfs_pass_filter.cwl
     label: Merge & pass filter strekla2
@@ -132,41 +105,32 @@ steps:
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
-        valueFrom: ${ return "mutect"}
+        valueFrom: ${return "mutect2"}
     out: [merged_vcf]
-  
-  vep_annot_vardict:
-    run: ../tools/variant_effect_predictor.cwl
-    in:
-      input_vcf: merge_vardict_vcf/merged_vcf
-      output_basename: output_basename
-      tool_name:
-        valueFrom: ${ return "vardict"}
-      reference: indexed_reference_fasta
-      cache: vep_cache
-    out: [output_vcf, output_html, warn_txt]
-  
+    
   vep_annot_strelka2:
-    run: ../tools/variant_effect_predictor.cwl
+    run: ../tools/vep_vcf2maf.cwl
     in:
       input_vcf: rename_strelka_samples/reheadered_vcf
       output_basename: output_basename
       tool_name:
-        valueFrom: ${ return "strelka2"}
+        valueFrom: ${return "strelka2"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_html, warn_txt]
 
   vep_annot_mutect2:
-    run: ../tools/variant_effect_predictor.cwl
+    run: ../tools/vep_vcf2maf.cwl
     in:
       input_vcf: merge_mutect2_vcf/merged_vcf
       output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
       tool_name:
-        valueFrom: ${ return "mutect2"}
+        valueFrom: ${return "mutect2"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_html, warn_txt]
 
 $namespaces:
   sbg: https://sevenbridges.com
