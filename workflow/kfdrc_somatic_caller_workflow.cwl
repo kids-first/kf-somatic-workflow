@@ -22,11 +22,9 @@ outputs:
   strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
   strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
   strekla2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
-  strelka2_vep_html: {type: File, outputSource: vep_annot_strelka2/output_html}
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
-  mutect2_vep_html: {type: File, outputSource: vep_annot_mutect2/output_html}
 
 steps:
   #samtools_tumor_cram2bam:
