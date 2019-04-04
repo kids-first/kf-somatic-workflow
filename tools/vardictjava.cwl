@@ -6,7 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 8000
-    coresMin: 8
+    coresMin: 6
   - class: DockerRequirement
     dockerPull: 'migbro/vardict:1.5.8'
 

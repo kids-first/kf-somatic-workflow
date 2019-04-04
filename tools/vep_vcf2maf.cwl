@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: kfdrc-vep-somatic-annotate
+id: kfdrc-vep-somatic-annotate-maf
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -8,33 +8,28 @@ requirements:
     ramMin: 24000
     coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vep:r93'
+    dockerPull: 'migbro/vep:r93'
 baseCommand: [tar, -xzf ]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
       $(inputs.cache.path)
-      && perl /ensembl-vep/vep
-      --cache --dir_cache $PWD
-      --cache_version 93
-      --vcf
-      --symbol
-      --canonical
-      --variant_class
-      --offline
-      --hgvs
-      --hgvsg
-      --fork 15
-      --sift b
-      --vcf_info_field ANN
-      -i $(inputs.input_vcf.path)
-      -o STDOUT
-      --stats_file $(inputs.output_basename)_stats.$(inputs.tool_name).html
-      --warning_file $(inputs.output_basename)_warnings.$(inputs.tool_name).txt
-      --fasta $(inputs.reference.path) |
-      /ensembl-vep/htslib/bgzip -c > $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz
-      && /ensembl-vep/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz
+      && gunzip -c $(inputs.input_vcf.path) > input_file.vcf
+      && perl /vcf2maf/vcf2maf.pl
+      --input-vcf input_file.vcf
+      --output-maf $(inputs.output_basename).$(inputs.tool_name).vep.maf
+      --filter-vcf 0
+      --vep-path /ensembl-vep/
+      --vep-data $PWD
+      --vep-forks 16
+      --ncbi-build GRCh38
+      --ref-fasta $(inputs.reference.path)
+      --tumor-id $(inputs.tumor_id)
+      --normal-id $(inputs.normal_id)
+      && mv input_file.vep.vcf $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf
+      && /ensembl-vep/htslib/bgzip $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf
+      && /ensembl-vep/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf.gz
 
 inputs:
   reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
@@ -42,6 +37,8 @@ inputs:
     type: File
     secondaryFiles: [.tbi]
   output_basename: string
+  tumor_id: string
+  normal_id: string
   tool_name: string
   cache: { type: File, label: tar gzipped cache from ensembl/local converted cache }
 
@@ -54,11 +51,10 @@ outputs:
     type: File
     outputBinding:
       glob: '*.vcf.gz.tbi'
-
-  output_html:
+  output_maf:
     type: File
     outputBinding:
-      glob: '*.html'
+      glob: '*.maf'
   warn_txt:
     type: ["null", File]
     outputBinding:
