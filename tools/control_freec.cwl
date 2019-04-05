@@ -8,7 +8,7 @@ requirements:
     ramMin: 20000
     coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'migbro/controlfreec:11.5'
+    dockerPull: 'kfdrc/controlfreec:11.5'
 
 baseCommand: [tar, -xzf]
 arguments:
