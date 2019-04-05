@@ -1,15 +1,16 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: control-freeC-8.7
+id: control-freeC-11-5
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 20000
-    coresMin: 4
+    coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'images.sbgenomics.com/bobo823/control-freec-hg38:v8.7'
-baseCommand: [tar, -xzvf]
+    dockerPull: 'migbro/controlfreec:11.5'
+
+baseCommand: [tar, -xzf]
 arguments:
   - position: 1
     shellQuote: false
@@ -20,15 +21,17 @@ arguments:
       ./GRCh38_everyChrs
       $(inputs.normal_bam.path)
       $(inputs.tumor_bam.path)
-      && /FreeC/freec
+      $(inputs.threads)
+      && /FREEC-11.5/src/freec
       -conf file.cfg
       && mv $(inputs.tumor_bam.basename)_ratio.txt $(inputs.output_basename).ratio.txt
-      && mv $(inputs.tumor_bam.basename)_CNVs $(inputs.output_basename).CNVs   
+      && mv $(inputs.tumor_bam.basename)_CNVs $(inputs.output_basename).CNVs
 inputs:
   tumor_bam: { type: File, secondaryFiles: [^.bai] }
   normal_bam: { type: File, secondaryFiles: [^.bai] }
   ref_chrs: File
   chr_len: File
+  threads: int
   output_basename: string
 outputs:
   output_txt:

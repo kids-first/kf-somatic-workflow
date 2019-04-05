@@ -58,6 +58,7 @@ steps:
     out: [bam_file]
 
   control_free_c:
+    run: ../tools/control_freec.cwl
     in:
       ref_chrs: ref_chrs
       chr_len: chr_len
@@ -66,22 +67,22 @@ steps:
       normal_bam: samtools_normal_cram2bam/bam_file
       output_basename: output_basename
     out: [output]
-    run: ../tools/control_freec.cwl
+  
 
   control_free_c_r:
+    run: ../tools/control_freec_R.cwl
     in:
       cnv_bam_ratio: control_free_c/output_txt
       cnv_result: control_free_c/output_cnv
     out: [output]
-    run: ../tools/control_freec_R.cwl
 
   control_free_c_viz:
+    run: ../tools/control_freec_visualize.cwl
     in:
       output_basename: output_basename
       cnv_bam_ratio: control_free_c/output_txt
     out: [output]
-    run: ../tools/control_freec_visualize.cwl
-
+    
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -111,7 +112,7 @@ steps:
   mutect2:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
+        value: c5.9xlarge;ebs-gp2;1200
     run: ../tools/gatk_Mutect2.cwl
     in:
       input_tumor_aligned: input_tumor_aligned

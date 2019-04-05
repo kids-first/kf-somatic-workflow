@@ -5,17 +5,17 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: 10000
     coresMin: 2
     coresMax: 8
   - class: DockerRequirement
-    dockerPull: 'migbro/controlfreec:11.5'
+    dockerPull: 'images.sbgenomics.com/bobo823/rtools:v3.2.3'
 baseCommand: [cat]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      /FREEC-11.5/scripts/assess_significance.R
+      /assess_significance.R
       | R
       --slave
       --args
