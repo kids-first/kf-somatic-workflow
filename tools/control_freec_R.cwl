@@ -9,7 +9,7 @@ requirements:
     coresMin: 2
     coresMax: 8
   - class: DockerRequirement
-    dockerPull: 'migbro/controlfreec:11.5'
+    dockerPull: 'kfdrc/controlfreec:11.5'
 baseCommand: [cat]
 arguments:
   - position: 1
