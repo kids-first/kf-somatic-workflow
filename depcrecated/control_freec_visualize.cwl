@@ -1,32 +1,31 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: control-freeC-R
+id: control-freeC-visualize
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: 10000
     coresMin: 2
     coresMax: 8
   - class: DockerRequirement
-    dockerPull: 'migbro/controlfreec:11.5'
+    dockerPull: 'images.sbgenomics.com/bobo823/rtools:v3.2.3'
 baseCommand: [cat]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      /FREEC-11.5/scripts/assess_significance.R
+      /makeGraph.R
       | R
       --slave
-      --args
-      $(inputs.cnv_result.path)
+      --args 2
       $(inputs.cnv_bam_ratio.path)
-      && mv $(inputs.cnv_result.path).p.value.txt $(inputs.cnv_result.basename).p.value.txt
+      && mv $(inputs.cnv_bam_ratio.path).png $(inputs.output_basename).png
 inputs:
   cnv_bam_ratio: File
-  cnv_result: File
+  output_basename: string
 outputs:
-  output_pval:
+  output_png:
     type: File
     outputBinding:
-      glob: '*.value.txt'
+      glob: '*png'

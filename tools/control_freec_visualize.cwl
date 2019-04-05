@@ -5,17 +5,17 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 10000
+    ramMin: 2000
     coresMin: 2
     coresMax: 8
   - class: DockerRequirement
-    dockerPull: 'images.sbgenomics.com/bobo823/rtools:v3.2.3'
+    dockerPull: 'migbro/controlfreec:11.5'
 baseCommand: [cat]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      /makeGraph.R
+      /FREEC-11.5/scripts/makeGraph.R
       | R
       --slave
       --args 2
