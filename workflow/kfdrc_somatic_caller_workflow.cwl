@@ -14,6 +14,7 @@ inputs:
   input_tumor_name: string
   input_normal_aligned: File
   input_normal_name: string
+  threads: int
   exome_flag: ['null', string]
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   chr_len: File
@@ -24,7 +25,7 @@ inputs:
 
 outputs:
   strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
-  strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
+  strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_maf}
   strekla2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
@@ -60,6 +61,7 @@ steps:
     in:
       ref_chrs: ref_chrs
       chr_len: chr_len
+      threads: threads
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
       output_basename: output_basename
