@@ -40,7 +40,7 @@ arguments:
 inputs:
   reference: { type: File, secondaryFiles: [^.dict, .fai] }
   hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: gzipped bed file }
-  exome_flag: { type: ['null', string], doc: "Y if exome/capture, N if WGS"}
+  exome_flag: { type: ['null', string], doc: "Y if exome/capture, defaults to WGS"}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -53,7 +53,7 @@ inputs:
           return {"location": dpath+self.basename+".crai", "class": "File"}
         }
       }
-    doc: "tumor SAM, BAM, or CRAM"
+    doc: "tumor BAM or CRAM"
   input_normal_aligned:
     type: File
     secondaryFiles: |
@@ -66,7 +66,7 @@ inputs:
           return {"location": dpath+self.basename+".crai", "class": "File"}
         }
       }
-    doc: "normal SAM, BAM, or CRAM"
+    doc: "normal BAM or CRAM"
 outputs:
   output_snv:
     type: File

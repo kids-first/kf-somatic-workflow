@@ -30,7 +30,13 @@ arguments:
       -normal $(inputs.input_normal_name)
       --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter
       -L $(inputs.interval_list.path)
-      -O $(inputs.input_tumor_aligned.nameroot).$(inputs.interval_list.nameroot).Mutect2.vcf.gz
+      ${
+        var arg = "-O $(inputs.input_tumor_aligned.nameroot).$(inputs.interval_list.nameroot).Mutect2.vcf.gz"
+        if (inputs.exome_flag == 'Y'){
+          arg += " --disable-adaptive-pruning"
+        }
+        return arg
+      }
 
 inputs:
   reference: {type: File, secondaryFiles: [^.dict, .fai]}
@@ -46,7 +52,7 @@ inputs:
           return {"location": dpath+self.basename+".crai", "class": "File"}
         }
       }
-    doc: "tumor SAM, BAM, or CRAM"
+    doc: "tumor BAM or CRAM"
   input_tumor_name: string
   input_normal_aligned:
     type: File
@@ -60,9 +66,10 @@ inputs:
           return {"location": dpath+self.basename+".crai", "class": "File"}
         }
       }
-    doc: "normal SAM, BAM, or CRAM"
+    doc: "normal BAM or CRAM"
   input_normal_name: string
   interval_list: File
+  exome_flag: { type: ['null', string], doc: "Y if exome/capture, defaults to WGS"}
 
 outputs:
   mutect2_vcf:
