@@ -9,14 +9,14 @@ requirements:
   - class: ResourceRequirement
     ramMin: 6000
     coresMin: 3
-  - class: InitialWorkDirRequirement
-    listing: |
-      ${
-        var listing = []
-        listing.push(inputs.input_tumor_aligned);
-        listing.push(inputs.input_normal_aligned);
-        return listing;
-      }
+  # - class: InitialWorkDirRequirement
+  #  listing: |
+  #    ${
+  #      var listing = []
+  #      listing.push(inputs.input_tumor_aligned);
+  #      listing.push(inputs.input_normal_aligned);
+  #      return listing;
+  #    }
 baseCommand: [/gatk, Mutect2]
 arguments:
   - position: 1
@@ -31,7 +31,7 @@ arguments:
       --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter
       -L $(inputs.interval_list.path)
       ${
-        var arg = "-O $(inputs.input_tumor_aligned.nameroot).$(inputs.interval_list.nameroot).Mutect2.vcf.gz"
+        var arg = "-O " + inputs.input_tumor_aligned.nameroot + "." + inputs.interval_list.nameroot + ".Mutect2.vcf.gz"
         if (inputs.exome_flag == 'Y'){
           arg += " --disable-adaptive-pruning"
         }

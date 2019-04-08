@@ -25,6 +25,7 @@ arguments:
       && /FREEC-11.5/src/freec
       -conf file.cfg
       && mv $(inputs.tumor_bam.basename)_ratio.txt $(inputs.output_basename).ratio.txt
+      && gzip $(inputs.output_basename).ratio.txt
       && mv $(inputs.tumor_bam.basename)_CNVs $(inputs.output_basename).CNVs
 inputs:
   tumor_bam: { type: File, secondaryFiles: [^.bai] }
@@ -37,7 +38,7 @@ outputs:
   output_txt:
     type: File
     outputBinding:
-      glob: '*.ratio.txt'
+      glob: '*.ratio.txt.gz'
   output_cnv:
     type: File
     outputBinding:
