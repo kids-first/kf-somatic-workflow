@@ -10,17 +10,24 @@ requirements:
     coresMax: 8
   - class: DockerRequirement
     dockerPull: 'kfdrc/controlfreec:11.5'
-baseCommand: [cat]
+baseCommand: []
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      /FREEC-11.5/scripts/makeGraph.R
+      RATIO=$(inputs.cnv_bam_ratio.path)
+      
+      if file --mime-type $(inputs.cnv_bam_ratio.path) | grep -q gzip$; then
+        gunzip  -c $(inputs.cnv_bam_ratio.path) > ./$(inputs.cnv_bam_ratio.nameroot);
+        RATIO=./$(inputs.cnv_bam_ratio.nameroot);
+      fi
+
+      cat /FREEC-11.5/scripts/makeGraph.R
       | R
       --slave
       --args 2
-      $(inputs.cnv_bam_ratio.path)
-      && mv $(inputs.cnv_bam_ratio.path).png $(inputs.output_basename).png
+      $RATIO
+      && mv $RATIO.png $(inputs.output_basename).png
 inputs:
   cnv_bam_ratio: File
   output_basename: string
@@ -28,4 +35,4 @@ outputs:
   output_png:
     type: File
     outputBinding:
-      glob: '*png'
+      glob: "$(inputs.output_basename).png"

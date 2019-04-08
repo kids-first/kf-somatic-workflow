@@ -19,8 +19,6 @@ inputs:
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   chr_len: File
   ref_chrs: File
-  ref_tar_gz: { type: File, label: tar gzipped snpEff reference }
-
   output_basename: string
 
 outputs:
@@ -33,7 +31,6 @@ outputs:
   manta_vep_vcf: {type: File, outputSource: vep_annot_manta/output_vcf}
   manta_vep_tbi: {type: File, outputSource: vep_annot_manta/output_tbi}
   manta_vep_maf: {type: File, outputSource: vep_annot_manta/output_maf}
-  cnv_result: { type: File, outputSource: control_free_c/output_cnv }
   cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
   cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
   cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
@@ -68,7 +65,6 @@ steps:
       output_basename: output_basename
     out: [output]
   
-
   control_free_c_r:
     run: ../tools/control_freec_R.cwl
     in:
@@ -121,6 +117,7 @@ steps:
       input_normal_name: input_normal_name
       reference: indexed_reference_fasta
       interval_list: gatk_intervallisttools/output
+      exome_flag: exome_flag
     scatter: [interval_list]
     out: [mutect2_vcf]
   
@@ -170,7 +167,7 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return "strelka2_snv"}
+        valueFrom: ${return "strelka2_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_html, warn_txt]
@@ -183,7 +180,7 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return "mutect2_snv"}
+        valueFrom: ${return "mutect2_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_html, warn_txt]
@@ -196,40 +193,11 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return "manta_sv"}
+        valueFrom: ${return "manta_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_html, warn_txt]
   
-  snpeff_annot_strelka2:
-    in:
-      input_vcf: rename_strelka_samples/reheadered_vcf
-      ref_tar_gz: ref_tar_gz
-      output_basename: output_basename
-      tool_name:
-        valueFrom: ${return "strelka2_snv"}
-    out: [output_vcf, output_tbi]
-    run: ../tools/snpEff_annotate.cwl
-  snpeff_annot_mutect2:
-    in:
-      input_vcf: merge_mutect2_vcf/merged_vcf
-      ref_tar_gz: ref_tar_gz
-      output_basename: output_basename
-      tool_name:
-        valueFrom: ${return "mutect2_snv"}
-    out: [output_vcf, output_tbi]
-    run: ../tools/snpEff_annotate.cwl
-
-  snpeff_annot_manta:
-    in:
-      input_vcf: rename_manta_samples/reheadered_vcf
-      ref_tar_gz: ref_tar_gz
-      output_basename: output_basename
-      tool_name:
-        valueFrom: ${return "manta_sv"}
-    out: [output_vcf, output_tbi]
-    run: ../tools/snpEff_annotate.cwl
-
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
