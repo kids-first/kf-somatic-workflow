@@ -24,7 +24,7 @@ inputs:
 outputs:
   strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
   strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_maf}
-  strekla2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
+  strelka2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}

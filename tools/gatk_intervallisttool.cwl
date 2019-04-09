@@ -20,10 +20,11 @@ arguments:
       --java-options "-Xmx2000m"
       --SCATTER_COUNT=50
       --SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW
-      --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=1000000
+      --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=80000000
       --INPUT=$(inputs.interval_list.path) --OUTPUT=.
-      && seq -w 50 | xargs -I N -P 4
-      /gatk IntervalListToBed --java-options -Xmx100m -I temp_00N_of_50/scattered.interval_list -O temp_00N_of_50/scattered.interval_list.N.bed
+      && CT=`find . -name 'temp_00*' | wc -l`
+      && seq -w $CT | xargs -I N -P 4
+      /gatk IntervalListToBed --java-options -Xmx100m -I temp_00N_of_$CT/scattered.interval_list -O temp_00N_of_$CT/scattered.interval_list.N.bed
 inputs:
   interval_list: File
 outputs:
