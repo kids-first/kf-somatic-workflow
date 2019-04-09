@@ -30,6 +30,9 @@ steps:
     out: [output]
 
   mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge;ebs-gp2;500
     run: ../tools/gatk_Mutect2.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
@@ -43,6 +46,9 @@ steps:
     out: [mutect2_vcf]
 
   merge_mutect2_vcf:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_mergevcfs_pass_filter.cwl
     label: Merge & pass filter mutect2
     in:
@@ -54,6 +60,9 @@ steps:
     out: [merged_vcf]
 
   vep_annot_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.4xlarge;ebs-gp2;250
     run: ../tools/vep_vcf2maf.cwl
     in:
       input_vcf: merge_mutect2_vcf/merged_vcf
@@ -71,5 +80,3 @@ $namespaces:
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
     value: 4
-  - class: 'sbg:AWSInstanceType'
-    value: c5.9xlarge;ebs-gp2;750
