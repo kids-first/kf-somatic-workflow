@@ -25,7 +25,7 @@ arguments:
     shellQuote: false
     valueFrom: >-
       && /gatk SelectVariants
-      --java-options "-Xmx6000m"
+      --java-options "-Xmx8000m"
       -V $(inputs.output_basename).$(inputs.tool_name).vcf.gz
       -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
       --select 'vc.isNotFiltered()'
