@@ -48,7 +48,7 @@ steps:
   merge_mutect2_vcf:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
+        value: c5.2xlarge;ebs-gp2;250
     run: ../tools/gatk_mergevcfs_pass_filter.cwl
     label: Merge & pass filter mutect2
     in:
