@@ -4,6 +4,7 @@ id: kfdrc_mutect2_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
+  - class: SubworkflowFeatureRequirement
 
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
@@ -61,59 +62,6 @@ steps:
         valueFrom: ${return "mutect2"}
     out: [merged_vcf]
 
-  gatk_get_tumor_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
-    run: ../tools/gatk_getpileupsummaries.cwl
-    in:
-      aligned_reads: input_tumor_aligned
-      reference: indexed_reference_fasta
-      interval_list: gatk_intervallisttools/output
-      exac_common_vcf: exac_common_vcf
-    scatter: [interval_list]
-    out: [pileup_table]
-
-  gatk_get_normal_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
-    run: ../tools/gatk_getpileupsummaries.cwl
-    in:
-      aligned_reads: input_normal_aligned
-      reference: indexed_reference_fasta
-      interval_list: gatk_intervallisttools/output
-      exac_common_vcf: exac_common_vcf
-    scatter: [interval_list]
-    out: [pileup_table]
-
-  gatk_gather_tumor_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
-    run: ../tools/gatk_gatherpileupsummaries.cwl
-    label: GATK merge pileup tables
-    in:
-      input_tables: gatk_get_tumor_pileup_summaries/pileup_table
-      output_basename: output_basename
-      reference_dict: reference_dict
-      tool_name:
-        valueFrom: ${return "mutect2"}
-    out: [merged_table]
-
-  gatk_gather_normal_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
-    run: ../tools/gatk_gatherpileupsummaries.cwl
-    label: GATK merge pileup tables
-    in:
-      input_tables: gatk_get_normal_pileup_summaries/pileup_table
-      output_basename: output_basename
-      reference_dict: reference_dict
-      tool_name:
-        valueFrom: ${return "mutect2"}
-    out: [merged_table]
 
   vep_annot_mutect2:
     hints:
