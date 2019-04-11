@@ -5,7 +5,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.0.12.0'
+    dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
     ramMin: 6000
     coresMin: 3
@@ -30,6 +30,8 @@ arguments:
       -normal $(inputs.input_normal_name)
       --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter
       -L $(inputs.interval_list.path)
+      --germline-resource $(inputs.af_only_gnomad_vcf.path)
+      --f1r2-tar-gz $(inputs.input_tumor_aligned.nameroot) + "." + $(inputs.interval_list.nameroot) + ".f1r2_counts.tar.gz"
       ${
         var arg = "-O " + inputs.input_tumor_aligned.nameroot + "." + inputs.interval_list.nameroot + ".Mutect2.vcf.gz"
         if (inputs.exome_flag == 'Y'){
@@ -69,6 +71,7 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   interval_list: File
+  af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exome_flag: { type: ['null', string], doc: "Y if exome/capture, defaults to WGS"}
 
 outputs:
@@ -77,3 +80,7 @@ outputs:
     outputBinding:
       glob: '*.vcf.gz'
     secondaryFiles: [.tbi]
+  f1r2_counts:
+    type: File
+    outputBinding:
+      glob: '*.f1r2_counts.tar.gz'

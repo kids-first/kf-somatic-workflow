@@ -4,7 +4,7 @@ id: bcftools_reheader_vcf
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/bvcftools:latest'
+    dockerPull: 'kfdrc/bvcftools:latest'
   - class: ResourceRequirement
     ramMin: 1000
     coresMin: 1
