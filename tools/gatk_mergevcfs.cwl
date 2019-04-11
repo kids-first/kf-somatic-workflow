@@ -1,34 +1,26 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: gatk4_mergevcfs_selectvcfs
-label: GATK Merge and PASS
-doc: "Merge input vcfs and output only PASS"
+id: gatk4_mergevcfs
+label: GATK Merge VCF
+doc: "Merge input vcfs"
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.0.12.0'
+    dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 12000
-    coresMin: 4
+    ramMin: 4000
+    coresMin: 2
 baseCommand: [/gatk, MergeVcfs]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx8000m"
+      --java-options "-Xmx2000m"
       --TMP_DIR=./TMP
       --CREATE_INDEX=true
       --SEQUENCE_DICTIONARY=$(inputs.reference_dict.path)
-      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).vcf.gz 
-  - position: 2
-    shellQuote: false
-    valueFrom: >-
-      && /gatk SelectVariants
-      --java-options "-Xmx12000m"
-      -V $(inputs.output_basename).$(inputs.tool_name).vcf.gz
-      -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
-      --select 'vc.isNotFiltered()'
+      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).merged.vcf.gz 
 
 inputs:
   input_vcfs:
@@ -47,5 +39,5 @@ outputs:
   merged_vcf:
     type: File
     outputBinding:
-      glob: '*PASS.vcf.gz'
+      glob: '*.merged.vcf.gz'
     secondaryFiles: [.tbi]
