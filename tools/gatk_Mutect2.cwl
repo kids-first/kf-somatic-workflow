@@ -31,7 +31,7 @@ arguments:
       --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter
       -L $(inputs.interval_list.path)
       --germline-resource $(inputs.af_only_gnomad_vcf.path)
-      --f1r2-tar-gz $(inputs.input_tumor_aligned.nameroot) + "." + $(inputs.interval_list.nameroot) + ".f1r2_counts.tar.gz"
+      --f1r2-tar-gz $(inputs.input_tumor_aligned.nameroot).$(inputs.interval_list.nameroot).f1r2_counts.tar.gz
       ${
         var arg = "-O " + inputs.input_tumor_aligned.nameroot + "." + inputs.interval_list.nameroot + ".Mutect2.vcf.gz"
         if (inputs.exome_flag == 'Y'){
