@@ -18,13 +18,17 @@ arguments:
       --java-options "-Xmx4000m"
       -V $(inputs.mutect_vcf.path)
       -O $(inputs.output_basename).mutect2_filtered.vcf.gz
+      -R $(inputs.reference.path)
       --contamination-table $(inputs.contamination_table.path)
       --tumor-segmentation $(inputs.segmentation_table.path)
       --ob-priors $(inputs.ob_priors.path)
-      --filtering-stats $(inputs.output_basename).mutect2_filtered.tsv
+      --filtering-stats $(inputs.output_basename).mutect2_filtered.txt
+      --stats $(inputs.mutect_stats.path)
 
 inputs:
   mutect_vcf: {type: File, secondaryFiles: [.tbi]}
+  mutect_stats: File
+  reference: File
   output_basename: string
   contamination_table: File
   segmentation_table: File
@@ -37,7 +41,8 @@ outputs:
       glob: '*.mutect2_filtered.tsv'
   
   filtered_vcf:
-    type: {type: File, secondaryFiles: ['.tbi']}
+    type: File
     outputBinding:
       glob: '*.mutect2_filtered.vcf.gz'
+    secondaryFiles: ['.tbi']
 

@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: gatk4_learn_oritentation_bias
-label: GATK Learn Bias
+id: gatk4_mergepileup
+label: GATK Merge Stats
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -10,27 +10,26 @@ requirements:
   - class: ResourceRequirement
     ramMin: 4000
     coresMin: 2
-baseCommand: [/gatk, LearnReadOrientationModel]
+baseCommand: [/gatk, MergeMutectStats]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx2000m"
-      -O $(inputs.output_basename).$(inputs.tool_name).f1r2_bias.tar.gz 
+      --java-options "-Xmx3000m"
+      -O $(inputs.output_basename).Mutect2.merged.stats 
 
 inputs:
-  input_tgz:
+  input_stats:
     type:
       type: array
       items: File
       inputBinding:
-        prefix: -I
+        prefix: --stats
     inputBinding:
       position: 1
-  tool_name: string
   output_basename: string
 outputs:
-  f1r2_bias:
+  merged_stats:
     type: File
     outputBinding:
-      glob: '*.f1r2_bias.tar.gz'
+      glob: '*.merged.stats'

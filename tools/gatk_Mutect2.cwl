@@ -80,6 +80,10 @@ outputs:
     outputBinding:
       glob: '*.vcf.gz'
     secondaryFiles: [.tbi]
+  mutect_stats:
+    type: File
+    outputBinding:
+      glob: '*.stats'
   f1r2_counts:
     type: File
     outputBinding:

@@ -38,7 +38,7 @@ steps:
   gatk_get_tumor_pileup_summaries:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge;ebs-gp2;500
+        value: c5.2xlarge;ebs-gp2;250
     label: GATK tumor pileup scatter
     run: ../tools/gatk_getpileupsummaries.cwl
     in:
@@ -52,7 +52,7 @@ steps:
   gatk_get_normal_pileup_summaries:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: c5.2xlarge;ebs-gp2;250
     label: GATK normal pileup scatter
     run: ../tools/gatk_getpileupsummaries.cwl
     in:
