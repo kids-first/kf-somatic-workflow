@@ -17,13 +17,15 @@ inputs:
   input_normal_aligned: File
   input_normal_name: string
   exome_flag: ['null', string]
-  # vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
 
 outputs:
-  mutect2_stats: {type: File, outputSource: filter_mutect2_vcf/stats_table}
+  mutect2_run_stats: {type: File, outputSource: merge_mutect2_stats/merged_stats}
+  mutect2_filtered_stats: {type: File, outputSource: filter_mutect2_vcf/stats_table}
   mutect2_filtered_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
-  # mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
+  mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
+  mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
   
 steps:
   gatk_intervallisttools:
@@ -47,7 +49,7 @@ steps:
       af_only_gnomad_vcf: af_only_gnomad_vcf
       exome_flag: exome_flag
     scatter: [interval_list]
-    out: [mutect2_vcf, f1r2_counts]
+    out: [mutect2_vcf, f1r2_counts, mutect_stats]
 
   mutect2_filter_support:
     run: ../workflow/kfdrc_mutect2_filter_support_subwf.cwl
@@ -67,7 +69,7 @@ steps:
       - class: 'sbg:AWSInstanceType'
         value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_mergevcfs.cwl
-    label: Merge mutect2 output
+    label: Merge mutect2 vcf
     in:
       input_vcfs: mutect2/mutect2_vcf
       output_basename: output_basename
@@ -75,32 +77,59 @@ steps:
       tool_name:
         valueFrom: ${return "mutect2"}
     out: [merged_vcf]
+
+  merge_mutect2_stats:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.xlarge;ebs-gp2;250
+    run: ../tools/gatk_mergemutectstats.cwl
+    label: Merge mutect2 stats
+    in:
+      input_stats: mutect2/mutect_stats
+      output_basename: output_basename
+    out: [merged_stats]
+
   
   filter_mutect2_vcf:
     run: ../tools/gatk_filtermutectcalls.cwl
     in:
       mutect_vcf: merge_mutect2_vcf/merged_vcf
+      mutect_stats: merge_mutect2_stats/merged_stats
+      reference: indexed_reference_fasta
       output_basename: output_basename
       contamination_table: mutect2_filter_support/contamination_table
       segmentation_table: mutect2_filter_support/segmentation_table
       ob_priors: mutect2_filter_support/f1r2_bias
     out: [stats_table, filtered_vcf]
 
-  # vep_annot_mutect2:
-  #   hints:
-  #     - class: 'sbg:AWSInstanceType'
-  #       value: c5.4xlarge;ebs-gp2;250
-  #   run: ../tools/vep_vcf2maf.cwl
-  #   in:
-  #     input_vcf: merge_mutect2_vcf/merged_vcf
-  #     output_basename: output_basename
-  #     tumor_id: input_tumor_name
-  #     normal_id: input_normal_name
-  #     tool_name:
-  #       valueFrom: ${return "mutect2_somatic"}
-  #     reference: indexed_reference_fasta
-  #     cache: vep_cache
-  #   out: [output_vcf, output_tbi, output_html, warn_txt]
+  gatk_selectvariants:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.xlarge;ebs-gp2;250
+    run: ../tools/gatk_selectvariants.cwl
+    label: GATK Select PASS
+    in:
+      input_vcf: filter_mutect2_vcf/filtered_vcf
+      output_basename: output_basename
+      tool_name:
+        valueFrom: ${return "mutect2"}
+    out: [pass_vcf]
+
+  vep_annot_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.4xlarge;ebs-gp2;250
+    run: ../tools/vep_vcf2maf.cwl
+    in:
+      input_vcf: gatk_selectvariants/pass_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name:
+        valueFrom: ${return "mutect2_somatic"}
+      reference: indexed_reference_fasta
+      cache: vep_cache
+    out: [output_vcf, output_tbi, output_html, warn_txt]
 
 $namespaces:
   sbg: https://sevenbridges.com
