@@ -21,7 +21,6 @@ inputs:
   output_basename: string
 
 outputs:
-  mutect2_run_stats: {type: File, outputSource: merge_mutect2_stats/merged_stats}
   mutect2_filtered_stats: {type: File, outputSource: filter_mutect2_vcf/stats_table}
   mutect2_filtered_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
@@ -89,7 +88,6 @@ steps:
       input_stats: mutect2/mutect_stats
       output_basename: output_basename
     out: [merged_stats]
-
   
   filter_mutect2_vcf:
     hints:
