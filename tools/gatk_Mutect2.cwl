@@ -8,7 +8,7 @@ requirements:
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
     ramMin: 4000
-    coresMin: 2
+    coresMin: 3
   # - class: InitialWorkDirRequirement
   #  listing: |
   #    ${
