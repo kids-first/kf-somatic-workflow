@@ -38,11 +38,10 @@ outputs:
   stats_table:
     type: File
     outputBinding:
-      glob: '*.mutect2_filtered.tsv'
+      glob: '*.mutect2_filtered.txt'
   
   filtered_vcf:
     type: File
     outputBinding:
       glob: '*.mutect2_filtered.vcf.gz'
     secondaryFiles: ['.tbi']
-
