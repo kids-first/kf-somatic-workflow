@@ -44,9 +44,7 @@ steps:
     out: [pileup_table]
 
   gatk_get_normal_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge;ebs-gp2;250
+
     label: GATK normal pileup scatter
     run: ../tools/gatk_getpileupsummaries.cwl
     in:
@@ -80,7 +78,6 @@ steps:
     out: [merged_table]
   
   gatk_calculate_contamination:
-    hints:
     run: ../tools/gatk_calculatecontamination.cwl
     in:
       tumor_pileup: gatk_gather_tumor_pileup_summaries/merged_table
@@ -92,4 +89,4 @@ $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:AWSInstanceType'
-    value: c5.9xlarge;ebs-gp2;250
+    value: c5.4xlarge;ebs-gp2;250
