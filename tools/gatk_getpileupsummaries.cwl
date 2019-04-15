@@ -8,14 +8,14 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: 2000
     coresMin: 2
 baseCommand: [/gatk, GetPileupSummaries]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx4000m"
+      --java-options "-Xmx2000m"
       -I $(inputs.aligned_reads.path)
       -V $(inputs.exac_common_vcf.path)
       -L $(inputs.interval_list.path)

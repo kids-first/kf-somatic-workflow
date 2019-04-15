@@ -25,6 +25,7 @@ outputs:
   mutect2_filtered_stats: {type: File, outputSource: filter_mutect2_vcf/stats_table}
   mutect2_filtered_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
+  mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
   
 steps:
@@ -91,6 +92,9 @@ steps:
 
   
   filter_mutect2_vcf:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_filtermutectcalls.cwl
     in:
       mutect_vcf: merge_mutect2_vcf/merged_vcf

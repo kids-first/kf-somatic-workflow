@@ -23,9 +23,6 @@ outputs:
 steps:
 
   gatk_learn_orientation_bias:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_learnorientationbias.cwl
     label: Gatk learn bias
     in:
@@ -36,9 +33,6 @@ steps:
     out: [f1r2_bias]
 
   gatk_get_tumor_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.2xlarge;ebs-gp2;250
     label: GATK tumor pileup scatter
     run: ../tools/gatk_getpileupsummaries.cwl
     in:
@@ -52,7 +46,7 @@ steps:
   gatk_get_normal_pileup_summaries:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.2xlarge;ebs-gp2;250
+        value: c5.4xlarge;ebs-gp2;250
     label: GATK normal pileup scatter
     run: ../tools/gatk_getpileupsummaries.cwl
     in:
@@ -64,9 +58,6 @@ steps:
     out: [pileup_table]
 
   gatk_gather_tumor_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     label: GATK merge tumor pileup tables
     run: ../tools/gatk_gatherpileupsummaries.cwl
     in:
@@ -78,9 +69,6 @@ steps:
     out: [merged_table]
 
   gatk_gather_normal_pileup_summaries:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     label: GATK merge normal pileup tables
     run: ../tools/gatk_gatherpileupsummaries.cwl
     in:
@@ -93,8 +81,6 @@ steps:
   
   gatk_calculate_contamination:
     hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_calculatecontamination.cwl
     in:
       tumor_pileup: gatk_gather_tumor_pileup_summaries/merged_table
@@ -105,5 +91,5 @@ steps:
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
-  - class: 'sbg:maxNumberOfParallelInstances'
-    value: 2
+  - class: 'sbg:AWSInstanceType'
+    value: c5.9xlarge;ebs-gp2;250

@@ -18,6 +18,7 @@ arguments:
       --java-options "-Xmx4000m"
       -V $(inputs.input_vcf.path)
       -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
+      --select 'vc.isNotFiltered()'
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
