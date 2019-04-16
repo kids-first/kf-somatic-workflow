@@ -7,7 +7,7 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: 6000
     coresMin: 3
   # - class: InitialWorkDirRequirement
   #  listing: |
@@ -22,7 +22,7 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx4000m"
+      --java-options "-Xmx6000m"
       -R $(inputs.reference.path)
       -I $(inputs.input_tumor_aligned.path)
       -I $(inputs.input_normal_aligned.path)

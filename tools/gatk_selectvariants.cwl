@@ -8,14 +8,21 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: 8000
     coresMin: 2
 baseCommand: [/gatk, SelectVariants]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx4000m"
+      --java-options "-Xmx8000m
+      -XX:+PrintFlagsFinal
+      -XX:+PrintGCTimeStamps
+      -XX:+PrintGCDateStamps
+      -XX:+PrintGCDetails
+      -Xloggc:gc_log.log
+      -XX:GCTimeLimit=50
+      -XX:GCHeapFreeLimit=10"
       -V $(inputs.input_vcf.path)
       -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
       --select 'vc.isNotFiltered()'
