@@ -8,14 +8,14 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 8000
-    coresMin: 2
+    ramMin: 16000
+    coresMin: 4
 baseCommand: [/gatk, SelectVariants]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx8000m
+      --java-options "-Xmx16000m
       -XX:+PrintFlagsFinal
       -XX:+PrintGCTimeStamps
       -XX:+PrintGCDateStamps
@@ -29,6 +29,8 @@ arguments:
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
+  output_basename: string
+  tool_name: string
   
 outputs:  
   pass_vcf:

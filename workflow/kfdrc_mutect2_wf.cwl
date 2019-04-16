@@ -92,7 +92,7 @@ steps:
   filter_mutect2_vcf:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
+        value: c5.2xlarge;ebs-gp2;250
     run: ../tools/gatk_filtermutectcalls.cwl
     in:
       mutect_vcf: merge_mutect2_vcf/merged_vcf
