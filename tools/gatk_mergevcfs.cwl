@@ -20,7 +20,14 @@ arguments:
       --TMP_DIR=./TMP
       --CREATE_INDEX=true
       --SEQUENCE_DICTIONARY=$(inputs.reference_dict.path)
-      --OUTPUT=$(inputs.output_basename).$(inputs.tool_name).merged.vcf.gz 
+      ${
+        var cmd = "--OUTPUT=" + inputs.output_basename + "." + inputs.tool_name + ".merged.vcf.gz "
+        if (typeof inputs.silent_flag !== 'undefined' && inputs.silent_flag == 1){
+          cmd += "--VALIDATION_STRINGENCY SILENT"
+        }
+        return cmd
+      }
+      
 
 inputs:
   input_vcfs:
@@ -35,6 +42,7 @@ inputs:
   reference_dict: File
   tool_name: string
   output_basename: string
+  silent_flag: ['null', int]
 outputs:
   merged_vcf:
     type: File
