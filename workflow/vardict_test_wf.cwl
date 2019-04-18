@@ -20,7 +20,7 @@ outputs:
 
 steps:
   gatk_intervallisttools:
-    run: ../dev/gatk_intervallisttool.cwl
+    run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
     out: [output]
@@ -28,7 +28,7 @@ steps:
   vardict:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
+        value: m5.4xlarge
     run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: input_tumor_aligned
@@ -42,14 +42,16 @@ steps:
     out: [vardict_vcf]
 
   merge_vardict_vcf:
-    run: ../tools/gatk_mergevcfs_pass_filter.cwl
-    label: Merge & pass filter vardict
+    run: ../tools/gatk_mergevcfs.cwl
+    label: GATK Merge vardict
     in:
       input_vcfs: vardict/vardict_vcf
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "vardict"}
+      silent_flag:
+        valueFrom: ${return 1}
     out: [merged_vcf]
 
 $namespaces:

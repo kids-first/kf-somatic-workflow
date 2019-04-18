@@ -5,7 +5,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 16000
+    ramMin: 28000
     coresMin: 8
   - class: DockerRequirement
     dockerPull: 'migbro/vardict:1.5.8'
@@ -16,7 +16,7 @@ arguments:
     shellQuote: false
     valueFrom: >-
       set -eo pipefail
-      && VAR_DICT_OPTS='"-Xms768m" "-Xmx16g"' /VarDict-1.5.8/bin/VarDict
+      && VAR_DICT_OPTS='"-Xms768m" "-Xmx28g"' /VarDict-1.5.8/bin/VarDict
       -G $(inputs.reference.path)
       -f 0.01 -th 8 --nosv
       -N $(inputs.output_basename)
