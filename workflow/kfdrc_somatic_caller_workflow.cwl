@@ -16,7 +16,7 @@ inputs:
   input_tumor_name: string
   input_normal_aligned: File
   input_normal_name: string
-  threads: int
+  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
   exome_flag: ['null', string]
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
