@@ -8,11 +8,14 @@ requirements:
     ramMin: 8000
   - class: DockerRequirement
     dockerPull: 'kfdrc/snpeff:4_3t'
-baseCommand: [tar, -xzvf]
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
+      tar -xzvf
       $(inputs.ref_tar_gz.path)
       && cwd=`pwd`
       && java -Xms2000m -Xmx8000m -jar /snpEff/snpEff.jar
