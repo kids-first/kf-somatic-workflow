@@ -250,7 +250,7 @@ steps:
   vep_annot_strelka2:
     run: ../tools/vep_vcf2maf.cwl
     in:
-      input_vcf: rename_strelka_samples/reheadered_vcf
+      input_vcf: gatk_selectvariants_strelka2/pass_vcf
       output_basename: output_basename
       tumor_id: input_tumor_name
       normal_id: input_normal_name
@@ -276,7 +276,7 @@ steps:
   vep_annot_manta:
     run: ../tools/vep_vcf2maf.cwl
     in:
-      input_vcf: rename_manta_samples/reheadered_vcf
+      input_vcf: gatk_selectvariants_manta/pass_vcf
       output_basename: output_basename
       tumor_id: input_tumor_name
       normal_id: input_normal_name

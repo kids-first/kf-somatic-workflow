@@ -21,15 +21,15 @@ arguments:
         var std = " --ref " + inputs.reference.path + " --callRegions " + inputs.hg38_strelka_bed.path + " --runDir=./ && ./runWorkflow.py -m local -j 36 --quiet ";
         var mv = " && mv results/variants/";
         if (typeof inputs.input_tumor_cram === 'undefined' || inputs.input_tumor_cram === null){
-          var mv_cmd = mv + "diploidSV.vcf.gz " +  inputs.output_basename + ".diploidSV.vcf.gz" + mv + "diploidSV.vcf.gz.tbi " + inputs.output_basename + ".diploidSV.vcf.gz.tbi";
+          var mv_cmd = mv + "diploidSV.vcf.gz " +  inputs.output_basename + ".manta.diploidSV.vcf.gz" + mv + "diploidSV.vcf.gz.tbi " + inputs.output_basename + ".manta.diploidSV.vcf.gz.tbi";
           return "--bam ".concat(inputs.input_normal_cram.path, std, mv_cmd);
         }
         else if (typeof inputs.input_normal_cram === 'undefined' || inputs.input_normal_cram === null){
-          var mv_cmd = mv + "tumorSV.vcf.gz " + inputs.output_basename + ".tumorSV.vcf.gz" + mv + "tumorSV.vcf.gz.tbi " + inputs.output_basename + ".tumorSV.vcf.gz.tbi";
+          var mv_cmd = mv + "tumorSV.vcf.gz " + inputs.output_basename + ".manta.tumorSV.vcf.gz" + mv + "tumorSV.vcf.gz.tbi " + inputs.output_basename + ".manta.tumorSV.vcf.gz.tbi";
           return "--tumorBam " + inputs.input_tumor_cram.path + std + mv_cmd;
         }
         else{
-          var mv_cmd = mv + "somaticSV.vcf.gz " + inputs.output_basename + ".somaticSV.vcf.gz" + mv + "somaticSV.vcf.gz.tbi " + inputs.output_basename + ".somaticSV.vcf.gz.tbi";
+          var mv_cmd = mv + "somaticSV.vcf.gz " + inputs.output_basename + ".manta.somaticSV.vcf.gz" + mv + "somaticSV.vcf.gz.tbi " + inputs.output_basename + ".manta.somaticSV.vcf.gz.tbi";
           return "--tumorBam " + inputs.input_tumor_cram.path + " --normalBam " + inputs.input_normal_cram.path + std + mv_cmd;
         }
       }
