@@ -10,11 +10,13 @@ requirements:
     coresMax: 8
   - class: DockerRequirement
     dockerPull: 'kfdrc/controlfreec:11.5'
-baseCommand: []
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
       RATIO=$(inputs.cnv_bam_ratio.path)
       
       if file --mime-type $(inputs.cnv_bam_ratio.path) | grep -q gzip$; then
