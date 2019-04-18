@@ -18,6 +18,7 @@ inputs:
   input_normal_name: string
   threads: int
   exome_flag: ['null', string]
+  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   chr_len: File
   ref_chrs: File
@@ -209,25 +210,27 @@ steps:
       - class: 'sbg:AWSInstanceType'
         value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
-    label: GATK Select PASS
+    label: GATK Select Mutect2 PASS
     in:
       input_vcf: filter_mutect2_vcf/filtered_vcf
       output_basename: output_basename
       tool_name:
         valueFrom: ${return "mutect2"}
+      mode: select_vars_mode
     out: [pass_vcf]
 
-  gatk_selectvariants_manta2:
+  gatk_selectvariants_manta:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
-    label: GATK Select PASS
+    label: GATK Select Manta PASS
     in:
       input_vcf: rename_manta_samples/reheadered_vcf
       output_basename: output_basename
       tool_name:
-        valueFrom: ${return "manta2"}
+        valueFrom: ${return "manta"}
+      mode: select_vars_mode
     out: [pass_vcf]
 
   gatk_selectvariants_strelka2:
@@ -235,12 +238,13 @@ steps:
       - class: 'sbg:AWSInstanceType'
         value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
-    label: GATK Select PASS
+    label: GATK Select Strelka2 PASS
     in:
       input_vcf: rename_strelka_samples/reheadered_vcf
       output_basename: output_basename
       tool_name:
         valueFrom: ${return "strelka2"}
+      mode: select_vars_mode
     out: [pass_vcf]
     
   vep_annot_strelka2:
