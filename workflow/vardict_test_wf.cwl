@@ -16,11 +16,11 @@ inputs:
   reference_dict: File
 
 outputs:
-  vardict_vcf: {type: File, outputSource: merge_vardict_vcf/merged_vcf}
+  vardict_vcf: {type: File, outputSource: merge_sort_vardict_vcf/merged_vcf}
 
 steps:
   gatk_intervallisttools:
-    run: ../tools/gatk_intervallisttool.cwl
+    run: ../dev/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
     out: [output]
@@ -28,7 +28,7 @@ steps:
   vardict:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: m5.4xlarge
+        value: r4.8xlarge;ebs-gp2;500
     run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: input_tumor_aligned
@@ -41,17 +41,15 @@ steps:
     scatter: [bed]
     out: [vardict_vcf]
 
-  merge_vardict_vcf:
-    run: ../tools/gatk_mergevcfs.cwl
-    label: GATK Merge vardict
+  merge_sort_vardict_vcf:
+    run: ../dev/gatk_sortvcf.cwl
+    label: GATK Merge & sortvardict
     in:
       input_vcfs: vardict/vardict_vcf
       output_basename: output_basename
       reference_dict: reference_dict
       tool_name:
         valueFrom: ${return "vardict"}
-      silent_flag:
-        valueFrom: ${return 1}
     out: [merged_vcf]
 
 $namespaces:

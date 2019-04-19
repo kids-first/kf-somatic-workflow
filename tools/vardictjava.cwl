@@ -5,8 +5,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 28000
-    coresMin: 8
+    ramMin: 20
+    coresMin: 4
   - class: DockerRequirement
     dockerPull: 'migbro/vardict:1.5.8'
 
@@ -16,12 +16,13 @@ arguments:
     shellQuote: false
     valueFrom: >-
       set -eo pipefail
-      && VAR_DICT_OPTS='"-Xms768m" "-Xmx28g"' /VarDict-1.5.8/bin/VarDict
+
+      export VAR_DICT_OPTS='"-Xms768m" "-Xmx18g"' && /VarDict-1.5.8/bin/VarDict
       -G $(inputs.reference.path)
       -f 0.01 -th 8 --nosv
       -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
-      -z -c 1 -S 2 -E 3 -g 4 $(inputs.bed.path)
+      -z -c 1 -S 2 -E 3 -g 4 $(inputs.bed.path) -y
       | /VarDict-1.5.8/bin/testsomatic.R
       | /VarDict-1.5.8/bin/var2vcf_paired.pl
       -N '$(inputs.input_tumor_name)|$(inputs.input_normal_name)'
