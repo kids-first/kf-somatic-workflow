@@ -5,7 +5,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.0.12.0'
+    dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
     ramMin: 2000
 
