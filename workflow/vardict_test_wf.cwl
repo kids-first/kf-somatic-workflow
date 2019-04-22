@@ -29,7 +29,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: r4.8xlarge;ebs-gp2;500
-    run: ../tools/vardictjava.cwl
+    run: ../dev/vardictjava.cwl
     in:
       input_tumor_bam: input_tumor_aligned
       input_tumor_name: input_tumor_name
