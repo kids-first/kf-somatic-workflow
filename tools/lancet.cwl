@@ -6,7 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 6000
-    coresMin: 3
+    coresMin: 6
   - class: DockerRequirement
     dockerPull: 'migbro/lancet:1.0.7'
 
@@ -19,7 +19,7 @@ arguments:
       --normal $(inputs.input_normal_bam.path)
       --ref $(inputs.reference.path)
       --bed $(inputs.bed.path)
-      --num-threads 3 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
+      --num-threads 6 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
