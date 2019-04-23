@@ -5,10 +5,10 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 6000
-    coresMin: 6
+    ramMin: 32000
+    coresMin: 18
   - class: DockerRequirement
-    dockerPull: 'migbro/lancet:1.0.7'
+    dockerPull: 'kfdrc/lancet:1.0.7'
 
 baseCommand: [/lancet-1.0.7/lancet]
 arguments:
@@ -19,7 +19,8 @@ arguments:
       --normal $(inputs.input_normal_bam.path)
       --ref $(inputs.reference.path)
       --bed $(inputs.bed.path)
-      --num-threads 6 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
+      --active-region-off
+      --num-threads 18 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}

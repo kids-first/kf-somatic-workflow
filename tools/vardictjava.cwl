@@ -26,9 +26,9 @@ arguments:
       | /VarDict-1.5.8/bin/testsomatic.R
       | /VarDict-1.5.8/bin/var2vcf_paired.pl
       -N '$(inputs.input_tumor_name)|$(inputs.input_normal_name)'
-      -f 0.01 > $(inputs.output_basename).vcf &&
-      cat $(inputs.output_basename).vcf | awk -F$'\t' -v OFS='\t' '{if ($0 !~ /^#/) gsub(/[KMRYSWBVHDXkmryswbvhdx]/, "N", $4) } {print}' | awk -F$'\t' -v OFS='\t' '{if ($0 !~ /^#/) gsub(/[KMRYSWBVHDXkmryswbvhdx]/, "N", $5) } {print}' |  awk -F$'\t' -v OFS='\t' '$1!~/^#/ && $4 == $5 {next} {print}' 
-      > $(inputs.output_basename).canonical_base_only.$(inputs.bed.nameroot).vcf &&
+      -f 0.01 > $(inputs.output_basename).vcf
+      && cat $(inputs.output_basename).vcf | awk -F$'\t' -v OFS='\t' '{if ($0 !~ /^#/) gsub(/[KMRYSWBVHDXkmryswbvhdx]/, "N", $4) } {print}' | awk -F$'\t' -v OFS='\t' '{if ($0 !~ /^#/) gsub(/[KMRYSWBVHDXkmryswbvhdx]/, "N", $5) } {print}' |  awk -F$'\t' -v OFS='\t' '$1!~/^#/ && $4 == $5 {next} {print}' 
+      > $(inputs.output_basename).canonical_base_only.$(inputs.bed.nameroot).vcf
       bgzip  $(inputs.output_basename).canonical_base_only.$(inputs.bed.nameroot).vcf &&
       tabix  $(inputs.output_basename).canonical_base_only.$(inputs.bed.nameroot).vcf.gz
 
