@@ -89,6 +89,10 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
+      scatter_ct:
+        valueFrom: ${return 50}
+      bands:
+        valueFrom: ${return 80000000}
     out: [output]
 
   strelka2:

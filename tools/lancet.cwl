@@ -5,8 +5,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 32000
-    coresMin: 18
+    ramMin: 12000
+    coresMin: 6
   - class: DockerRequirement
     dockerPull: 'kfdrc/lancet:1.0.7'
 
@@ -20,7 +20,7 @@ arguments:
       --ref $(inputs.reference.path)
       --bed $(inputs.bed.path)
       --active-region-off
-      --num-threads 18 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
+      --num-threads 6 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}

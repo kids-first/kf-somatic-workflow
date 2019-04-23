@@ -6,22 +6,31 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 6000
-    coresMin: 6
+    coresMin: 8
   - class: DockerRequirement
-    dockerPull: 'migbro/bcbio_vr:0.2.4'
+    dockerPull: 'kfdrc/bcbio_vr:0.2.4'
 
 baseCommand: [/bcbio-variation-recall]
 arguments:
-  - position: 1
+  - position: 0
     shellQuote: false
     valueFrom: >-
-      ensemble -c 8
+      ensemble --cores 8 --numpass $(inputs.min_overlap)
       --names $(inputs.tool_name_csv) $(inputs.output_basename).caller_consensus.vcf.gz
       $(inputs.reference.path)
 inputs:
     reference: File
     tool_name_csv: string
     output_basename: string
+    min_overlap: {type: int, doc: "Min number of callers to declare consensus.  Default is 2"}
+    input_vcfs:
+      type:
+        type: array
+        items: File
+      secondaryFiles: [.tbi]
+      inputBinding:
+        position: 1
+
 outputs:
   consensus_vcf:
     type: File
