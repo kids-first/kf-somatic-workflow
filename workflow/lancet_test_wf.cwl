@@ -27,6 +27,10 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
+      scatter_ct:
+        valueFrom: ${return 200}
+      bands:
+        valueFrom: ${return 1000000}
     out: [output]
 
   lancet:

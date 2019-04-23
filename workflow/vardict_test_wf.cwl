@@ -14,22 +14,30 @@ inputs:
   input_normal_name: string
   output_basename: string
   reference_dict: File
+  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
-  vardict_vcf: {type: File, outputSource: merge_sort_vardict_vcf/merged_vcf}
+  vardict_vep_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
+  vardict_vep_tbi: {type: File, outputSource: vep_annot_vardict/output_tbi}
+  vardict_prepass_vcf: {type: File, outputSource: sort_merge_vardict_vcf/merged_vcf}
 
 steps:
   gatk_intervallisttools:
-    run: ../dev/gatk_intervallisttool.cwl
+    run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
+      scatter_ct:
+        valueFrom: ${return 200}
+      bands:
+        valueFrom: ${return 1000000}
     out: [output]
 
   vardict:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: r4.8xlarge;ebs-gp2;500
-    run: ../dev/vardictjava.cwl
+    run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: input_tumor_aligned
       input_tumor_name: input_tumor_name
@@ -41,9 +49,9 @@ steps:
     scatter: [bed]
     out: [vardict_vcf]
 
-  merge_sort_vardict_vcf:
-    run: ../dev/gatk_sortvcf.cwl
-    label: GATK Merge & sortvardict
+  sort_merge_vardict_vcf:
+    run: ../tools/gatk_sortvcf.cwl
+    label: GATK Sort & merge vardict
     in:
       input_vcfs: vardict/vardict_vcf
       output_basename: output_basename
@@ -51,6 +59,34 @@ steps:
       tool_name:
         valueFrom: ${return "vardict"}
     out: [merged_vcf]
+
+  gatk_selectvariants_vardict:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.xlarge;ebs-gp2;250
+    run: ../tools/gatk_selectvariants.cwl
+    label: GATK Select Vardict PASS
+    in:
+      input_vcf: sort_merge_vardict_vcf/merged_vcf
+      output_basename: output_basename
+      tool_name:
+        valueFrom: ${return "vardict"}
+      mode: select_vars_mode
+    out: [pass_vcf]
+
+  vep_annot_vardict:
+    run: ../tools/vep_vcf2maf.cwl
+    in:
+      input_vcf: gatk_selectvariants_vardict/pass_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name:
+        valueFrom: ${return "vardict_somatic"}
+      reference: indexed_reference_fasta
+      cache: vep_cache
+    out: [output_vcf, output_tbi, output_html, warn_txt]
+
 
 $namespaces:
   sbg: https://sevenbridges.com

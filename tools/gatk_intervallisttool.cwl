@@ -18,15 +18,17 @@ arguments:
 
       /gatk IntervalListTools
       --java-options "-Xmx2000m"
-      --SCATTER_COUNT=50
+      --SCATTER_COUNT=$(inputs.scatter_ct)
       --SUBDIVISION_MODE=BALANCING_WITHOUT_INTERVAL_SUBDIVISION_WITH_OVERFLOW
-      --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=80000000
+      --UNIQUE=true --SORT=true --BREAK_BANDS_AT_MULTIPLES_OF=$(inputs.bands)
       --INPUT=$(inputs.interval_list.path) --OUTPUT=.
-      && CT=`find . -name 'temp_00*' | wc -l`
-      && seq -w $CT | xargs -I N -P 4
-      /gatk IntervalListToBed --java-options -Xmx100m -I temp_00N_of_$CT/scattered.interval_list -O temp_00N_of_$CT/scattered.interval_list.N.bed
+      && CT=`find . -name 'temp_0*' | wc -l`
+      && seq -f "%04g" $CT | xargs -I N -P 4
+      /gatk IntervalListToBed --java-options -Xmx100m -I temp_N_of_$CT/scattered.interval_list -O temp_N_of_$CT/scattered.interval_list.N.bed
 inputs:
   interval_list: File
+  bands: int
+  scatter_ct: int
 outputs:
   output:
     type: 'File[]'
