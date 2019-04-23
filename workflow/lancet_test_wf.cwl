@@ -32,7 +32,7 @@ steps:
   lancet:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.18xlarge;ebs-gp2;500
+        value: c5.9xlarge;ebs-gp2;500
     run: ../tools/lancet.cwl
     in:
       input_tumor_bam: input_tumor_aligned
