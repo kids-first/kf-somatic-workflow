@@ -148,7 +148,7 @@ steps:
         valueFrom: ${return "mutect2_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
 
 $namespaces:
   sbg: https://sevenbridges.com
