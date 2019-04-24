@@ -37,7 +37,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.9xlarge;ebs-gp2;500
-    run: ../tools/lancet.cwl
+    run: ../dev/lancet.cwl
     in:
       input_tumor_bam: input_tumor_aligned
       input_normal_bam: input_normal_aligned
@@ -90,4 +90,4 @@ $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 8
+    value: 4
