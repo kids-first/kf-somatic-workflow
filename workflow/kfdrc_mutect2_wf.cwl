@@ -33,16 +33,7 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
-      reference_dict:
-        valueFrom:
-          ${
-            if(wgs_calling_interval_list.nameext == '.interval_list'){
-              return null;
-            }
-            else{
-              return reference_dict;
-            }
-          }
+      reference_dict: reference_dict
       exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 50}

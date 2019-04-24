@@ -17,18 +17,24 @@ arguments:
       set -eo pipefail
       
       ${
-        if (inputs.reference_dict === undefined || inputs.reference_dict === null){
-          return "LIST=" + inputs.interval_list.path + "; BANDS=" + inputs.bands + ";";
+        var cmd = ""
+        if (interval_list.nameext == '.interval_list'){
+          cmd = "LIST=" + inputs.interval_list.path + ";"
         }
         else{
-          var cmd = "/gatk BedToIntervalList -I " + inputs.interval_list.path + " -O " + inputs.interval_list.nameroot 
+          cmd = "/gatk BedToIntervalList -I " + inputs.interval_list.path + " -O " + inputs.interval_list.nameroot 
           + ".interval_list -SD " + inputs.reference_dict.path + "; LIST=" + inputs.interval_list.nameroot 
           + ".interval_list;"
-          if (inputs.exome_flag == "Y"){
+
+        }
+        if (inputs.exome_flag == "Y"){
             cmd += "BANDS=0;"
           }
-          return cmd
+          
+        else{
+          cmd += "BANDS=" + inputs.bands + ";";
         }
+        return cmd
       }
       /gatk IntervalListTools
       --java-options "-Xmx2000m"
