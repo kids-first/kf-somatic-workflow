@@ -15,7 +15,7 @@ arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx2000m"
+      --java-options "-Xmx4000m"
       -O $(inputs.output_basename).$(inputs.tool_name).f1r2_bias.tar.gz 
 
 inputs:
