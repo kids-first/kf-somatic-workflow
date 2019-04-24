@@ -28,9 +28,9 @@ steps:
     in:
       interval_list: wgs_calling_interval_list
       scatter_ct:
-        valueFrom: ${return 200}
+        valueFrom: ${return 50}
       bands:
-        valueFrom: ${return 1000000}
+        valueFrom: ${return 80000000}
     out: [output]
 
   lancet:
@@ -90,4 +90,4 @@ $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 4
+    value: 8
