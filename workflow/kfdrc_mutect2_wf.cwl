@@ -12,9 +12,35 @@ inputs:
   wgs_calling_interval_list: File
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
-  input_tumor_aligned: File
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor BAM or CRAM"
+
   input_tumor_name: string
-  input_normal_aligned: File
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "normal BAM or CRAM"
+
   input_normal_name: string
   exome_flag: ['null', string]
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}

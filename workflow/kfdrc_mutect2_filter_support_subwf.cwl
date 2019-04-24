@@ -9,8 +9,34 @@ inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
   wgs_calling_interval_list: "File[]"
-  input_tumor_aligned: File
-  input_normal_aligned: File
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor BAM or CRAM"
+
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "normal BAM or CRAM"
+
   exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
   f1r2_counts: {type: "File[]", doc: "orientation counts from mutect2 outputs"}
