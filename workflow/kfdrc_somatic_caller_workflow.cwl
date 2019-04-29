@@ -12,9 +12,35 @@ inputs:
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   hg38_strelka_bed: File
-  input_tumor_aligned: File
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "tumor BAM or CRAM"
+
   input_tumor_name: string
-  input_normal_aligned: File
+  input_normal_aligned:
+    type: File
+    secondaryFiles: |
+      ${
+        var dpath = self.location.replace(self.basename, "")
+        if(self.nameext == '.bam'){
+          return {"location": dpath+self.nameroot+".bai", "class": "File"}
+        }
+        else{
+          return {"location": dpath+self.basename+".crai", "class": "File"}
+        }
+      }
+    doc: "normal BAM or CRAM"
+
   input_normal_name: string
   threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
   exome_flag: ['null', string]
@@ -89,6 +115,8 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
+      reference_dict: reference_dict
+      exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 50}
       bands:
@@ -262,7 +290,7 @@ steps:
         valueFrom: ${return "strelka2_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
 
   vep_annot_mutect2:
     run: ../tools/vep_vcf2maf.cwl
@@ -275,7 +303,7 @@ steps:
         valueFrom: ${return "mutect2_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
 
   vep_annot_manta:
     run: ../tools/vep_vcf2maf.cwl
@@ -288,7 +316,7 @@ steps:
         valueFrom: ${return "manta_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
   
 $namespaces:
   sbg: https://sevenbridges.com

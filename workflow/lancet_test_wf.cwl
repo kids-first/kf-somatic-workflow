@@ -37,7 +37,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.9xlarge;ebs-gp2;500
-    run: ../dev/lancet.cwl
+    run: ../tools/lancet.cwl
     in:
       input_tumor_bam: input_tumor_aligned
       input_normal_bam: input_normal_aligned
