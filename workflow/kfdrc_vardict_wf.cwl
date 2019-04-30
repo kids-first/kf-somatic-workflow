@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: vardict_test_wf
+id: kfdrc_vardict_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -14,19 +14,40 @@ inputs:
   input_normal_name: string
   output_basename: string
   reference_dict: File
+  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
   vardict_vep_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
   vardict_vep_tbi: {type: File, outputSource: vep_annot_vardict/output_tbi}
+  vardict_vep_maf: {type: File, outputSource: vep_annot_vardict/output_maf}
   vardict_prepass_vcf: {type: File, outputSource: sort_merge_vardict_vcf/merged_vcf}
 
 steps:
+  samtools_tumor_cram2bam:
+    run: ../tools/samtools_cram2bam.cwl
+    in:
+      input_reads: input_tumor_aligned
+      threads:
+        valueFrom: ${return 36}
+      reference: indexed_reference_fasta
+    out: [bam_file]
+  samtools_normal_cram2bam:
+    run: ../tools/samtools_cram2bam.cwl
+    in:
+      input_reads: input_normal_aligned
+      threads:
+        valueFrom: ${return 36}
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
+      reference_dict: reference_dict
+      exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 200}
       bands:
@@ -39,9 +60,9 @@ steps:
         value: r4.8xlarge;ebs-gp2;500
     run: ../tools/vardictjava.cwl
     in:
-      input_tumor_bam: input_tumor_aligned
+      input_tumor_bam: samtools_tumor_cram2bam/bam_file
       input_tumor_name: input_tumor_name
-      input_normal_bam: input_normal_aligned
+      input_normal_bam: samtools_normal_cram2bam/bam_file
       input_normal_name: input_normal_name
       reference: indexed_reference_fasta
       bed: gatk_intervallisttools/output

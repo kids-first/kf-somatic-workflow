@@ -20,7 +20,11 @@ arguments:
       --ref $(inputs.reference.path)
       --bed $(inputs.bed.path)
       --active-region-off
-      --num-threads 6 >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
+      --num-threads 6
+      --window-size $(inputs.window)
+      --padding 0
+      --max-indel-len 50
+       >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
@@ -28,6 +32,7 @@ inputs:
     input_normal_bam: {type: File, secondaryFiles: [^.bai]}
     bed: {type: File}
     output_basename: {type: string}
+    window: int
 outputs:
   lancet_vcf:
     type: File

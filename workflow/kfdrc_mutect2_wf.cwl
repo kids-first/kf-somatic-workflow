@@ -42,7 +42,7 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
-  exome_flag: ['null', string]
+  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
