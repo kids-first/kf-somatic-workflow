@@ -24,7 +24,7 @@ arguments:
       --window-size $(inputs.window)
       --padding 0
       --max-indel-len 50
-       >  $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
+      > $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
