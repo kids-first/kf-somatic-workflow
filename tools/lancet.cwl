@@ -19,7 +19,6 @@ arguments:
       --normal $(inputs.input_normal_bam.path)
       --ref $(inputs.reference.path)
       --bed $(inputs.bed.path)
-      --active-region-off
       --num-threads 6
       --window-size $(inputs.window)
       --padding 0
