@@ -21,7 +21,7 @@ arguments:
       --bed $(inputs.bed.path)
       --num-threads 6
       --window-size $(inputs.window)
-      --padding 0
+      --padding 25
       --max-indel-len 50
       > $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
 
