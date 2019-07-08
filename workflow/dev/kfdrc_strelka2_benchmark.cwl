@@ -8,7 +8,7 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  hg38_strelka_bed: { ype: File, secondaryFiles: [.tbi], label: gzipped bed file}
+  hg38_strelka_bed: {type: File, secondaryFiles: [.tbi], label: gzipped bed file}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
