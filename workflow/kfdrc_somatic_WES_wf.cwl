@@ -8,7 +8,10 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  wgs_calling_interval_list: File
+  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
+  chr_len: {type: File, doc: "Text file with lengths of each chromosome in fasta file"}
+  ref_chrs: {type: File, doc: "Tar gzipped file, one fasta file per chromosome. For now, hardcoded to create folder GRCh38_everyChrs when unpacked"}
+  wgs_calling_interval_list: {type: File, doc: "Bed preferred for best compatibility for all tools"}
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   hg38_strelka_bed: File
@@ -56,8 +59,69 @@ outputs:
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_prepass_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
+  cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
+  cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
+  cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
+
 
 steps:
+  samtools_tumor_cram2bam:
+    run: ../tools/samtools_cram2bam.cwl
+    in:
+      input_reads: input_tumor_aligned
+      threads:
+        valueFrom: ${return 36}
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
+  samtools_normal_cram2bam:
+    run: ../tools/samtools_cram2bam.cwl
+    in:
+      input_reads: input_normal_aligned
+      threads:
+        valueFrom: ${return 36}
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
+  gen_config:
+    run: ../dev/gen_controlfreec_configfile.cwl
+    in:
+      tumor_bam: samtools_tumor_cram2bam/bam_file
+      normal_bam: samtools_normal_cram2bam/bam_file
+      reference: indexed_reference_fasta
+      capture_regions: wgs_calling_interval_list
+      exome_flag: exome_flag
+      chr_len: chr_len
+      threads: threads
+    out: [config_file]
+
+  control_free_c:
+    run: ../dev/control_freec.cwl
+    in:
+      ref_chrs: ref_chrs
+      chr_len: chr_len
+      threads: threads
+      config_file: gen_config/config_file
+      capture_regions: wgs_calling_interval_list
+      tumor_bam: samtools_tumor_cram2bam/bam_file
+      normal_bam: samtools_normal_cram2bam/bam_file
+      output_basename: output_basename
+    out: [output]
+  
+  control_free_c_r:
+    run: ../tools/control_freec_R.cwl
+    in:
+      cnv_bam_ratio: control_free_c/output_txt
+      cnv_result: control_free_c/output_cnv
+    out: [output]
+
+  control_free_c_viz:
+    run: ../tools/control_freec_visualize.cwl
+    in:
+      output_basename: output_basename
+      cnv_bam_ratio: control_free_c/output_txt
+    out: [output]
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
