@@ -103,7 +103,8 @@ steps:
       normal_bam: samtools_normal_cram2bam/bam_file
       reference: indexed_reference_fasta
       capture_regions: capture_regions
-      exome_flag: exome_flag
+      exome_flag: 
+        valueFrom: ${return Y}
       chr_len: chr_len
       threads: threads_controlfreec
     out: [config_file]
@@ -153,7 +154,7 @@ steps:
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
-      interval_list: wgs_calling_interval_list
+      interval_list: calling_interval_list
       reference_dict: reference_dict
       exome_flag: exome_flag
       scatter_ct:
