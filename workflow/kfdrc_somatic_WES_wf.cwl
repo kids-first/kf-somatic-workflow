@@ -99,13 +99,13 @@ steps:
     run: ../dev/gen_controlfreec_configfile.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
+      normal_bam: samtools_normal_cram2bam/bam_file 
       reference: indexed_reference_fasta
       capture_regions: capture_regions
       exome_flag: 
         valueFrom: ${return Y}
       chr_len: chr_len
-      threads: threads_controlfreec
+      threads: threads
     out: [config_file]
 
   control_free_c:
