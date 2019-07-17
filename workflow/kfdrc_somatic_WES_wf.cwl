@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_somatic_san_cnv_wf
+id: kfdrc_whole_exome_somatic_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
