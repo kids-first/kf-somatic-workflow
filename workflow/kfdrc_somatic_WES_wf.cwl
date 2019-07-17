@@ -15,9 +15,9 @@ inputs:
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   capture_regions: {type: File, doc: "Bed file for CNV calls (exact intervals)"}
-  b_allele_vcf: {type: File, label: vcf containing SNV b-alleles sites (only sites with PASS will be used)}
+  b_allele_vcf: {type: File, doc: "vcf containing SNV b-alleles sites (only sites with PASS will be used)"}
   hg38_strelka_bed: File
-  manifest: {type: File, doc: Nextera Manifest file for Canvas}
+  manifest: {type: File, doc: "Nextera Manifest file for Canvas"}
   sample_name: string
   canvas_reference_file: {type: File, doc: "Canvas-ready kmer file"} 
   genomeSize_file: {type: File, doc: "GenomeSize.xml file"}
