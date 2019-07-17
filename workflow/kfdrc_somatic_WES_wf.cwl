@@ -15,7 +15,7 @@ inputs:
   calling_interval_list: {type: File, doc: "Bed preferred for best compatibility Mutect2, Strelka2, etc"}
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
-  capture_regions: {type: [File], doc: "Bed file for CNV calls (exact intervals)"}
+  capture_regions: {type: File, doc: "Bed file for CNV calls (exact intervals)"}
   b_allele_vcf: {type: File, label: vcf containing SNV b-alleles sites (only sites with PASS will be used)}
   hg38_strelka_bed: File
   manifest: {type: File, doc: Nextera Manifest file for Canvas}
@@ -53,7 +53,7 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
-  exome_flag: ['null', string]
+  exome_flag: string
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
