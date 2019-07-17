@@ -8,8 +8,7 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  threads_controlfreec: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
-  threads_canvas: int
+  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
   chr_len: {type: File, doc: "Text file with lengths of each chromosome in fasta file"}
   ref_chrs: {type: File, doc: "Tar gzipped file, one fasta file per chromosome. For now, hardcoded to create folder GRCh38_everyChrs when unpacked"}
   calling_interval_list: {type: File, doc: "Bed preferred for best compatibility Mutect2, Strelka2, etc"}
@@ -116,7 +115,7 @@ steps:
       normal_bam: samtools_normal_cram2bam/bam_file
       ref_chrs: ref_chrs
       chr_len: chr_len
-      threads: threads_controlfreec
+      threads: threads
       config_file: gen_config/config_file
       capture_regions: capture_regions
       output_basename: output_basename
