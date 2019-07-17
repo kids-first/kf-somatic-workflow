@@ -8,13 +8,21 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
+  threads_controlfreec: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
+  threads_canvas: int
   chr_len: {type: File, doc: "Text file with lengths of each chromosome in fasta file"}
   ref_chrs: {type: File, doc: "Tar gzipped file, one fasta file per chromosome. For now, hardcoded to create folder GRCh38_everyChrs when unpacked"}
-  wgs_calling_interval_list: {type: File, doc: "Bed preferred for best compatibility for all tools"}
+  calling_interval_list: {type: File, doc: "Bed preferred for best compatibility Mutect2, Strelka2, etc"}
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
+  capture_regions: {type: [File], doc: "Bed file for CNV calls (exact intervals)"}
+  b_allele_vcf: {type: File, label: vcf containing SNV b-alleles sites (only sites with PASS will be used)}
   hg38_strelka_bed: File
+  manifest: {type: File, doc: Nextera Manifest file for Canvas}
+  sample_name: string
+  canvas_reference_file: {type: File, doc: "Canvas-ready kmer file"} 
+  genomeSize_file: {type: File, doc: "GenomeSize.xml file"}
+  genome_fasta: {type: File, doc: "Genome.fa", secondaryFiles: [.fai]}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -59,9 +67,14 @@ outputs:
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_prepass_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
-  cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
-  cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
-  cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
+  ctrlfreec_cnv: {type: File, outputSource: control_free_c/output_cnv}
+  ctrlfreec_cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
+  ctrlfreec_cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
+  ctrlfreec_cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
+  canvas_cnv_vcf: {type: File, outputSource: canvas/output_vcf}
+  canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
+  canvas_folder: {type: File, outputSource: canvas/output_folder}
+
 
 
 steps:
@@ -89,24 +102,24 @@ steps:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
       reference: indexed_reference_fasta
-      capture_regions: wgs_calling_interval_list
+      capture_regions: capture_regions
       exome_flag: exome_flag
       chr_len: chr_len
-      threads: threads
+      threads: threads_controlfreec
     out: [config_file]
 
   control_free_c:
     run: ../dev/control_freec.cwl
     in:
-      ref_chrs: ref_chrs
-      chr_len: chr_len
-      threads: threads
-      config_file: gen_config/config_file
-      capture_regions: wgs_calling_interval_list
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
+      ref_chrs: ref_chrs
+      chr_len: chr_len
+      threads: threads_controlfreec
+      config_file: gen_config/config_file
+      capture_regions: capture_regions
       output_basename: output_basename
-    out: [output]
+    out: [output_txt, output_cnv]
   
   control_free_c_r:
     run: ../tools/control_freec_R.cwl
@@ -121,6 +134,21 @@ steps:
       output_basename: output_basename
       cnv_bam_ratio: control_free_c/output_txt
     out: [output]
+
+  canvas:
+    run: ../dev/canvas-paired-wes.cwl
+    in:  
+      tumor_bam: samtools_tumor_cram2bam/bam_file
+      normal_bam: samtools_normal_cram2bam/bam_file
+      manifest: manifest
+      b_allele_vcf: b_allele_vcf
+      sample_name: sample_name
+      output_basename: output_basename
+      reference: canvas_reference_file
+      genomeSize_file: genomeSize_file
+      genome_fasta: genome_fasta
+      filter_bed: capture_regions
+    out: [output_vcf, output_txt, output_folder]
 
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
