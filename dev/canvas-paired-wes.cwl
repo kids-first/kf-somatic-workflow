@@ -35,15 +35,15 @@ arguments:
       TempCNV_$(inputs.sample_name)
 
 inputs:
-  tumor_bam: {type: File, label: tumor bam file, secondaryFiles: [.bai]}
-  manifest: {type: File, label: Nextera manifest file}
-  control_bam: {type: ['null', File], label: Bam file of unmatched control sample (optional), secondaryFiles: [.bai]}
-  b_allele_vcf: {type: File, label: vcf containing SNV b-alleles sites (only sites with PASS will be used)}
+  tumor_bam: {type: File, doc: "tumor bam file", secondaryFiles: [.bai]}
+  manifest: {type: File, doc: "Nextera manifest file"}
+  control_bam: {type: ['null', File], doc: "Bam file of unmatched control sample (optional)", secondaryFiles: [.bai]}
+  b_allele_vcf: {type: File, doc: "vcf containing SNV b-alleles sites (only sites with PASS will be used)"}
   sample_name: string
-  reference: {type: File, label: Canvas-ready kmer file}
-  genomeSize_file: {type: File, label: GenomeSize.xml}
-  genome_fasta: {type: File, label: Genome.fa, secondaryFiles: [.fai]}
-  filter_bed: {type: File, label: bed file of regions to skip }
+  reference: {type: File, doc: "Canvas-ready kmer file"}
+  genomeSize_file: {type: File, doc: "GenomeSize.xml"}
+  genome_fasta: {type: File, doc: "Genome.fa", secondaryFiles: [.fai]}
+  filter_bed: {type: File, doc: "bed file of regions to skip"}
   output_basename: string
 
 outputs:

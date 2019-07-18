@@ -22,35 +22,9 @@ inputs:
   canvas_reference_file: {type: File, doc: "Canvas-ready kmer file"} 
   genomeSize_file: {type: File, doc: "GenomeSize.xml file"}
   genome_fasta: {type: File, doc: "Genome.fa", secondaryFiles: [.fai]}
-  input_tumor_aligned:
-    type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
-    doc: "tumor BAM or CRAM"
-
+  input_tumor_aligned: { type: File, secondaryFiles: [.crai] }
   input_tumor_name: string
-  input_normal_aligned:
-    type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
-    doc: "normal BAM or CRAM"
-
+  input_normal_aligned: { type: File, secondaryFiles: [.crai] }
   input_normal_name: string
   exome_flag: string
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
@@ -165,8 +139,8 @@ steps:
   strelka2:
     run: ../tools/strelka2.cwl
     in:
-      input_tumor_aligned: input_tumor_aligned
-      input_normal_aligned: input_normal_aligned
+      input_tumor_aligned: samtools_tumor_cram2bam/bam_file
+      input_normal_aligned: samtools_normal_cram2bam/bam_file
       reference: indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
       exome_flag: exome_flag
@@ -178,9 +152,9 @@ steps:
         value: c5.9xlarge;ebs-gp2;500
     run: ../tools/gatk_Mutect2.cwl
     in:
-      input_tumor_aligned: input_tumor_aligned
+      input_tumor_aligned: samtools_tumor_cram2bam/bam_file
       input_tumor_name: input_tumor_name
-      input_normal_aligned: input_normal_aligned
+      input_normal_aligned: samtools_normal_cram2bam/bam_file
       input_normal_name: input_normal_name
       reference: indexed_reference_fasta
       interval_list: gatk_intervallisttools/output
@@ -195,8 +169,8 @@ steps:
       indexed_reference_fasta: indexed_reference_fasta
       reference_dict: reference_dict
       wgs_calling_interval_list: gatk_intervallisttools/output
-      input_tumor_aligned: input_tumor_aligned
-      input_normal_aligned: input_normal_aligned
+      input_tumor_aligned: samtools_tumor_cram2bam/bam_file
+      input_normal_aligned: samtools_normal_cram2bam/bam_file
       exac_common_vcf: exac_common_vcf
       output_basename: output_basename
       f1r2_counts: mutect2/f1r2_counts

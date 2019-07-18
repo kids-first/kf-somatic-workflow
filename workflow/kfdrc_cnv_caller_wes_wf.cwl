@@ -110,3 +110,4 @@ $namespaces:
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
     value: 4
+    
