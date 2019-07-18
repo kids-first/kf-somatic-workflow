@@ -113,7 +113,7 @@ steps:
     run: ../dev/canvas-paired-wes.cwl
     in:  
       tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
+      control_bam: samtools_normal_cram2bam/bam_file
       manifest: manifest
       b_allele_vcf: b_allele_vcf
       sample_name: sample_name
