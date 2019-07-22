@@ -18,9 +18,9 @@ arguments:
       ln -s $(inputs.tumor_bam.path) .; ln -s $(inputs.tumor_bam.secondaryFiles[0].path) ./$(inputs.tumor_bam.basename).bai
 
       mono /1.11.0/Canvas.exe Somatic-Enrichment
-      -b $(inputs.tumor_bam.path)
+      -b $(inputs.tumor_bam.basename)
       --manifest=$(inputs.manifest.path)
-      --control-bam=$(inputs.control_bam.path)
+      --control-bam=$(inputs.control_bam.basename)
       --b-allele-vcf=$(inputs.b_allele_vcf.path)
       --exclude-non-het-b-allele-sites
       --sample-name=$(inputs.sample_name)

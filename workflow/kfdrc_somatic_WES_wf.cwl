@@ -32,18 +32,18 @@ inputs:
   output_basename: string
 
 outputs:
-  #strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
-  #strelka2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
-  #strelka2_prepass_vcf: {type: File, outputSource: rename_strelka_samples/reheadered_vcf}
-  #strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_maf}
-  #mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
-  #mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
-  #mutect2_prepass_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
-  #mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
-  #ctrlfreec_cnv: {type: File, outputSource: control_free_c/output_cnv}
-  #ctrlfreec_cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
-  #ctrlfreec_cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
-  #ctrlfreec_cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
+  strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
+  strelka2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
+  strelka2_prepass_vcf: {type: File, outputSource: rename_strelka_samples/reheadered_vcf}
+  strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_maf}
+  mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
+  mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
+  mutect2_prepass_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
+  mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
+  ctrlfreec_cnv: {type: File, outputSource: control_free_c/output_cnv}
+  ctrlfreec_cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
+  ctrlfreec_cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
+  ctrlfreec_cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
   canvas_cnv_vcf: {type: File, outputSource: canvas/output_vcf}
   canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
   canvas_folder: {type: File, outputSource: canvas/output_folder}
