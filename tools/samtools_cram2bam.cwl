@@ -20,7 +20,6 @@ arguments:
       -T $(inputs.reference.path)
       > $(inputs.input_reads.nameroot).bam
       && samtools index $(inputs.input_reads.nameroot).bam $(inputs.input_reads.nameroot).bai
-      && ln -s $(inputs.input_reads.nameroot).bai $(inputs.input_reads.nameroot).bam.bai
 inputs:
   input_reads: File
   threads: int

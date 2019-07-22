@@ -9,12 +9,15 @@ requirements:
     ramMin: 32000
     coresMin: 16
   - class: InlineJavascriptRequirement
-baseCommand: [mono]
 arguments: 
   - position: 1
     shellQuote: false
     valueFrom: >-
-      /1.11.0/Canvas.exe Somatic-Enrichment
+      ln -s $(inputs.control_bam.path) .; ln -s $(inputs.control_bam.secondaryFiles[0].path) ./$(inputs.control_bam.basename).bai
+
+      ln -s $(inputs.tumor_bam.path) .; ln -s $(inputs.tumor_bam.secondaryFiles[0].path) ./$(inputs.tumor_bam.basename).bai
+
+      mono /1.11.0/Canvas.exe Somatic-Enrichment
       -b $(inputs.tumor_bam.path)
       --manifest=$(inputs.manifest.path)
       --control-bam=$(inputs.control_bam.path)
@@ -35,9 +38,9 @@ arguments:
       TempCNV_$(inputs.sample_name)
 
 inputs:
-  tumor_bam: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
+  tumor_bam: {type: File, doc: "tumor bam file", secondaryFiles: [.bai]}
   manifest: {type: File, doc: "Nextera manifest file"}
-  control_bam: {type: File, doc: "Bam file of unmatched control sample", secondaryFiles: [^.bai]}
+  control_bam: {type: File, doc: "Bam file of unmatched control sample", secondaryFiles: [.bai]}
   b_allele_vcf: {type: File, doc: "vcf containing SNV b-alleles sites (only sites with PASS will be used)"}
   sample_name: string
   reference: {type: File, doc: "Canvas-ready kmer file"}
