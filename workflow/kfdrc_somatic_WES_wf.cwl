@@ -48,8 +48,6 @@ outputs:
   canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
   canvas_folder: {type: File, outputSource: canvas/output_folder}
 
-
-
 steps:
   samtools_tumor_cram2bam:
     run: ../tools/samtools_cram2bam.cwl

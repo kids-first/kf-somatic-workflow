@@ -37,7 +37,7 @@ arguments:
 inputs:
   tumor_bam: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
   manifest: {type: File, doc: "Nextera manifest file"}
-  control_bam: {type: File, doc: "Bam file of unmatched control sample (optional)", secondaryFiles: [^.bai]}
+  control_bam: {type: File, doc: "Bam file of unmatched control sample", secondaryFiles: [^.bai]}
   b_allele_vcf: {type: File, doc: "vcf containing SNV b-alleles sites (only sites with PASS will be used)"}
   sample_name: string
   reference: {type: File, doc: "Canvas-ready kmer file"}
