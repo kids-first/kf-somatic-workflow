@@ -76,8 +76,7 @@ steps:
       normal_bam: samtools_normal_cram2bam/bam_file 
       reference: indexed_reference_fasta
       capture_regions: capture_regions
-      exome_flag: 
-        valueFrom: ${return Y}
+      exome_flag: exome_flag
       chr_len: chr_len
       threads: threads
     out: [config_file]
