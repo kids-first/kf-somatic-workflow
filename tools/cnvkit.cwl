@@ -13,17 +13,20 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      cnvkit.py batch $(inputs.tumor_bam.path)
-      --normal $(inputs.normal_bam.path)
+      ln -s $(inputs.normal_bam.path) .; ln -s $(inputs.normal_bam.secondaryFiles[0].path) ./$(inputs.normal_bam.basename).bai
+
+      ln -s $(inputs.tumor_bam.path) .; ln -s $(inputs.tumor_bam.secondaryFiles[0].path) ./$(inputs.tumor_bam.basename).bai
+
+      cnvkit.py batch $(inputs.tumor_bam.basename)
+      --normal $(inputs.normal_bam.basename)
       --fasta $(inputs.reference_fasta.path)
       --targets $(inputs.target_regions.path)
-      --output-reference $(inputs.output_reference_name)
-      --diagram
-      --scatter
+      --output-reference $(inputs.output_reference_name) 
+      --diagram --scatter
 
-      cnvkit.py call $(inputs.tumor_bam.basename) -o $(inputs.tumor_bam.basename).call.cns
+      cnvkit.py call $(inputs.tumor_bam.nameroot).cns -o $(inputs.tumor_bam.nameroot).call.cns
 
-      cnvkit.py export vcf $(inputs.tumor_bam.basename).call.cns -o $(tumor_bam.basename).vcf
+      cnvkit.py export vcf $(inputs.tumor_bam.nameroot).call.cns -o $(inputs.tumor_bam.nameroot).vcf
 
 inputs:
   tumor_bam: {type: File, doc: "tumor bam file", secondaryFiles: [.bai]}
@@ -37,7 +40,7 @@ outputs:
   output_vcf:
     type: File
     outputBinding:
-      glob: '*.CNV.vcf.gz'
+      glob: '*.vcf'
     secondaryFiles: [.tbi]
   output_calls:
     type: File
@@ -46,7 +49,7 @@ outputs:
   output_scatter:
     type: File
     outputBinding:
-      glob: '*.scatter.pdf'
+      glob: '*scatter.pdf'
   output_diagram:
     type: File
     outputBinding:

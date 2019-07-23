@@ -10,7 +10,7 @@ requirements:
 inputs:
   input_tumor: { type: File, secondaryFiles: [.crai] }
   input_normal: { type: File, secondaryFiles: [.crai] }
-  ref_chr: {type: File, doc: "folder of reference chromosomes"}
+  ref_chrs: {type: File, doc: "folder of reference chromosomes"}
   reference: {type: File, secondaryFiles: [.fai]}
   canvas_reference: {type: File, doc: "Canvas-ready kmer file"}
   chr_len: {type: File, doc: "file with chromosome lengths"}
@@ -32,6 +32,10 @@ outputs:
   canvas_cnv_vcf: {type: File, outputSource: canvas/output_vcf}
   canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
   canvas_folder: {type: File, outputSource: canvas/output_folder}
+  cnvkit_vcf: {type: File, outputSource: cnvkit/output_vcf}
+  cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
+  cnvkit_scatter: {type: File, outputSource: cnvkit/output_scatter}
+  cnvkit_diagram: {type: File, outputSource: cnvkit/output_diagram}
 
 steps:
   samtools_tumor_cram2bam:
@@ -69,7 +73,7 @@ steps:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
       capture_regions: capture_regions
-      ref_chr: ref_chr
+      ref_chrs: ref_chrs
       chr_len: chr_len
       threads: threads
       output_basename: output_basename
@@ -94,16 +98,27 @@ steps:
     run: ../dev/canvas-paired-wes.cwl
     in: 
       tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
+      control_bam: samtools_normal_cram2bam/bam_file
       manifest: manifest
       b_allele_vcf: b_allele_vcf
       reference: canvas_reference
       genomeSize_file: genomeSize_file
       genome_fasta: genome_fasta
-      capture_regions: capture_regions
+      filter_bed: capture_regions
       sample_name: sample_name
       output_basename: output_basename
     out: [output_vcf, output_txt, output_folder]
+  
+  cnvkit: 
+    run: ../tools/cnvkit.cwl
+    in:
+      tumor_bam: samtools_tumor_cram2bam/bam_file
+      normal_bam: samtools_normal_cram2bam/bam_file
+      reference_fasta: reference
+      target_regions: capture_regions
+      output_reference_name: output_basename
+      output_basename: output_basename
+    out: [output_vcf, output_calls, output_scatter, output_diagram]
 
 $namespaces:
   sbg: https://sevenbridges.com
