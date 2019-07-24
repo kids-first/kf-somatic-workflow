@@ -23,19 +23,28 @@ inputs:
   output_basename: string
   capture_regions: File
   exome_flag: {type: string, doc: "insert 'Y' if exome mode"}
+  input_normal_name: string
+  input_tumor_name: string
+  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
   ctrlfreec_cnv: {type: File, outputSource: control_free_c/output_cnv}
   ctrlfreec_cnv_bam_ratio: {type: File, outputSource: control_free_c/output_txt}
   ctrlfreec_cnv_pval: {type: File, outputSource: control_free_c_r/output_pval}
   ctrlfreec_cnv_png: {type: File, outputSource: control_free_c_viz/output_png}
-  canvas_cnv_vcf: {type: File, outputSource: canvas/output_vcf}
   canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
   canvas_folder: {type: File, outputSource: canvas/output_folder}
-  cnvkit_vcf: {type: File, outputSource: cnvkit/output_vcf}
+  canvas_annotated_vcf: {type: File, outputSource: vep_annot_canvas/output_vcf}
+  canvas_vep_tbi: {type: File, outputSource: vep_annot_canvas/output_tbi}
+  canvas_maf: {type: File, outputSource: vep_annot_canvas/output_maf}
+  canvas_annotated_txt: {type: File, outputSource: vep_annot_canvas/warn_txt}
+  cnvkit_annotated_vcf: {type: File, outputSource: vep_annot_cnvkit/output_vcf}
+  cnvkit_vep_tbi: {type: File, outputSource: vep_annot_cnvkit/output_tbi}
+  cnvkit_maf: {type: File, outputSource: vep_annot_cnvkit/output_maf}
   cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
   cnvkit_scatter: {type: File, outputSource: cnvkit/output_scatter}
   cnvkit_diagram: {type: File, outputSource: cnvkit/output_diagram}
+  
 
 steps:
   samtools_tumor_cram2bam:
@@ -108,7 +117,7 @@ steps:
       sample_name: sample_name
       output_basename: output_basename
     out: [output_vcf, output_txt, output_folder]
-  
+
   cnvkit: 
     run: ../tools/cnvkit.cwl
     in:
@@ -119,6 +128,32 @@ steps:
       output_reference_name: output_basename
       output_basename: output_basename
     out: [output_vcf, output_calls, output_scatter, output_diagram]
+
+  vep_annot_canvas:
+    run: ../tools/vep_vcf2maf.cwl
+    in:
+      input_vcf: canvas/output_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name:
+        valueFrom: ${return "canvas_somatic"}
+      reference: reference
+      cache: vep_cache
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
+
+  vep_annot_cnvkit:
+    run: ../tools/vep_vcf2maf.cwl
+    in:
+      input_vcf: cnvkit/output_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name:
+        valueFrom: ${return "cnvkit_somatic"}
+      reference: reference
+      cache: vep_cache
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
 
 $namespaces:
   sbg: https://sevenbridges.com
