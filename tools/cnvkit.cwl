@@ -28,14 +28,14 @@ arguments:
 
       cnvkit.py export vcf $(inputs.tumor_bam.nameroot).call.cns -o $(inputs.tumor_bam.nameroot).vcf
 
-      mv $(inputs.tumor_bam.basename).call.cns $(inputs.output_basename).calls.cns
+      mv $(inputs.tumor_bam.nameroot).call.cns $(inputs.output_basename).calls.cns
 
-      mv $(inputs.tumor_bam.basename).diagram.pdf $(inputs.output_basename).diagram.pdf
+      mv $(inputs.tumor_bam.nameroot)-diagram.pdf $(inputs.output_basename).diagram.pdf
 
-      mv $(inputs.tumor_bam.basename).scatter.pdf $(inputs.output_basename).scatter.pdf
+      mv $(inputs.tumor_bam.nameroot)-scatter.pdf $(inputs.output_basename).scatter.pdf
 
-      mv $(inputs.tumor_bam.basename).vcf $(inputs.output_basename).cnvkit.vcf
-      
+      mv $(inputs.tumor_bam.nameroot).vcf $(inputs.output_basename).cnvkit.vcf
+
       gzip $(inputs.output_basename).cnvkit.vcf
 
 inputs:
@@ -50,7 +50,7 @@ outputs:
   output_vcf:
     type: File
     outputBinding:
-      glob: '*.vcf'
+      glob: '*.vcf.gz'
     secondaryFiles: [.tbi]
   output_calls:
     type: File
