@@ -28,6 +28,12 @@ arguments:
 
       cnvkit.py export vcf $(inputs.tumor_bam.nameroot).call.cns -o $(inputs.tumor_bam.nameroot).vcf
 
+      && mv $(inputs.tumor_bam.basename).call.cns $(inputs.output_basename).calls.cns
+      && mv $(inputs.tumor_bam.basename).diagram.pdf $(inputs.output_basename).diagram.pdf
+      && mv $(inputs.tumor_bam.basename).scatter.pdf $(inputs.output_basename).scatter.pdf
+      && mv $(inputs.tumor_bam.basename).vcf $(inputs.output_basename).cnvkit.vcf
+      && gzip $(inputs.output_basename).cnvkit.vcf
+
 inputs:
   tumor_bam: {type: File, doc: "tumor bam file", secondaryFiles: [.bai]}
   normal_bam: {type: File, doc: "matched normal bam file", secondaryFiles: [.bai]}
@@ -49,8 +55,8 @@ outputs:
   output_scatter:
     type: File
     outputBinding:
-      glob: '*scatter.pdf'
+      glob: '*.scatter.pdf'
   output_diagram:
     type: File
     outputBinding:
-      glob: '*diagram.pdf'
+      glob: '*.diagram.pdf'
