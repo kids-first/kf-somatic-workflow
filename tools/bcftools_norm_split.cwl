@@ -15,15 +15,26 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      $(inputs.reference.path) $(inputs.input_vcf.path) -Oz >  $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.vcf.gz &&
-      bcftools view --types snps,mnps $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.vcf.gz -Oz > $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.snv_mnv.vcf.gz &&
-      bcftools view --types indels $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.vcf.gz -Oz > $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.indels.vcf.gz &&
+      $(inputs.reference.path) $(inputs.input_vcf.path) -Oz >  $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.vcf.gz
+
+      ${
+          var snp_cmd = "bcftools view --exclude-types ref " + inputs.input_vcf.nameroot.replace('.vcf','') + ".bcfNorm.vcf.gz";
+          var indel_cmd = "bcftools view --exclude-types ref,bnd " + inputs.input_vcf.nameroot.replace('.vcf','') + ".bcfNorm.vcf.gz";
+          if (inputs.grep_v_phrase != null){
+              snp_cmd += " | grep -Ev " + inputs.grep_v_phrase;
+              indel_cmd += " | grep -Ev " + inputs.grep_v_phrase;
+          }
+          snp_cmd += " | bcftools view --types snps,mnps -Oz - > " + inputs.input_vcf.nameroot.replace('.vcf','') + ".bcfNorm.snv_mnv.vcf.gz; ";
+          indel_cmd += " | bcftools view --types indels -Oz - > " + inputs.input_vcf.nameroot.replace('.vcf','') + ".bcfNorm.indels.vcf.gz;";
+          return snp_cmd + indel_cmd;
+      }
+
       ls *.vcf.gz | xargs -IFN tabix FN
 
-
 inputs:
-  input_vcf: File
-  reference: File
+  input_vcf: {type: File, secondaryFiles: ['.tbi']}
+  reference: {type: File, secondaryFiles: ['.fai']}
+  grep_v_phrase: {type: ['null', string]}
 outputs:
   normalized_vcf:
     type: File
@@ -33,8 +44,10 @@ outputs:
   snv_mnv_vcf:
     type: File
     outputBinding:
-      glob: 'bcfNorm.snv_mnv.vcf.gz'
+      glob: '*.bcfNorm.snv_mnv.vcf.gz'
+    secondaryFiles: [.tbi]
   indelvcf:
     type: File
     outputBinding:
-      glob: 'bcfNorm.indels.vcf.gz'
+      glob: '*.bcfNorm.indels.vcf.gz'
+    secondaryFiles: [.tbi]
