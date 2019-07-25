@@ -34,16 +34,11 @@ outputs:
   ctrlfreec_cnv_png: {type: File, outputSource: control_free_c_viz/output_png}
   canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
   canvas_folder: {type: File, outputSource: canvas/output_folder}
-  canvas_annotated_vcf: {type: File, outputSource: vep_annot_canvas/output_vcf}
-  canvas_vep_tbi: {type: File, outputSource: vep_annot_canvas/output_tbi}
-  canvas_maf: {type: File, outputSource: vep_annot_canvas/output_maf}
-  canvas_annotated_txt: {type: File, outputSource: vep_annot_canvas/warn_txt}
-  cnvkit_annotated_vcf: {type: File, outputSource: vep_annot_cnvkit/output_vcf}
-  cnvkit_vep_tbi: {type: File, outputSource: vep_annot_cnvkit/output_tbi}
-  cnvkit_maf: {type: File, outputSource: vep_annot_cnvkit/output_maf}
-  cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
-  cnvkit_scatter: {type: File, outputSource: cnvkit/output_scatter}
-  cnvkit_diagram: {type: File, outputSource: cnvkit/output_diagram}
+  canvas_vcf: {type: File, outputSource: canvas/output_vcf}
+  // cnvkit_vcf: {type: File, outputSource: cnvkit/output_vcf}
+  // cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
+  // cnvkit_scatter: {type: File, outputSource: cnvkit/output_scatter}
+  // cnvkit_diagram: {type: File, outputSource: cnvkit/output_diagram}
   
 
 steps:
@@ -118,42 +113,16 @@ steps:
       output_basename: output_basename
     out: [output_vcf, output_txt, output_folder]
 
-  cnvkit: 
-    run: ../tools/cnvkit.cwl
-    in:
-      tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
-      reference_fasta: reference
-      target_regions: capture_regions
-      output_reference_name: output_basename
-      output_basename: output_basename
-    out: [output_vcf, output_calls, output_scatter, output_diagram]
-
-  vep_annot_canvas:
-    run: ../tools/vep_vcf2maf.cwl
-    in:
-      input_vcf: canvas/output_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        valueFrom: ${return "canvas_somatic"}
-      reference: reference
-      cache: vep_cache
-    out: [output_vcf, output_tbi, output_maf, warn_txt]
-
-  vep_annot_cnvkit:
-    run: ../tools/vep_vcf2maf.cwl
-    in:
-      input_vcf: cnvkit/output_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        valueFrom: ${return "cnvkit_somatic"}
-      reference: reference
-      cache: vep_cache
-    out: [output_vcf, output_tbi, output_maf, warn_txt]
+  // cnvkit: 
+  //   run: ../tools/cnvkit.cwl
+  //   in:
+  //     tumor_bam: samtools_tumor_cram2bam/bam_file
+  //     normal_bam: samtools_normal_cram2bam/bam_file
+  //     reference_fasta: reference
+  //     target_regions: capture_regions
+  //     output_reference_name: output_basename
+  //     output_basename: output_basename
+  //   out: [output_vcf, output_calls, output_scatter, output_diagram]
 
 $namespaces:
   sbg: https://sevenbridges.com
