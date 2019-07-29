@@ -23,8 +23,8 @@ arguments:
       $(inputs.antitarget_coverage.path) 
       -o $(inputs.output_basename).antitargetcoverage.cnn
      
-      cnvkit.py fix $(inputs.output_basename).target.coverage.cnn 
-      $(inputs.output_basename).target.anticoverage.cnn 
+      cnvkit.py fix $(inputs.output_basename).targetcoverage.cnn 
+      $(inputs.output_basename).antitargetcoverage.cnn 
       $(inputs.reference_coverage_file.path) 
       -o $(inputs.output_basename).cnr
 
@@ -32,9 +32,11 @@ arguments:
       --drop-low-coverage 
       -o $(inputs.output_basename).cns
 
+      cnvkit.py export vcf $(inputs.output_basename).cns -o $(inputs.output_basename).vcf
+
       cnvkit.py call $(inputs.output_basename).cns 
       -v $(inputs.output_basename).vcf
-      -o $(inputs.output_basename).cnv.cns
+      -o $(inputs.output_basename).call.cns
 
       cnvkit.py scatter $(inputs.output_basename).cnr
       --segment $(inputs.output_basename).cns
@@ -68,7 +70,7 @@ outputs:
   output_calls:
     type: File
     outputBinding:
-      glob: '*.cnv.cns'
+      glob: '*.call.cns'
   output_scatter:
     type: File
     outputBinding:
