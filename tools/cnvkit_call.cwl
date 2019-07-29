@@ -26,7 +26,7 @@ arguments:
       cnvkit.py fix $(inputs.output_basename).targetcoverage.cnn 
       $(inputs.output_basename).antitargetcoverage.cnn 
       $(inputs.reference_coverage_file.path) 
-      -o $(inputs.output_basename).cnr
+      -o $(inputs.output_basename).cnv.cnr
 
       cnvkit.py segment $(inputs.output_basename).cnr 
       --drop-low-coverage 
@@ -62,7 +62,7 @@ outputs:
   output_cnr: 
     type: File
     outputBinding:
-    glob: '*.cnr'
+    glob: '*.cnv.cnr'
   output_vcf:
     type: File
     outputBinding:
