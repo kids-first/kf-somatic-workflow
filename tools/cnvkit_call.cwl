@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: cnvkit-batch
+id: cnvkit-calling-pipeline
 requirements: 
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
@@ -28,7 +28,7 @@ arguments:
       $(inputs.reference_coverage_file.path) 
       -o $(inputs.output_basename).cnv.cnr
 
-      cnvkit.py segment $(inputs.output_basename).cnr 
+      cnvkit.py segment $(inputs.output_basename).cnv.cnr 
       --drop-low-coverage 
       -o $(inputs.output_basename).cns
 
@@ -38,13 +38,13 @@ arguments:
       -v $(inputs.output_basename).vcf
       -o $(inputs.output_basename).call.cns
 
-      cnvkit.py scatter $(inputs.output_basename).cnr
+      cnvkit.py scatter $(inputs.output_basename).cnv.cnr
       --segment $(inputs.output_basename).cns
       --y-max $(inputs.y_max)
       --y-min $(inputs.y_min)
       -o $(inputs.output_basename).scatter.pdf
 
-      cnvkit.py diagram $(inputs.output_basename).cnr
+      cnvkit.py diagram $(inputs.output_basename).cnv.cnr
       --segment $(inputs.output_basename).cns
       -o $(inputs.output_basename).diagram.pdf
 
