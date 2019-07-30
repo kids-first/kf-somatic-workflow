@@ -11,7 +11,6 @@ inputs:
   input_tumor: { type: File, secondaryFiles: [.crai] }
   input_normal: { type: File, secondaryFiles: [.crai] }
   reference: {type: File, secondaryFiles: [.fai]}
-  threads: int
   capture_regions: {type: File, doc: "target regions"}
   annotation_file: {type: File, doc: "refFlat.txt file"}
   output_basename: string
@@ -24,8 +23,6 @@ outputs:
   cnvkit_diagram: {type: File, outputSource: cnvkit/output_diagram}
   cnvkit_metrics: {type: File, outputSource: cnvkit/output_metrics}
   cnvkit_gainloss: {type: File, outputSource: cnvkit/output_gainloss}
-
-  
 
 steps:
   samtools_tumor_cram2bam:
@@ -47,7 +44,7 @@ steps:
     out: [bam_file]
 
   cnvkit: 
-    run: ../tools/cnvkit.cwl
+    run: ../tools/cnvkit-batch.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
