@@ -46,8 +46,6 @@ inputs:
   capture_regions: {type: File, doc: "target regions"}
   annotation_file: {type: File, doc: "refFlat.txt file"}
   output_basename: string
-  y_min: {type: ['null', string], doc: "y min for scatter plot"}
-  y_max: {type: ['null', string], doc: "y max for scatter plot"}
 
 outputs:
   output_cnr: 
