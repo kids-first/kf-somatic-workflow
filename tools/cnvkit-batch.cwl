@@ -66,11 +66,11 @@ outputs:
   output_scatter:
     type: File
     outputBinding:
-      glob: '*scatter.pdf'
+      glob: '*.scatter.pdf'
   output_diagram:
     type: File
     outputBinding:
-      glob: '*diagram.pdf'
+      glob: '*.diagram.pdf'
   output_metrics: 
     type: File
     outputBinding:
