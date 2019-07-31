@@ -18,6 +18,7 @@ inputs:
   b_allele_vcf: {type: File, doc: "vcf containing SNV b-alleles sites (only sites with PASS will be used)"}
   genomeSize_file: {type: File, doc: "GenomeSize.xml"}
   genome_fasta: {type: File, doc: "Genome.fa"}
+  annotation_file: {type: File, doc: "refFlat.txt file"}
   threads: int
   sample_name: string
   output_basename: string

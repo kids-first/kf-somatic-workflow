@@ -27,16 +27,19 @@ arguments:
 
       mv $(inputs.tumor_bam.nameroot)-diagram.pdf $(inputs.output_basename).diagram.pdf
       mv $(inputs.tumor_bam.nameroot)-scatter.pdf $(inputs.output_basename).scatter.pdf
+    
 
       cnvkit.py call $(inputs.tumor_bam.nameroot).cns 
       -o $(inputs.output_basename).call.cns
       
       cnvkit.py export vcf $(inputs.output_basename).call.cns -o $(inputs.output_basename).vcf
 
-      cnvkit.py metrics $(inputs.output_basename).cnr -s $(inputs.tumor_bam.nameroot).cns
+      cnvkit.py metrics $(inputs.tumor_bam.nameroot).cnr -s $(inputs.tumor_bam.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
 
-      cnvkit.py gainloss $(inputs.output_basename).cnr -o $(inputs.output_basename).gainloss.txt
+      cnvkit.py gainloss $(inputs.tumor_bam.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
+
+      mv $(inputs.tumor_bam.nameroot).cnr $(inputs.output_basename).cnr
 
 
 inputs:
