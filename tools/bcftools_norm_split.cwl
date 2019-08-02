@@ -15,7 +15,7 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      $(inputs.reference.path) $(inputs.input_vcf.path) -Oz >  $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.vcf.gz
+      $(inputs.reference.path) $(inputs.input_vcf.path) >  $(inputs.input_vcf.nameroot.replace('.vcf','')).bcfNorm.vcf.gz
 
       ${
           var snp_cmd = "bcftools view --exclude-types ref " + inputs.input_vcf.nameroot.replace('.vcf','') + ".bcfNorm.vcf.gz";
