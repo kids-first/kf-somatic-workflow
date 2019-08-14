@@ -14,7 +14,7 @@ inputs:
   reference_dict: File
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  window: { type: int, doc: "window size for lancet.  default is 600"}
+  window: { type: int, doc: "window size for lancet.  default is 600, recommend 500"}
 
 outputs:
   lancet_pass_vcf: {type: File, outputSource: gatk_selectvariants_lancet/pass_vcf}
@@ -33,14 +33,34 @@ steps:
         valueFrom: ${return 80000000}
     out: [output]
 
+  samtools_calmd_tumor:
+    run: ../../tools/samtools_calmd.cwl
+    in:
+      input_reads: input_tumor_aligned
+      threads:
+        type: ['null', int]
+        default: 16
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
+  samtools_calmd_normal:
+    run: ../../tools/samtools_calmd.cwl
+    in:
+      input_reads: input_normal_aligned
+      threads:
+        type: ['null', int]
+        default: 16
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
   lancet:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.9xlarge;ebs-gp2;500
     run: ../../tools/lancet.cwl
     in:
-      input_tumor_bam: input_tumor_aligned
-      input_normal_bam: input_normal_aligned
+      input_tumor_bam: samtools_calmd_tumor/bam_file
+      input_normal_bam: samtools_calmd_normal/bam_file
       reference: indexed_reference_fasta
       bed: gatk_intervallisttools/output
       output_basename: output_basename

@@ -31,7 +31,8 @@ steps:
     in:
       input_reads: input_tumor_aligned
       threads:
-        valueFrom: ${return 36}
+        type: ['null', int]
+        default: 16
       reference: indexed_reference_fasta
     out: [bam_file]
   samtools_normal_cram2bam:
@@ -39,7 +40,8 @@ steps:
     in:
       input_reads: input_normal_aligned
       threads:
-        valueFrom: ${return 36}
+        type: ['null', int]
+        default: 16
       reference: indexed_reference_fasta
     out: [bam_file]
   gatk_intervallisttools:

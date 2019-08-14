@@ -10,11 +10,14 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/lancet:1.0.7'
 
-baseCommand: [/lancet-1.0.7/lancet]
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
+      /lancet-1.0.7/lancet
       --tumor $(inputs.input_tumor_bam.path)
       --normal $(inputs.input_normal_bam.path)
       --ref $(inputs.reference.path)
@@ -24,6 +27,17 @@ arguments:
       --padding 25
       --max-indel-len 50
       > $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
+      || (echo 'active region filter failed, trying without' && /lancet-1.0.7/lancet
+      --tumor $(inputs.input_tumor_bam.path)
+      --normal $(inputs.input_normal_bam.path)
+      --ref $(inputs.reference.path)
+      --bed $(inputs.bed.path)
+      --num-threads 6
+      --window-size $(inputs.window)
+      --active-region-off
+      --padding 25
+      --max-indel-len 50
+      > $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf)
 
 inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
