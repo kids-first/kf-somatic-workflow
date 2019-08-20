@@ -19,13 +19,13 @@ arguments:
       $(inputs.ref_chrs.path)
       && /FREEC-11.5/src/freec
       -conf $(inputs.config_file.path)
-      && mv $(inputs.tumor_bam.basename)_ratio.txt $(inputs.output_basename).ratio.txt
+      && mv *_ratio.txt $(inputs.output_basename).ratio.txt
       && gzip $(inputs.output_basename).ratio.txt
-      && mv $(inputs.tumor_bam.basename)_CNVs $(inputs.output_basename).CNVs
+      && mv *_CNVs $(inputs.output_basename).CNVs
 
 inputs:
-  tumor_bam: { type: File, secondaryFiles: [^.bai] }
-  normal_bam: { type: File, secondaryFiles: [^.bai] }
+  tumor_bam: { type: ['null', File], secondaryFiles: [^.bai] }
+  normal_bam: { type: ['null', File], secondaryFiles: [^.bai] }
   ref_chrs: File
   chr_len: File
   threads: int

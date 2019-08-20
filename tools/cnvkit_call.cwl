@@ -1,3 +1,4 @@
+## this tool takes in panel of normal. must run the cnvkit reference tool on cavatica first
 cwlVersion: v1.0
 class: CommandLineTool
 id: cnvkit-calling-pipeline
