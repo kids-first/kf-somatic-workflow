@@ -9,14 +9,6 @@ requirements:
     coresMin: 36
   - class: DockerRequirement
     dockerPull: 'obenauflab/strelka'
-  - class: InitialWorkDirRequirement
-    listing: |
-      ${
-        var listing = []
-        listing.push(inputs.input_tumor_aligned);
-        listing.push(inputs.input_normal_aligned);
-        return listing;
-      }
 
 baseCommand: [/strelka-2.9.3.centos6_x86_64/bin/configureStrelkaSomaticWorkflow.py]
 arguments:

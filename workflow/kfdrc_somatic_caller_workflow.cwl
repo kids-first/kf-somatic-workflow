@@ -43,7 +43,7 @@ inputs:
 
   input_normal_name: string
   threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
-  exome_flag: ['null', string]
+  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   chr_len: File

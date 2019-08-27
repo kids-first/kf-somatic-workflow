@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: vardict_test_wf
+id: kfdrc_vardict_benchmark
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -14,19 +14,38 @@ inputs:
   input_normal_name: string
   output_basename: string
   reference_dict: File
+  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  # vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
-  vardict_vep_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
-  vardict_vep_tbi: {type: File, outputSource: vep_annot_vardict/output_tbi}
+  vardict_pass_vcf: {type: File, outputSource: gatk_selectvariants_vardict/pass_vcf}
   vardict_prepass_vcf: {type: File, outputSource: sort_merge_vardict_vcf/merged_vcf}
 
 steps:
+  # samtools_tumor_cram2bam:
+  #   run: ../../tools/samtools_cram2bam.cwl
+  #   in:
+  #     input_reads: input_tumor_aligned
+  #     threads:
+  #       valueFrom: ${return 36}
+  #     reference: indexed_reference_fasta
+  #   out: [bam_file]
+  # samtools_normal_cram2bam:
+  #   run: ../../tools/samtools_cram2bam.cwl
+  #   in:
+  #     input_reads: input_normal_aligned
+  #     threads:
+  #       valueFrom: ${return 36}
+  #     reference: indexed_reference_fasta
+  #   out: [bam_file]
+
   gatk_intervallisttools:
-    run: ../tools/gatk_intervallisttool.cwl
+    run: ../../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
+      reference_dict: reference_dict
+      exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 200}
       bands:
@@ -37,7 +56,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: r4.8xlarge;ebs-gp2;500
-    run: ../tools/vardictjava.cwl
+    run: ../../tools/vardictjava.cwl
     in:
       input_tumor_bam: input_tumor_aligned
       input_tumor_name: input_tumor_name
@@ -50,7 +69,7 @@ steps:
     out: [vardict_vcf]
 
   sort_merge_vardict_vcf:
-    run: ../tools/gatk_sortvcf.cwl
+    run: ../../tools/gatk_sortvcf.cwl
     label: GATK Sort & merge vardict
     in:
       input_vcfs: vardict/vardict_vcf
@@ -64,7 +83,7 @@ steps:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.xlarge;ebs-gp2;250
-    run: ../tools/gatk_selectvariants.cwl
+    run: ../../tools/gatk_selectvariants.cwl
     label: GATK Select Vardict PASS
     in:
       input_vcf: sort_merge_vardict_vcf/merged_vcf
@@ -73,20 +92,6 @@ steps:
         valueFrom: ${return "vardict"}
       mode: select_vars_mode
     out: [pass_vcf]
-
-  vep_annot_vardict:
-    run: ../tools/vep_vcf2maf.cwl
-    in:
-      input_vcf: gatk_selectvariants_vardict/pass_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        valueFrom: ${return "vardict_somatic"}
-      reference: indexed_reference_fasta
-      cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
-
 
 $namespaces:
   sbg: https://sevenbridges.com
