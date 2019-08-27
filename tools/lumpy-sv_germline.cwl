@@ -8,11 +8,14 @@ requirements:
     ramMin: 24000
   - class: DockerRequirement
     dockerPull: 'kfdrc/lumpy:latest'
-baseCommand: [/samtools-1.8/misc/seq_cache_populate.pl ]
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
+      /samtools-1.8/misc/seq_cache_populate.pl
       -root $PWD/ref_cache
       $(inputs.reference.path)
       && export REF_CACHE=$PWD/ref_cache/%2s/%2s/%s
