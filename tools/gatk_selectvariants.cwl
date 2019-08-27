@@ -10,11 +10,13 @@ requirements:
   - class: ResourceRequirement
     ramMin: 8000
     coresMin: 4
-baseCommand: []
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
       ${
         var run_mode = inputs.mode;
         if (run_mode == 'grep' || run_mode == 'gatk'){
