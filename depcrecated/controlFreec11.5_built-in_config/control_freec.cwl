@@ -28,8 +28,8 @@ arguments:
       && gzip $(inputs.output_basename).ratio.txt
       && mv $(inputs.tumor_bam.basename)_CNVs $(inputs.output_basename).CNVs
 inputs:
-  tumor_bam: { type: File, secondaryFiles: [^.bai] }
-  normal_bam: { type: File, secondaryFiles: [^.bai] }
+  tumor_bam: { type: ['null', File], secondaryFiles: [^.bai] }
+  normal_bam: { type: ['null', File], secondaryFiles: [^.bai] }
   ref_chrs: File
   chr_len: File
   threads: int

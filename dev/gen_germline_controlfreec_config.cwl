@@ -23,6 +23,7 @@ arguments:
       CONTENT="[general]
       
       chrLenFile = $(inputs.chr_len.path)
+      
       chrFiles = ./GRCh38_everyChrs
       
       ploidy = 2
@@ -54,14 +55,6 @@ arguments:
       
       inputFormat = BAM
       
-      mateOrientation = FR
-      
-      [control]
-      
-      mateFile = $(inputs.normal_bam.path)
-      
-      inputFormat = BAM
-      
       mateOrientation = FR";
 
       printf "$CONTENT" >> $CONFIG
@@ -79,7 +72,6 @@ arguments:
 
 inputs:
   tumor_bam: File
-  normal_bam: File
   chr_len: File
   threads: int
   capture_regions: {type: ['null', File], doc: "Only needed if whole exome"}
