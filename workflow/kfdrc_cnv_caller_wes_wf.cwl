@@ -24,8 +24,6 @@ inputs:
   output_basename: string
   capture_regions: File
   exome_flag: {type: string, doc: "insert 'Y' if exome mode"}
-  input_normal_name: string
-  input_tumor_name: string
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
 
 outputs:
@@ -102,7 +100,7 @@ steps:
     out: [output_png]
   
   canvas:
-    run: ../tools/canvas-paired-wes.cwl
+    run: ../tools/canvas_paired_wes.cwl
     in: 
       tumor_bam: samtools_tumor_cram2bam/bam_file
       control_bam: samtools_normal_cram2bam/bam_file
@@ -117,7 +115,7 @@ steps:
     out: [output_vcf, output_txt, output_folder]
 
   cnvkit: 
-    run: ../tools/cnvkit-batch.cwl
+    run: ../tools/cnvkit_batch.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
