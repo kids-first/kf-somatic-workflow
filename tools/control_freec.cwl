@@ -1,6 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 id: control-freeC-11-5
+
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
@@ -16,17 +17,12 @@ arguments:
     shellQuote: false
     valueFrom: >-
       $(inputs.ref_chrs.path)
-      && perl /get_config.pl
-      $(inputs.chr_len.path)
-      ./GRCh38_everyChrs
-      $(inputs.normal_bam.path)
-      $(inputs.tumor_bam.path)
-      $(inputs.threads)
       && /FREEC-11.5/src/freec
-      -conf file.cfg
+      -conf $(inputs.config_file.path)
       && mv $(inputs.tumor_bam.basename)_ratio.txt $(inputs.output_basename).ratio.txt
       && gzip $(inputs.output_basename).ratio.txt
       && mv $(inputs.tumor_bam.basename)_CNVs $(inputs.output_basename).CNVs
+
 inputs:
   tumor_bam: { type: File, secondaryFiles: [^.bai] }
   normal_bam: { type: File, secondaryFiles: [^.bai] }
@@ -34,6 +30,9 @@ inputs:
   chr_len: File
   threads: int
   output_basename: string
+  config_file: File
+  capture_regions: {type: ['null', File], doc: "If not WGS, provide "}
+
 outputs:
   output_txt:
     type: File

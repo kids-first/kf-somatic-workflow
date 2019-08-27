@@ -68,7 +68,7 @@ steps:
     out: [bam_file]
 
   gen_config:
-    run: ../dev/gen_controlfreec_configfile.cwl
+    run: ../tools/gen_controlfreec_configfile.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file 
@@ -80,7 +80,7 @@ steps:
     out: [config_file]
 
   control_free_c:
-    run: ../dev/control_freec.cwl
+    run: ../tools/control_freec.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
@@ -107,7 +107,7 @@ steps:
     out: [output]
 
   canvas:
-    run: ../dev/canvas-paired-wes.cwl
+    run: ../tools/canvas-paired-wes.cwl
     in:  
       tumor_bam: samtools_tumor_cram2bam/bam_file
       control_bam: samtools_normal_cram2bam/bam_file

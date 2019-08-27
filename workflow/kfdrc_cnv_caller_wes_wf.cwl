@@ -10,7 +10,7 @@ requirements:
 inputs:
   input_tumor: { type: File, secondaryFiles: [.crai] }
   input_normal: { type: File, secondaryFiles: [.crai] }
-  ref_chrs: {type: File, doc: "folder of reference chromosomes"}
+  ref_chrs: {type: File, doc: "Tar gzip of reference chromosomes"}
   reference: {type: File, secondaryFiles: [.fai]}
   canvas_reference: {type: File, doc: "Canvas-ready kmer file"}
   chr_len: {type: File, doc: "file with chromosome lengths"}
@@ -26,7 +26,7 @@ inputs:
   exome_flag: {type: string, doc: "insert 'Y' if exome mode"}
   input_normal_name: string
   input_tumor_name: string
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
 
 outputs:
   ctrlfreec_cnv: {type: File, outputSource: control_free_c/output_cnv}
@@ -64,7 +64,7 @@ steps:
     out: [bam_file]
 
   gen_config:
-    run: ../dev/gen_controlfreec_configfile.cwl
+    run: ../tools/gen_controlfreec_configfile.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
@@ -75,7 +75,7 @@ steps:
     out: [config_file]
 
   control_free_c: 
-    run: ../dev/control_freec.cwl
+    run: ../tools/control_freec.cwl
     in: 
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
@@ -102,7 +102,7 @@ steps:
     out: [output_png]
   
   canvas:
-    run: ../dev/canvas-paired-wes.cwl
+    run: ../tools/canvas-paired-wes.cwl
     in: 
       tumor_bam: samtools_tumor_cram2bam/bam_file
       control_bam: samtools_normal_cram2bam/bam_file
