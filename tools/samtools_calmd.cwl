@@ -1,25 +1,24 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: samtools_cram2bam
+id: samtools_calmd
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: 'kfdrc/samtools:1.9'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 12000
+    ramMin: 32000
     coresMin: inputs.threads
-  
-baseCommand: [samtools, view]
+baseCommand: [samtools, calmd]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -@ $(inputs.threads)
-      -bh $(inputs.input_reads.path)
-      -T $(inputs.reference.path)
-      > $(inputs.input_reads.nameroot).bam
-      && samtools index $(inputs.input_reads.nameroot).bam $(inputs.input_reads.nameroot).bai
+      -@ 16
+      -b $(inputs.input_reads.path)
+      --reference $(inputs.reference.path)
+      > $(inputs.input_reads.nameroot).calmd.bam
+      && samtools index $(inputs.input_reads.nameroot).calmd.bam $(inputs.input_reads.nameroot).calmd.bai
 inputs:
   input_reads: File
   threads:
