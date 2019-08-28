@@ -23,6 +23,7 @@ arguments:
       CONTENT="[general]
       
       chrLenFile = $(inputs.chr_len.path)
+      
       chrFiles = ./GRCh38_everyChrs
       
       ploidy = 2
