@@ -16,9 +16,10 @@ v4.1.1, used to run Mutect2 and perform common tasks, like merge vcfs from calle
 v93, used to annotate vcfs and generate mafs per MSKCC specs https://github.com/Ensembl/ensembl-vep
 ### vcf2maf
 v1.6.16 https://github.com/mskcc/vcf2maf/releases
+### Canvas
+v1.11.0, for kfdrc_somatic_WES_wf.cwl and kfdrc_cnv_caller_wes_wf.cwl only.
 
-
-## Usage
+## Usage: kfdrc_somatic_caller_workflow.cwl
 
 ### Inputs:
 ```yaml
@@ -29,18 +30,22 @@ inputs:
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   hg38_strelka_bed: File
-  input_tumor_aligned: File
+  input_tumor_aligned:
+    type: File
+    doc: "tumor BAM or CRAM"
   input_tumor_name: string
-  input_normal_aligned: File
+  input_normal_aligned:
+    type: File
+    doc: "normal BAM or CRAM"
   input_normal_name: string
   threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
-  exome_flag: ['null', string]
+  exome_flag: {type: ['null', string], doc: "insert 'Y' if exome mode"}
+  capture_regions: {type: ['null', File], doc: "If not WGS, provide this bed file"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
-  chr_len: File
-  ref_chrs: File
-  output_basename: string
-```
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
+  chr_len: {type: File, doc: "file with chromosome lengths"}
+  ref_chrs: {type: File, doc: "Tar gzip of reference chromosomes"}
+  output_basename: string```
 
 ### Suggested inputs:
 ```text

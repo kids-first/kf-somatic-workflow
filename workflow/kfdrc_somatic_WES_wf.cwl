@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_somatic_wf
+id: kfdrc_whole_exome_somatic_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -8,47 +8,27 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  wgs_calling_interval_list: File
+  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
+  chr_len: {type: File, doc: "Text file with lengths of each chromosome in fasta file"}
+  ref_chrs: {type: File, doc: "Tar gzipped file, one fasta file per chromosome. For now, hardcoded to create folder GRCh38_everyChrs when unpacked"}
+  calling_interval_list: {type: File, doc: "Bed preferred for best compatibility Mutect2, Strelka2, etc"}
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
+  capture_regions: {type: File, doc: "Bed file for CNV calls (exact intervals)"}
+  b_allele_vcf: {type: File, doc: "vcf containing SNV b-alleles sites (only sites with PASS will be used)"}
   hg38_strelka_bed: File
-  input_tumor_aligned:
-    type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
-    doc: "tumor BAM or CRAM"
-
+  manifest: {type: File, doc: "Nextera Manifest file for Canvas"}
+  sample_name: string
+  canvas_reference_file: {type: File, doc: "Canvas-ready kmer file"} 
+  genomeSize_file: {type: File, doc: "GenomeSize.xml file"}
+  genome_fasta: {type: File, doc: "Genome.fa", secondaryFiles: [.fai]}
+  input_tumor_aligned: { type: File, secondaryFiles: [.crai] }
   input_tumor_name: string
-  input_normal_aligned:
-    type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
-    doc: "normal BAM or CRAM"
-
+  input_normal_aligned: { type: File, secondaryFiles: [.crai] }
   input_normal_name: string
-  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
-  exome_flag: {type: ['null', string], doc: "insert 'Y' if exome mode"}
-  capture_regions: {type: ['null', File], doc: "If not WGS, provide this bed file"}
+  exome_flag: string
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
-  chr_len: {type: File, doc: "file with chromosome lengths"}
-  ref_chrs: {type: File, doc: "Tar gzip of reference chromosomes"}
+  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
 
 outputs:
@@ -60,13 +40,13 @@ outputs:
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_prepass_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
-  manta_vep_vcf: {type: File, outputSource: vep_annot_manta/output_vcf}
-  manta_vep_tbi: {type: File, outputSource: vep_annot_manta/output_tbi}
-  manta_prepass_vcf: {type: File, outputSource: rename_manta_samples/reheadered_vcf}
-  manta_vep_maf: {type: File, outputSource: vep_annot_manta/output_maf}
-  ctrlfreec_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
-  ctrlfreec_pval: { type: File, outputSource: control_free_c_r/output_pval }
-  ctrlfreec_png: { type: File, outputSource: control_free_c_viz/output_png }
+  ctrlfreec_cnv: {type: File, outputSource: control_free_c/output_cnv}
+  ctrlfreec_cnv_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
+  ctrlfreec_cnv_pval: { type: File, outputSource: control_free_c_r/output_pval }
+  ctrlfreec_cnv_png: { type: File, outputSource: control_free_c_viz/output_png }
+  canvas_cnv_vcf: {type: File, outputSource: canvas/output_vcf}
+  canvas_coverage_txt: {type: File, outputSource: canvas/output_txt}
+  canvas_folder: {type: File, outputSource: canvas/output_folder}
 
 steps:
   samtools_tumor_cram2bam:
@@ -91,24 +71,25 @@ steps:
     run: ../tools/gen_controlfreec_configfile.cwl
     in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
+      normal_bam: samtools_normal_cram2bam/bam_file 
+      reference: indexed_reference_fasta
       capture_regions: capture_regions
       exome_flag: exome_flag
       chr_len: chr_len
       threads: threads
     out: [config_file]
 
-  control_free_c: 
+  control_free_c:
     run: ../tools/control_freec.cwl
-    in: 
+    in:
       tumor_bam: samtools_tumor_cram2bam/bam_file
       normal_bam: samtools_normal_cram2bam/bam_file
-      capture_regions: capture_regions
       ref_chrs: ref_chrs
       chr_len: chr_len
       threads: threads
-      output_basename: output_basename
       config_file: gen_config/config_file
+      capture_regions: capture_regions
+      output_basename: output_basename
     out: [output_txt, output_cnv]
   
   control_free_c_r:
@@ -124,11 +105,26 @@ steps:
       output_basename: output_basename
       cnv_bam_ratio: control_free_c/output_txt
     out: [output]
-    
+
+  canvas:
+    run: ../tools/canvas-paired-wes.cwl
+    in:  
+      tumor_bam: samtools_tumor_cram2bam/bam_file
+      control_bam: samtools_normal_cram2bam/bam_file
+      manifest: manifest
+      b_allele_vcf: b_allele_vcf
+      sample_name: sample_name
+      output_basename: output_basename
+      reference: canvas_reference_file
+      genomeSize_file: genomeSize_file
+      genome_fasta: genome_fasta
+      filter_bed: capture_regions
+    out: [output_vcf, output_txt, output_folder]
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
-      interval_list: wgs_calling_interval_list
+      interval_list: calling_interval_list
       reference_dict: reference_dict
       exome_flag: exome_flag
       scatter_ct:
@@ -140,22 +136,12 @@ steps:
   strelka2:
     run: ../tools/strelka2.cwl
     in:
-      input_tumor_aligned: input_tumor_aligned
-      input_normal_aligned: input_normal_aligned
+      input_tumor_aligned: samtools_tumor_cram2bam/bam_file
+      input_normal_aligned: samtools_normal_cram2bam/bam_file
       reference: indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
       exome_flag: exome_flag
     out: [output]
-
-  manta:
-    run: ../tools/manta.cwl
-    in:
-      input_tumor_cram: input_tumor_aligned
-      input_normal_cram: input_normal_aligned
-      output_basename: output_basename
-      reference: indexed_reference_fasta
-      hg38_strelka_bed: hg38_strelka_bed
-    out: [output_sv]
   
   mutect2:
     hints:
@@ -163,9 +149,9 @@ steps:
         value: c5.9xlarge;ebs-gp2;500
     run: ../tools/gatk_Mutect2.cwl
     in:
-      input_tumor_aligned: input_tumor_aligned
+      input_tumor_aligned: samtools_tumor_cram2bam/bam_file
       input_tumor_name: input_tumor_name
-      input_normal_aligned: input_normal_aligned
+      input_normal_aligned: samtools_normal_cram2bam/bam_file
       input_normal_name: input_normal_name
       reference: indexed_reference_fasta
       interval_list: gatk_intervallisttools/output
@@ -180,8 +166,8 @@ steps:
       indexed_reference_fasta: indexed_reference_fasta
       reference_dict: reference_dict
       wgs_calling_interval_list: gatk_intervallisttools/output
-      input_tumor_aligned: input_tumor_aligned
-      input_normal_aligned: input_normal_aligned
+      input_tumor_aligned: samtools_tumor_cram2bam/bam_file
+      input_normal_aligned: samtools_normal_cram2bam/bam_file
       exac_common_vcf: exac_common_vcf
       output_basename: output_basename
       f1r2_counts: mutect2/f1r2_counts
@@ -202,14 +188,6 @@ steps:
     run: ../tools/bcftools_reheader_vcf.cwl
     in:
       input_vcf: merge_strelka2_vcf/merged_vcf
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
-    out: [reheadered_vcf]
-
-  rename_manta_samples:
-    run: ../tools/bcftools_reheader_vcf.cwl
-    in:
-      input_vcf: manta/output_sv
       input_normal_name: input_normal_name
       input_tumor_name: input_tumor_name
     out: [reheadered_vcf]
@@ -265,20 +243,6 @@ steps:
       mode: select_vars_mode
     out: [pass_vcf]
 
-  gatk_selectvariants_manta:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
-    run: ../tools/gatk_selectvariants.cwl
-    label: GATK Select Manta PASS
-    in:
-      input_vcf: rename_manta_samples/reheadered_vcf
-      output_basename: output_basename
-      tool_name:
-        valueFrom: ${return "manta"}
-      mode: select_vars_mode
-    out: [pass_vcf]
-
   gatk_selectvariants_strelka2:
     hints:
       - class: 'sbg:AWSInstanceType'
@@ -319,19 +283,6 @@ steps:
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
 
-  vep_annot_manta:
-    run: ../tools/vep_vcf2maf.cwl
-    in:
-      input_vcf: gatk_selectvariants_manta/pass_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        valueFrom: ${return "manta_somatic"}
-      reference: indexed_reference_fasta
-      cache: vep_cache
-    out: [output_vcf, output_tbi, output_maf, warn_txt]
-  
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
