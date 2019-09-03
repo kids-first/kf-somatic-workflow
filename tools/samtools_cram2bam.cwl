@@ -8,7 +8,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 12000
-    coresMin: inputs.threads
+    coresMin: $(inputs.threads)
   
 baseCommand: [samtools, view]
 arguments:

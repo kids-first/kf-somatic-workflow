@@ -8,16 +8,16 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   wgs_calling_interval_list: File
-  input_tumor_aligned: File
+  input_tumor_aligned: {type: File, secondaryFiles: [.crai]}
   input_tumor_name: string
-  input_normal_aligned: File
+  input_normal_aligned: {type: File, secondaryFiles: [.crai]}
   input_normal_name: string
   output_basename: string
   reference_dict: File
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
-  window: { type: int, doc: "window size for lancet.  default is 600"}
+  window: { type: int, doc: "window size for lancet.  default is 600, recommend 500"}
 
 outputs:
   lancet_vep_vcf: {type: File, outputSource: vep_annot_lancet/output_vcf}
@@ -26,24 +26,6 @@ outputs:
   lancet_prepass_vcf: {type: File, outputSource: sort_merge_lancet_vcf/merged_vcf}
 
 steps:
-  samtools_tumor_cram2bam:
-    run: ../tools/samtools_cram2bam.cwl
-    in:
-      input_reads: input_tumor_aligned
-      threads:
-        type: ['null', int]
-        default: 16
-      reference: indexed_reference_fasta
-    out: [bam_file]
-  samtools_normal_cram2bam:
-    run: ../tools/samtools_cram2bam.cwl
-    in:
-      input_reads: input_normal_aligned
-      threads:
-        type: ['null', int]
-        default: 16
-      reference: indexed_reference_fasta
-    out: [bam_file]
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -56,14 +38,34 @@ steps:
         valueFrom: ${return 80000000}
     out: [output]
 
+  samtools_cram2bam_plus_calmd_tumor:
+    run: ../tools/samtools_cram2bam_plus_calmd.cwl
+    in:
+      input_reads: input_tumor_aligned
+      threads:
+        type: ['null', int]
+        default: 16
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
+  samtools_cram2bam_plus_calmd_normal:
+    run: ../tools/samtools_cram2bam_plus_calmd.cwl
+    in:
+      input_reads: input_normal_aligned
+      threads:
+        type: ['null', int]
+        default: 16
+      reference: indexed_reference_fasta
+    out: [bam_file]
+
   lancet:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.9xlarge;ebs-gp2;500
     run: ../tools/lancet.cwl
     in:
-      input_tumor_bam: samtools_tumor_cram2bam/bam_file
-      input_normal_bam: samtools_normal_cram2bam/bam_file
+      input_tumor_bam: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_normal_bam: samtools_cram2bam_plus_calmd_tumor/bam_file
       reference: indexed_reference_fasta
       bed: gatk_intervallisttools/output
       output_basename: output_basename
@@ -72,7 +74,7 @@ steps:
     out: [lancet_vcf]
 
   sort_merge_lancet_vcf:
-    run: ../dev/gatk_sortvcf.cwl
+    run: ../tools/gatk_sortvcf.cwl
     label: GATK Sort & Merge lancet
     in:
       input_vcfs: lancet/lancet_vcf
