@@ -65,7 +65,7 @@ steps:
     run: ../tools/lancet.cwl
     in:
       input_tumor_bam: samtools_cram2bam_plus_calmd_tumor/bam_file
-      input_normal_bam: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_normal_bam: samtools_cram2bam_plus_calmd_normal/bam_file
       reference: indexed_reference_fasta
       bed: gatk_intervallisttools/output
       output_basename: output_basename
