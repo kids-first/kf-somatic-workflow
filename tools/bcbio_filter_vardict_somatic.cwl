@@ -8,7 +8,7 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: DockerRequirement
-    dockerPull: 'migbro/bcbio_vardict_filter'
+    dockerPull: 'kfdrc/bcbio_vardict_filter'
 
 baseCommand: [python]
 arguments:
