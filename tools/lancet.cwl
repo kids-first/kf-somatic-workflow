@@ -24,7 +24,7 @@ arguments:
       --bed $(inputs.bed.path)
       --num-threads 6
       --window-size $(inputs.window)
-      --padding 25
+      --padding $(inputs.padding)
       --max-indel-len 50
       > $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf
       || (echo 'active region filter failed, trying without' && /lancet-1.0.7/lancet
@@ -35,7 +35,7 @@ arguments:
       --num-threads 6
       --window-size $(inputs.window)
       --active-region-off
-      --padding 25
+      --padding $(inputs.padding)
       --max-indel-len 50
       > $(inputs.input_tumor_bam.nameroot).$(inputs.bed.nameroot).vcf)
 
@@ -45,7 +45,8 @@ inputs:
     input_normal_bam: {type: File, secondaryFiles: [^.bai]}
     bed: {type: File}
     output_basename: {type: string}
-    window: int
+    window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
+    padding: {type: int, doc: "If WGS (less likely), recommend 25, if exome+, recommend half window size"}
 outputs:
   lancet_vcf:
     type: File

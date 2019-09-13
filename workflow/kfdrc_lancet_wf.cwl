@@ -7,17 +7,20 @@ requirements:
 
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
-  wgs_calling_interval_list: File
+  calling_interval_list: File
   input_tumor_aligned: {type: File, secondaryFiles: [.crai]}
   input_tumor_name: string
   input_normal_aligned: {type: File, secondaryFiles: [.crai]}
   input_normal_name: string
   output_basename: string
   reference_dict: File
-  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
+  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode, most likely given run time"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
-  window: { type: int, doc: "window size for lancet.  default is 600, recommend 500"}
+  window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
+  padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend hald window size"}
+  strelka2_vcf: {type: ['null', File], doc: "PASS vcf from strelka2 run for the sample to be analyzed. Optional and recommneded to augment an exome interval list"}
+  mutect2_vcf: {type: ['null', File], doc: "PASS vcf from mutect2 run for the sample to be analyzed, Optional and recommneded to augment an exome interval list"}
 
 outputs:
   lancet_vep_vcf: {type: File, outputSource: vep_annot_lancet/output_vcf}
@@ -26,10 +29,19 @@ outputs:
   lancet_prepass_vcf: {type: File, outputSource: sort_merge_lancet_vcf/merged_vcf}
 
 steps:
+  bedops_gen_lancet_intervals:
+    run: ../tools/preprocess_lancet_intervals.cwl
+    in:
+      strelka2_vcf: strelka2_vcf
+      mutect2_vcf: mutect2_vcf
+      ref_bed: calling_interval_list
+      output_basename: output_basename
+    out: [run_bed]
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
-      interval_list: wgs_calling_interval_list
+      interval_list: bedops_gen_lancet_intervals/run_bed
       reference_dict: reference_dict
       exome_flag: exome_flag
       scatter_ct:
@@ -70,6 +82,7 @@ steps:
       bed: gatk_intervallisttools/output
       output_basename: output_basename
       window: window
+      padding: padding
     scatter: [bed]
     out: [lancet_vcf]
 
