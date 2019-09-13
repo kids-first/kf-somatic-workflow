@@ -4,7 +4,7 @@ id: bcftools_reheader_vcf
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/bedops:2.4.36'
+    dockerPull: 'kfdrc/bedops:2.4.36'
   - class: ResourceRequirement
     ramMin: 8000
     coresMin: 4
@@ -15,7 +15,7 @@ arguments:
     shellQuote: false
     valueFrom: >-
       set -eo pipefail
-      
+
       ${
           var flag = 0
           var cmd = "";
