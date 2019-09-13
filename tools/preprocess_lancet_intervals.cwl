@@ -9,11 +9,13 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: InlineJavascriptRequirement
-baseCommand: []
+baseCommand: [/bin/bash, -c]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+      
       ${
           var flag = 0
           var cmd = "";
