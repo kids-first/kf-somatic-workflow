@@ -8,20 +8,21 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   wgs_calling_interval_list: File
-  input_tumor_aligned: File
+  input_tumor_aligned: {type: File, secondaryFiles: [.crai]}
   input_tumor_name: string
-  input_normal_aligned: File
+  input_normal_aligned: {type: File, secondaryFiles: [.crai]}
   input_normal_name: string
   output_basename: string
   reference_dict: File
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
+  min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
-  vardict_vep_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
-  vardict_vep_tbi: {type: File, outputSource: vep_annot_vardict/output_tbi}
-  vardict_vep_maf: {type: File, outputSource: vep_annot_vardict/output_maf}
+  vardict_vep_somatic_only_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
+  vardict_vep_somatic_only_tbi: {type: File, outputSource: vep_annot_vardict/output_tbi}
+  vardict_vep_somatic_only_maf: {type: File, outputSource: vep_annot_vardict/output_maf}
   vardict_prepass_vcf: {type: File, outputSource: sort_merge_vardict_vcf/merged_vcf}
 
 steps:
@@ -30,7 +31,7 @@ steps:
     in:
       input_reads: input_tumor_aligned
       threads:
-        valueFrom: ${return 36}
+        valueFrom: ${return 16}
       reference: indexed_reference_fasta
     out: [bam_file]
   samtools_normal_cram2bam:
@@ -38,7 +39,7 @@ steps:
     in:
       input_reads: input_normal_aligned
       threads:
-        valueFrom: ${return 36}
+        valueFrom: ${return 16}
       reference: indexed_reference_fasta
     out: [bam_file]
 
@@ -64,6 +65,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_bam: samtools_normal_cram2bam/bam_file
       input_normal_name: input_normal_name
+      min_vaf: min_vaf
       reference: indexed_reference_fasta
       bed: gatk_intervallisttools/output
       output_basename: output_basename
@@ -81,6 +83,16 @@ steps:
         valueFrom: ${return "vardict"}
     out: [merged_vcf]
 
+  bcbio_filter_fp_somatic:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.xlarge;ebs-gp2;250
+    run: ../tools/bcbio_filter_vardict_somatic.cwl
+    in:
+      input_vcf: sort_merge_vardict_vcf/merged_vcf
+      output_basename: output_basename
+    out: [filtered] 
+
   gatk_selectvariants_vardict:
     hints:
       - class: 'sbg:AWSInstanceType'
@@ -88,7 +100,7 @@ steps:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Vardict PASS
     in:
-      input_vcf: sort_merge_vardict_vcf/merged_vcf
+      input_vcf: bcbio_filter_fp_somatic/filtered_vcf
       output_basename: output_basename
       tool_name:
         valueFrom: ${return "vardict"}
