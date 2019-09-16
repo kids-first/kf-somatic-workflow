@@ -18,7 +18,7 @@ inputs:
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
-  padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend hald window size"}
+  padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend half window size"}
   strelka2_vcf: {type: ['null', File], doc: "PASS vcf from strelka2 run for the sample to be analyzed. Optional and recommneded to augment an exome interval list"}
   mutect2_vcf: {type: ['null', File], doc: "PASS vcf from mutect2 run for the sample to be analyzed, Optional and recommneded to augment an exome interval list"}
 
@@ -37,7 +37,7 @@ steps:
       ref_bed: calling_interval_list
       output_basename: output_basename
     out: [run_bed]
-
+ß
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
