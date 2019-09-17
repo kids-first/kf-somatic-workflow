@@ -9,7 +9,7 @@ requirements:
     dockerPull: 'images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3'
   - class: ResourceRequirement
     ramMin: 32000
-    coresMin: 16
+    coresMin: $(inputs.threads)
 arguments: 
   - position: 1
     shellQuote: false
@@ -19,12 +19,13 @@ arguments:
       ${ 
           var cmd = "";
           if (inputs.input_control != null) {
-              cmd = "ln -s $(inputs.input_control.path) .; ln -s $(inputs.input_control.secondaryFiles[0].path) ./$(inputs.input_control.basename).bai"
+              cmd = "ln -s " + inputs.input_control.path + " .; ln -s " + inputs.input_control.secondaryFiles[0].path + " ./" + inputs.input_control.basename + ".bai"
           }
           return cmd;
       }
 
-      cnvkit.py batch 
+      cnvkit.py batch
+      -p $(inputs.threads)
       ${
           var cmd = "";
           if (inputs.wgs_mode == 'Y') {
@@ -48,12 +49,26 @@ arguments:
           }
           return cmd;
       }
+      --drop-low-coverage
       --annotate $(inputs.annotation_file.path)
-      --output-reference $(inputs.output_basename)_cnvkit_reference.cnn 
+      ${
+        var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn";
+        if(inputs.cnv_kit_cnn != null){
+          arg = "--reference " + inputs.cnv_kit_cnn.path;
+        }
+        return arg;
+      }
       --diagram 
       --scatter
-    
-      cnvkit.py call $(inputs.input_sample.nameroot).cns 
+
+      cnvkit.py call $(inputs.input_sample.nameroot).cns
+      ${
+        var arg = "";
+        if (inputs.b_allele_vcf != null){
+          arg = "--vcf " + inputs.b_allele_vcf.path;
+        }
+        return arg;
+      }
       -o $(inputs.output_basename).call.cns
       
       cnvkit.py export vcf $(inputs.output_basename).call.cns -o $(inputs.output_basename).vcf
@@ -61,7 +76,7 @@ arguments:
       cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
 
-      cnvkit.py gainloss $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
+      cnvkit.py gainloss --drop-low-coverage $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
 
       mv $(inputs.input_sample.nameroot).cnr $(inputs.output_basename).cnr
 
@@ -71,13 +86,18 @@ arguments:
 
 
 inputs:
-  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [.bai]}
-  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [.bai]}
+  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
+  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
   reference: {type: File, doc: "fasta file", secondaryFiles: [.fai]}
+  cnv_kit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
+  b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
   annotation_file: {type: File, doc: "refFlat.txt file"}
   output_basename: string
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
+  threads:
+    type: ['null', int]
+    default: 16
 
 outputs:
   output_cnr: 
@@ -108,3 +128,8 @@ outputs:
     type: File
     outputBinding:
       glob: '*.gainloss.txt'
+  output_cnn:
+    type: ['null', File]
+    outputBinding:
+      glob: '*.cnn'
+    doc: "Output if starting from cnn scratch.  Should not appear if an existing .cnn was given as input."
