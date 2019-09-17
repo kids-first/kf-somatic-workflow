@@ -33,15 +33,7 @@ arguments:
           }
           return cmd;
       }
-      $(inputs.input_sample.path) 
-      ${
-          var cmd = "--normal ";
-          if (inputs.input_control != null) {
-              cmd += inputs.input_control.path + " ";
-          }
-          return cmd;
-      }
-      --fasta $(inputs.reference.path) 
+      $(inputs.input_sample.path)
       ${
           var cmd = "";
           if (inputs.capture_regions != null) {
@@ -50,11 +42,15 @@ arguments:
           return cmd;
       }
       --drop-low-coverage
-      --annotate $(inputs.annotation_file.path)
       ${
-        var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn";
-        if(inputs.cnv_kit_cnn != null){
-          arg = "--reference " + inputs.cnv_kit_cnn.path;
+        if (inputs.cnv_kit_cnn == null){
+          var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn --fasta " + inputs.reference.path + " --annotate " + inputs.annotation_file.path;
+          if (inputs.input_control != null) {
+              arg += " --normal " + inputs.input_control.path;
+          }
+        }
+        else{
+          var arg = "--reference " + inputs.cnv_kit_cnn.path;
         }
         return arg;
       }
@@ -88,11 +84,11 @@ arguments:
 inputs:
   input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
   input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
-  reference: {type: File, doc: "fasta file", secondaryFiles: [.fai]}
+  reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
   cnv_kit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
-  annotation_file: {type: File, doc: "refFlat.txt file"}
+  annotation_file: {type: ['null', File], doc: "refFlat.txt file,  needed if cnv kit cnn not already built"}
   output_basename: string
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
   threads:
