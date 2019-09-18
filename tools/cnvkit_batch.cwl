@@ -41,7 +41,6 @@ arguments:
           }
           return cmd;
       }
-      --drop-low-coverage
       ${
         if (inputs.cnv_kit_cnn == null){
           var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn --fasta " + inputs.reference.path + " --annotate " + inputs.annotation_file.path;
@@ -51,6 +50,10 @@ arguments:
         }
         else{
           var arg = "--reference " + inputs.cnv_kit_cnn.path;
+          var msex = ['m','y','male','Male']
+          if (msex.indexOf(inputs.sex) >= 0){
+            arg += " --male-reference";
+          }
         }
         return arg;
       }
@@ -65,6 +68,14 @@ arguments:
         }
         return arg;
       }
+      ${
+        var arg = "--sample-sex " + inputs.sex;
+        var msex = ['m','y','male','Male']
+        if (msex.indexOf(inputs.sex) >= 0){
+          arg += " --male-reference";
+        }
+        return arg;
+      }
       -o $(inputs.output_basename).call.cns
       
       cnvkit.py export vcf $(inputs.output_basename).call.cns -o $(inputs.output_basename).vcf
@@ -72,7 +83,7 @@ arguments:
       cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
 
-      cnvkit.py gainloss --drop-low-coverage $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
+      cnvkit.py gainloss $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
 
       mv $(inputs.input_sample.nameroot).cnr $(inputs.output_basename).cnr
 
@@ -94,6 +105,11 @@ inputs:
   threads:
     type: ['null', int]
     default: 16
+  sex:
+    type: 
+      type: enum
+      symbols: ['m','y','male','Male','f','x','female','Female']
+    doc: "Set sample sex.  CNVkit isn't always great at guessing it"
 
 outputs:
   output_cnr: 
@@ -127,5 +143,5 @@ outputs:
   output_cnn:
     type: ['null', File]
     outputBinding:
-      glob: '*.cnn'
+      glob: '*_reference.cnn'
     doc: "Output if starting from cnn scratch.  Should not appear if an existing .cnn was given as input."
