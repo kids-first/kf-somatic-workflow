@@ -73,7 +73,7 @@ steps:
       output_basename: output_basename
       wgs_mode: wgs_mode
       capture_regions: capture_regions
-      b_allele_vcf: b_allele_vcf
+      b_allele_vcf: bcftools_filter_vcf/filtered_vcf
       threads: threads
       sex: sex
       tumor_sample_name: tumor_sample_name
