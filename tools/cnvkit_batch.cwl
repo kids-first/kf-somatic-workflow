@@ -79,6 +79,12 @@ arguments:
       -o $(inputs.output_basename).call.cns
       
       cnvkit.py export vcf $(inputs.output_basename).call.cns -o $(inputs.output_basename).vcf
+      
+      ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
+
+      cnvkit.py export seg $(inputs.tumor_sample_name).cns -o $(inputs.output_basename).call.seg
+
+      rm $(inputs.tumor_sample_name).cns
 
       cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
@@ -96,11 +102,12 @@ inputs:
   input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
   input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
   reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
-  cnv_kit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
+  cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
   annotation_file: {type: ['null', File], doc: "refFlat.txt file,  needed if cnv kit cnn not already built"}
   output_basename: string
+  tumor_sample_name: string
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
   threads:
     type: ['null', int]
@@ -145,3 +152,7 @@ outputs:
     outputBinding:
       glob: '*_reference.cnn'
     doc: "Output if starting from cnn scratch.  Should not appear if an existing .cnn was given as input."
+  output_seg:
+    type: File
+    outputBinding:
+      glob '*.seg'
