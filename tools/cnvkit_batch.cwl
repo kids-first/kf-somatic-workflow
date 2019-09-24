@@ -113,9 +113,7 @@ inputs:
     type: ['null', int]
     default: 16
   sex:
-    type: 
-      type: enum
-      symbols: ['m','y','male','Male','f','x','female','Female']
+    type: string
     doc: "Set sample sex.  CNVkit isn't always great at guessing it"
 
 outputs:
@@ -155,4 +153,4 @@ outputs:
   output_seg:
     type: File
     outputBinding:
-      glob '*.seg'
+      glob: '*.seg'
