@@ -19,11 +19,7 @@ inputs:
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
   threads: {type: ['null', int], default: 16}
   tumor_sample_name: {type: string, doc: "For seg file output"}
-  sex:
-    type: 
-      type: enum
-      symbols: ['m','y','male','Male','f','x','female','Female']
-    doc: "Set sample sex.  CNVkit isn't always great at guessing it"
+  sex: {type: string, doc: "Set sample sex.  CNVkit isn't always great at guessing it"}
   include_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
   exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
 
