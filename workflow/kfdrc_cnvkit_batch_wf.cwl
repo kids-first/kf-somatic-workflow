@@ -15,7 +15,7 @@ inputs:
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
   annotation_file: {type: File, doc: "refFlat.txt file"}
   output_basename: string
-  cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
+  cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
   threads: {type: ['null', int], default: 16}
   tumor_sample_name: {type: string, doc: "For seg file output"}
@@ -26,6 +26,7 @@ inputs:
 
 outputs:
   cnvkit_cnr: {type: File, outputSource: cnvkit/output_cnr}
+  cnvkit_cnn_output: {type: ['null', File], outputSource: cnvkit/output_cnn}
   cnvkit_vcf: {type: File, outputSource: cnvkit/output_vcf}
   cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
   cnvkit_scatter: {type: File, outputSource: cnvkit/output_scatter}
@@ -73,8 +74,8 @@ steps:
       threads: threads
       sex: sex
       tumor_sample_name: tumor_sample_name
-      cnvkit_cnn: cnvkit_cnn
-    out: [output_cnr, output_vcf, output_calls, output_scatter, output_diagram, output_metrics, output_gainloss, output_seg]
+      cnvkit_cnn: cnvkit_cnn_input
+    out: [output_cnr, output_vcf, output_calls, output_scatter, output_diagram, output_metrics, output_gainloss, output_seg, output_cnn]
 
 $namespaces:
   sbg: https://sevenbridges.com
