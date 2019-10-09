@@ -41,7 +41,8 @@ arguments:
       }
 
 inputs:
-  reference: {type: File, secondaryFiles: [^.dict, .fai]}
+  reference: {type: File, secondaryFiles: [.fai]}
+  reference_dict: File
   input_tumor_aligned:
     type: File
     secondaryFiles: |
