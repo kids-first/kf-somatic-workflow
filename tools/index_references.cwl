@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: preprocess_references
+id: index_references
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
@@ -35,13 +35,18 @@ inputs:
   input_fasta_file: File
   af_only_gnomad_vcf: File
   exac_common_vcf: File
-  hg38_strelka_bed
+  hg38_strelka_bed: File
+
 outputs:
   indexed_reference_fasta:
     type: File
     outputBinding:
       glob: '$(inputs.input_fasta_file.basename)'
     secondaryFiles: [^.fai]
+  reference_fai:
+    type: File
+    outputBinding:
+      glob: '$(inputs.input_fasta_file.nameroot).fai'
   indexed_af_only_gnomad_vcf:
     type: File
     outputBinding:

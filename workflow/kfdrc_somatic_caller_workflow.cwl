@@ -6,12 +6,12 @@ requirements:
   - class: MultipleInputFeatureRequirement
   - class: SubworkflowFeatureRequirement
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
+  reference_fasta: {type: File, doc: "Genome reference fasta file"}
   reference_dict: File
   wgs_calling_interval_list: File
-  af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
-  exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
-  hg38_strelka_bed: File
+  af_only_gnomad_vcf: {type: File, doc: "Broad GATK gnomad reference file"}
+  exac_common_vcf: {type: File, doc: "Broad GATK exac reference file"}
+  hg38_strelka_bed: {type: File, doc: "bgzipped chromosome bed file"}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -82,6 +82,18 @@ outputs:
   ctrlfreec_info: {type: File, outputSource: rename_outputs/ctrlfreec_info}
 
 steps:
+
+  index_references:
+    run: ../tools/index_references.cwl
+    in:
+      input_fasta_file: reference_fasta
+      af_only_gnomad_vcf: af_only_gnomad_vcf
+      exac_common_vcf: exac_common_vcf
+      hg38_strelka_bed: hg38_strelka_bed
+    out:
+      [indexed_reference_fasta, indexed_af_only_gnomad_vcf, indexed_exac_common_vcf, indexed_hg38_strelka_bed]
+
+
   bcftools_filter_vcf:
     run: ../tools/bcftools_filter_vcf.cwl
     in:
@@ -98,7 +110,7 @@ steps:
       input_reads: samtools_tumor_cram2bam/bam_file
       threads:
         valueFrom: ${return 16}
-      reference: reference
+      reference: index_references/indexed_reference_fasta
       snp_vcf: b_allele
     out:
       [pileup]
@@ -109,7 +121,7 @@ steps:
       input_reads: samtools_normal_cram2bam/bam_file
       threads:
         valueFrom: ${return 16}
-      reference: reference
+      reference: index_references/indexed_reference_fasta
       snp_vcf: b_allele
     out:
       [pileup]
@@ -120,7 +132,7 @@ steps:
       input_reads: input_tumor_aligned
       threads:
         valueFrom: ${return 36}
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
     out: [bam_file]
 
   samtools_normal_cram2bam:
@@ -129,7 +141,7 @@ steps:
       input_reads: input_normal_aligned
       threads:
         valueFrom: ${return 36}
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
     out: [bam_file]
 
   control_free_c: 
@@ -145,7 +157,7 @@ steps:
       ploidy: ploidy
       # capture_regions: capture_regions
       max_threads: threads
-      reference: reference
+      reference: index_references/indexed_reference_fasta
       snp_file: bcftools_filter_vcf/filtered_vcf
       coeff_var: coeff_var
       sex: sex
@@ -163,7 +175,7 @@ steps:
   convert_ratio_to_seg:
     run: ../tools/ubuntu_ratio2seg.cwl
     in:
-      reference_fai: reference_fai
+      reference_fai: index_references/reference_fai
       ctrlfreec_ratio: control_free_c/ratio
       sample_name: input_tumor_name
       output_basename: output_basename
@@ -186,7 +198,7 @@ steps:
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
       # exome_flag: exome_flag
     out: [output]
@@ -197,7 +209,7 @@ steps:
       input_tumor_cram: input_tumor_aligned
       input_normal_cram: input_normal_aligned
       output_basename: output_basename
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
     out: [output_sv]
   
@@ -211,10 +223,10 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      reference: indexed_reference_fasta
-      reference_dict
+      reference: index_references/indexed_reference_fasta
+      reference_dict: reference_dict
       interval_list: gatk_intervallisttools/output
-      af_only_gnomad_vcf: af_only_gnomad_vcf
+      af_only_gnomad_vcf: index_references/indexed_af_only_gnomad_vcf
       # exome_flag: exome_flag
     scatter: [interval_list]
     out: [mutect2_vcf, f1r2_counts, mutect_stats]
@@ -222,12 +234,12 @@ steps:
   mutect2_filter_support:
     run: ../workflow/kfdrc_mutect2_filter_support_subwf.cwl
     in:
-      indexed_reference_fasta: indexed_reference_fasta
+      indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
       wgs_calling_interval_list: gatk_intervallisttools/output
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
-      exac_common_vcf: exac_common_vcf
+      exac_common_vcf: index_references/indexed_exac_common_vcf
       output_basename: output_basename
       f1r2_counts: mutect2/f1r2_counts
     out: [contamination_table, segmentation_table, f1r2_bias]
@@ -289,7 +301,7 @@ steps:
     in:
       mutect_vcf: merge_mutect2_vcf/merged_vcf
       mutect_stats: merge_mutect2_stats/merged_stats
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
       output_basename: output_basename
       contamination_table: mutect2_filter_support/contamination_table
       segmentation_table: mutect2_filter_support/segmentation_table
@@ -347,7 +359,7 @@ steps:
       normal_id: input_normal_name
       tool_name:
         valueFrom: ${return "strelka2_somatic"}
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
 
@@ -360,7 +372,7 @@ steps:
       normal_id: input_normal_name
       tool_name:
         valueFrom: ${return "mutect2_somatic"}
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
 
@@ -373,7 +385,7 @@ steps:
       normal_id: input_normal_name
       tool_name:
         valueFrom: ${return "manta_somatic"}
-      reference: indexed_reference_fasta
+      reference: index_references/indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
   

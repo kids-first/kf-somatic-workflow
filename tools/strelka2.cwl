@@ -30,7 +30,7 @@ arguments:
       -j 36
 
 inputs:
-  reference: { type: File, secondaryFiles: [^.dict, .fai] }
+  reference: {type: File, secondaryFiles: [.fai]}
   hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: gzipped bed file }
   exome_flag: { type: ['null', string], doc: "Y if exome/capture, defaults to WGS"}
   input_tumor_aligned:

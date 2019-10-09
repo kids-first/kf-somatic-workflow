@@ -9,14 +9,14 @@ requirements:
   - class: ResourceRequirement
     ramMin: 6000
     coresMin: 3
-  # - class: InitialWorkDirRequirement
-  #  listing: |
-  #    ${
-  #      var listing = []
-  #      listing.push(inputs.input_tumor_aligned);
-  #      listing.push(inputs.input_normal_aligned);
-  #      return listing;
-  #    }
+  - class: InitialWorkDirRequirement
+    listing: |
+      ${
+        var listing = [];
+        listing.push(inputs.reference);
+        listing.push(inputs.reference_dict);
+        return listing;
+      }
 baseCommand: [/gatk, Mutect2]
 arguments:
   - position: 1
