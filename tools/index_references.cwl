@@ -42,11 +42,11 @@ outputs:
     type: File
     outputBinding:
       glob: '$(inputs.input_fasta_file.basename)'
-    secondaryFiles: [^.fai]
+    secondaryFiles: [.fai]
   reference_fai:
     type: File
     outputBinding:
-      glob: '$(inputs.input_fasta_file.nameroot).fai'
+      glob: '$(inputs.input_fasta_file.basename).fai'
   indexed_af_only_gnomad_vcf:
     type: File
     outputBinding:
