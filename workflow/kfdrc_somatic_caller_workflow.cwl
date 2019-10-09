@@ -91,7 +91,7 @@ steps:
       exac_common_vcf: exac_common_vcf
       hg38_strelka_bed: hg38_strelka_bed
     out:
-      [indexed_reference_fasta, indexed_af_only_gnomad_vcf, indexed_exac_common_vcf, indexed_hg38_strelka_bed]
+      [indexed_reference_fasta, indexed_af_only_gnomad_vcf, indexed_exac_common_vcf, indexed_hg38_strelka_bed, reference_fai]
 
 
   bcftools_filter_vcf:
@@ -201,7 +201,7 @@ steps:
       reference: index_references/indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
       # exome_flag: exome_flag
-    out: [output]
+    out: [output_snv, output_indel]
 
   manta:
     run: ../tools/manta.cwl

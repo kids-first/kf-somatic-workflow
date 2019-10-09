@@ -7,8 +7,8 @@ requirements:
     dockerPull: 'kfdrc/samtools:1.9'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 16000
-    coresMin: 8
+    ramMin: 8000
+    coresMin: 4
   
 baseCommand: []
 arguments:
@@ -17,7 +17,7 @@ arguments:
     valueFrom: >-
       cp $(inputs.input_fasta_file.path) .
 
-      samtools index -@ 8 ./$(inputs.input_fasta_file.basename)
+      samtools faidx ./$(inputs.input_fasta_file.basename)
 
       cp $(inputs.af_only_gnomad_vcf.path) .
 
