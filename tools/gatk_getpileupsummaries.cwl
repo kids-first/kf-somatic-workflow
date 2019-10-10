@@ -10,6 +10,14 @@ requirements:
   - class: ResourceRequirement
     ramMin: 2000
     coresMin: 2
+  - class: InitialWorkDirRequirement
+    listing: |
+      ${
+        var listing = [];
+        listing.push(inputs.reference);
+        listing.push(inputs.reference_dict);
+        return listing;
+      }
 baseCommand: [/gatk, GetPileupSummaries]
 arguments:
   - position: 0
@@ -25,6 +33,7 @@ arguments:
 inputs:
   aligned_reads: {type: File, secondaryFiles: ['.crai']}
   reference: File
+  reference_dict: File
   interval_list: File
   exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
 

@@ -10,6 +10,14 @@ requirements:
   - class: ResourceRequirement
     ramMin: 4000
     coresMin: 2
+  - class: InitialWorkDirRequirement
+    listing: |
+      ${
+        var listing = [];
+        listing.push(inputs.reference);
+        listing.push(inputs.reference_dict);
+        return listing;
+      }
 baseCommand: [/gatk, FilterMutectCalls]
 arguments:
   - position: 0
@@ -29,6 +37,7 @@ inputs:
   mutect_vcf: {type: File, secondaryFiles: [.tbi]}
   mutect_stats: File
   reference: File
+  reference_dict: File
   output_basename: string
   contamination_table: File
   segmentation_table: File
