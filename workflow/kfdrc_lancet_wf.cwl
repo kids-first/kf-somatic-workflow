@@ -37,7 +37,7 @@ steps:
       ref_bed: calling_interval_list
       output_basename: output_basename
     out: [run_bed]
-ß
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
