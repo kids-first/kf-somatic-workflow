@@ -37,7 +37,7 @@ inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   output_basename: string
   tool_name: string
-  mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   
 outputs:  
   pass_vcf:

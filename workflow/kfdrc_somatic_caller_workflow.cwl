@@ -7,6 +7,7 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
+  reference_fai: File
   reference_dict: File
   wgs_calling_interval_list: File
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
@@ -42,13 +43,21 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
-  threads: {type: int, doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage."}
+  threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
   exome_flag: {type: ['null', string], doc: "insert 'Y' if exome mode"}
   capture_regions: {type: ['null', File], doc: "If not WGS, provide this bed file"}
-  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
   chr_len: {type: File, doc: "file with chromosome lengths"}
-  ref_chrs: {type: File, doc: "Tar gzip of reference chromosomes"}
+  ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
+  mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+  mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+  b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  VarDict input recommended.  Tool will prefilter for germline and pass if expression given"}
+  coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
+  contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
+  include_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
+  exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
+  sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
   output_basename: string
 
 outputs:
@@ -64,9 +73,13 @@ outputs:
   manta_vep_tbi: {type: File, outputSource: vep_annot_manta/output_tbi}
   manta_prepass_vcf: {type: File, outputSource: rename_manta_samples/reheadered_vcf}
   manta_vep_maf: {type: File, outputSource: vep_annot_manta/output_maf}
-  ctrlfreec_bam_ratio: { type: File, outputSource: control_free_c/output_txt }
-  ctrlfreec_pval: { type: File, outputSource: control_free_c_r/output_pval }
-  ctrlfreec_png: { type: File, outputSource: control_free_c_viz/output_png }
+  ctrlfreec_pval: {type: File, outputSource: rename_outputs/ctrlfreec_pval}
+  ctrlfreec_config: {type: File, outputSource: rename_outputs/ctrlfreec_config}
+  ctrlfreec_pngs: {type: 'File[]', outputSource: rename_outputs/ctrlfreec_pngs}
+  ctrlfreec_bam_ratio: {type: File, outputSource: rename_outputs/ctrlfreec_bam_ratio}
+  ctrlfreec_bam_seg: {type: File, outputSource: convert_ratio_to_seg/ctrlfreec_ratio2seg}
+  ctrlfreec_baf: {type: File, outputSource: rename_outputs/ctrlfreec_baf}
+  ctrlfreec_info: {type: File, outputSource: rename_outputs/ctrlfreec_info}
 
 steps:
   samtools_tumor_cram2bam:
@@ -87,44 +100,75 @@ steps:
       reference: indexed_reference_fasta
     out: [bam_file]
 
-  gen_config:
-    run: ../tools/gen_controlfreec_configfile.cwl
+  bcftools_filter_vcf:
+    run: ../tools/bcftools_filter_vcf.cwl
     in:
-      tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
-      capture_regions: capture_regions
-      exome_flag: exome_flag
-      chr_len: chr_len
-      threads: threads
-    out: [config_file]
+      input_vcf: b_allele
+      include_expression: include_expression
+      exclude_expression: exclude_expression
+      output_basename: output_basename
+    out:
+      [filtered_vcf]
+
+  controlfreec_tumor_mini_pileup:
+    run: ../tools/control_freec_mini_pileup.cwl
+    in:
+      input_reads: samtools_tumor_cram2bam/bam_file
+      threads:
+        valueFrom: ${return 16}
+      reference: indexed_reference_fasta
+      snp_vcf: b_allele
+    out:
+      [pileup]
+
+  controlfreec_normal_mini_pileup:
+    run: ../tools/control_freec_mini_pileup.cwl
+    in:
+      input_reads: samtools_normal_cram2bam/bam_file
+      threads:
+        valueFrom: ${return 16}
+      reference: indexed_reference_fasta
+      snp_vcf: b_allele
+    out:
+      [pileup]
 
   control_free_c: 
-    run: ../tools/control_freec.cwl
+    run: ../tools/control-freec-11-6-sbg.cwl
     in: 
-      tumor_bam: samtools_tumor_cram2bam/bam_file
-      normal_bam: samtools_normal_cram2bam/bam_file
-      capture_regions: capture_regions
-      ref_chrs: ref_chrs
+      mate_file_sample: samtools_tumor_cram2bam/bam_file
+      mate_orientation_sample: mate_orientation_sample
+      mini_pileup_sample: controlfreec_tumor_mini_pileup/pileup
+      mate_file_control: samtools_normal_cram2bam/bam_file
+      mate_orientation_control: mate_orientation_control
+      mini_pileup_control: controlfreec_normal_mini_pileup/pileup
       chr_len: chr_len
-      threads: threads
-      output_basename: output_basename
-      config_file: gen_config/config_file
-    out: [output_txt, output_cnv]
-  
-  control_free_c_r:
-    run: ../tools/control_freec_R.cwl
-    in:
-      cnv_bam_ratio: control_free_c/output_txt
-      cnv_result: control_free_c/output_cnv
-    out: [output]
+      ploidy: ploidy
+      capture_regions: capture_regions
+      max_threads: threads
+      reference: indexed_reference_fasta
+      snp_file: bcftools_filter_vcf/filtered_vcf
+      coeff_var: coeff_var
+      sex: sex
+      contamination_adjustment: contamination_adjustment
+    out: [cnvs_pvalue, config_script, pngs, ratio, sample_BAF, info_txt]
 
-  control_free_c_viz:
-    run: ../tools/control_freec_visualize.cwl
+  rename_outputs:
+    run: ../tools/ubuntu_rename_outputs.cwl
     in:
+      input_files: [control_free_c/cnvs_pvalue, control_free_c/config_script, control_free_c/ratio, control_free_c/sample_BAF, control_free_c/info_txt]
+      input_pngs: control_free_c/pngs
       output_basename: output_basename
-      cnv_bam_ratio: control_free_c/output_txt
-    out: [output]
-    
+    out: [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_baf, ctrlfreec_info]
+  
+  convert_ratio_to_seg:
+    run: ../tools/ubuntu_ratio2seg.cwl
+    in:
+      reference_fai: reference_fai
+      ctrlfreec_ratio: control_free_c/ratio
+      sample_name: input_tumor_name
+      output_basename: output_basename
+    out: [ctrlfreec_ratio2seg]
+  
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -145,7 +189,7 @@ steps:
       reference: indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
       exome_flag: exome_flag
-    out: [output]
+    out: [output_snv, output_indel]
 
   manta:
     run: ../tools/manta.cwl
