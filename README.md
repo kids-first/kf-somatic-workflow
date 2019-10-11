@@ -37,12 +37,14 @@ Both the annotated vcf and maf file are made available.
 
 2) For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls, GATK Haplotype caller recommended.
 Please also make sure the index for this file is available.
-Also, a range of input ploidy possibilities for the inputs are needed.You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
+Also, a range of input ploidy possibilities for the inputs are needed.
+You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
+For mate orientation, you will need to specify, the drop down and tool doc explains your options.
 
 3) As a cavatica app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for ControlFreec, and `PASS` filter tool mode.
 
-4) What is `select_vars_mode` you ask?On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
-Related, `bcftools_filter_vcf` is built in as a convenience in case youe b allele frequency file has not been filtered on `PASS`.
+4) What is `select_vars_mode` you ask? On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
+Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
 You can use the `include_expression` `Filter="PASS"` to achieve this.
 
 5) Suggested reference inputs are:
