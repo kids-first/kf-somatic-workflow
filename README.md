@@ -53,6 +53,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file.You will need to bgzip this file.
+     - `vep_cache`: [vep_cache](ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/homo_sapiens_vep_93_GRCh38.tar.gz) - variant effect predictor cache.  Current production workflow uses this version, and is compatible with the release used in teh vcf2maf tool.
      - `threads`: 16
      - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths.
       The first column must be chromosomes, optionally the secnod can be an alternate format of chromosomes.
@@ -82,3 +83,12 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `ctrlfreec_bam_seg`: In-house generated seg file based on ratio file.  Provided asa a convenience for compatibility with tools that require inputs in legacy microarray format.
     - `ctrlfreec_baf`: baf estimations.
     - `ctrlfreec_info`: Contains useful run time information, like ploidy used for analysis, and window size
+
+7) Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
+    - `Strelka2`: obenauflab/strelka
+    - `Mutect2` and all `GATK` tools: kfdrc/gatk:4.1.1.0
+    - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
+    - `samtools`: kfdrc/samtools:1.9
+    - `Variant Effect Predictor`: kfdrc/vep:r93
+    - `Manta`: kfdrc/manta:latest
+    - `bcftools` and `vcftools`: kfdrc/bvcftools:latest 

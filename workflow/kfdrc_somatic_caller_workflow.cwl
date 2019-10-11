@@ -12,7 +12,7 @@ inputs:
   wgs_calling_interval_list: File
   af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
-  hg38_strelka_bed: File
+  hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi']}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
