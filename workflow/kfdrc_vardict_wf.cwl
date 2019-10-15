@@ -8,9 +8,9 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   wgs_calling_interval_list: File
-  input_tumor_aligned: {type: File, secondaryFiles: [.crai]}
+  input_tumor_aligned: File
   input_tumor_name: string
-  input_normal_aligned: {type: File, secondaryFiles: [.crai]}
+  input_normal_aligned: File
   input_normal_name: string
   output_basename: string
   reference_dict: File
@@ -50,15 +50,15 @@ steps:
       reference_dict: reference_dict
       exome_flag: exome_flag
       scatter_ct:
-        valueFrom: ${return 200}
+        valueFrom: ${return 50}
       bands:
-        valueFrom: ${return 1000000}
+        valueFrom: ${return 50000}
     out: [output]
 
   vardict:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: r4.8xlarge;ebs-gp2;500
+        value: c5.9xlarge;ebs-gp2;500
     run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: samtools_tumor_cram2bam/bam_file
