@@ -5,8 +5,8 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 35000
-    coresMin: 18
+    ramMin: 12000
+    coresMin: 6
   - class: DockerRequirement
     dockerPull: 'kfdrc/vardict:1.5.8'
 
@@ -16,9 +16,9 @@ arguments:
     shellQuote: false
     valueFrom: >-
       set -eo pipefail;
-      export VAR_DICT_OPTS='"-Xms768m" "-Xmx34g"';
+      export VAR_DICT_OPTS='"-Xms768m" "-Xmx11g"';
       /VarDict-1.5.8/bin/VarDict
-      -G $(inputs.reference.path) -f $(inputs.min_vaf) -th 18 --nosv -N $(inputs.output_basename)
+      -G $(inputs.reference.path) -f $(inputs.min_vaf) -th 6 --nosv -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
       -z -c 1 -S 2 -E 3 -g 4 -y -F 0x700 -Q 10 -V 0.01 -x 150 $(inputs.bed.path)
       | /VarDict-1.5.8/bin/testsomatic.R
