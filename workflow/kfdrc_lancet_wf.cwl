@@ -15,6 +15,7 @@ inputs:
   output_basename: string
   reference_dict: File
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode, most likely given run time"}
+  ram: {type: ['null', int], default: 12000, doc: "Adjust in rare circumstances in which 12000 MB is not enough.  NOTE IT IS IN MB!"}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
@@ -83,6 +84,7 @@ steps:
       output_basename: output_basename
       window: window
       padding: padding
+      ram: ram
     scatter: [bed]
     out: [lancet_vcf]
 
