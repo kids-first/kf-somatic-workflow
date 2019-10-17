@@ -8,7 +8,7 @@ requirements:
     ramMin: 24000
     coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vep:r93'
+    dockerPull: 'kfdrc/vep:r93_v2'
 baseCommand: [tar, -xzf ]
 arguments:
   - position: 1
