@@ -58,7 +58,7 @@ steps:
   vardict:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: c5.9xlarge;ebs-gp2;750
     run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: samtools_tumor_cram2bam/bam_file
