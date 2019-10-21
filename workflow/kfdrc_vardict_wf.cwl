@@ -17,6 +17,8 @@ inputs:
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  cpus: {type: ['null', int], default: 9}
+  ram: {type: ['null', int], default: 18, doc: "In GB"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
@@ -50,9 +52,9 @@ steps:
       reference_dict: reference_dict
       exome_flag: exome_flag
       scatter_ct:
-        valueFrom: ${return 50}
+        valueFrom: ${return 100}
       bands:
-        valueFrom: ${return 50000}
+        valueFrom: ${return 20000}
     out: [output]
 
   vardict:
@@ -66,6 +68,8 @@ steps:
       input_normal_bam: samtools_normal_cram2bam/bam_file
       input_normal_name: input_normal_name
       min_vaf: min_vaf
+      cpus: cpus
+      ram: ram
       reference: indexed_reference_fasta
       bed: gatk_intervallisttools/output
       output_basename: output_basename

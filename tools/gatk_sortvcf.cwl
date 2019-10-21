@@ -17,8 +17,17 @@ arguments:
     shellQuote: false
     valueFrom: >-
       --java-options "-Xmx6g"
-      -O $(inputs.output_basename).$(inputs.tool_name).merged.vcf.gz
+      -O $(inputs.output_basename).$(inputs.tool_name).merged.vcf
       --SEQUENCE_DICTIONARY $(inputs.reference_dict.path)
+      --CREATE_INDEX false
+
+  - position: 2
+    shellQuote: false
+    valueFrom: >-
+      
+      && cat $(inputs.output_basename).$(inputs.tool_name).merged.vcf | uniq
+      | bgzip > $(inputs.output_basename).$(inputs.tool_name).merged.vcf.gz
+      && tabix $(inputs.output_basename).$(inputs.tool_name).merged.vcf.gz
 
 inputs:
   input_vcfs:
