@@ -5,10 +5,10 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 18000
-    coresMin: 9
+    ramMin: ${return inputs.ram * 1000}
+    coresMin: $(inputs.cpus)
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vardict:1.5.8'
+    dockerPull: 'migbro/vardict:1.7.0'
 
 baseCommand: [/bin/bash, -c]
 arguments:
@@ -16,13 +16,17 @@ arguments:
     shellQuote: false
     valueFrom: >-
       set -eo pipefail;
-      export VAR_DICT_OPTS='"-Xms768m" "-Xmx34g"';
-      /VarDict-1.5.8/bin/VarDict
-      -G $(inputs.reference.path) -f $(inputs.min_vaf) -th 9 --nosv -N $(inputs.output_basename)
+      ${
+        var ram = Math.floor(inputs.ram/1.074 - 1);
+        var exp_cmd = "export VAR_DICT_OPTS='\"-Xms768m\" \"-Xmx" + ram + "g\"';";
+        return exp_cmd;
+      }
+      /VarDict-1.7.0/bin/VarDict
+      -G $(inputs.reference.path) -f $(inputs.min_vaf) -th $(inputs.cpus) --nosv -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
-      -z -c 1 -S 2 -E 3 -g 4 -y -F 0x700 -Q 10 -V 0.01 -x 150 $(inputs.bed.path)
-      | /VarDict-1.5.8/bin/testsomatic.R
-      | /VarDict-1.5.8/bin/var2vcf_paired.pl
+      -z -c 1 -S 2 -E 3 -g 4 -y -F 0x700 -Q 10 -V 0.01 -x 150 $(inputs.bed.path) > vardict_results.txt
+      && cat vardict_results.txt | /VarDict-1.7.0/bin/testsomatic.R > vardict_r_test_results.txt
+      && cat vardict_r_test_results.txt | /VarDict-1.7.0/bin/var2vcf_paired.pl
       -N '$(inputs.input_tumor_name)|$(inputs.input_normal_name)' -f $(inputs.min_vaf) -M -m 4.25 > $(inputs.output_basename).result.vcf
       && cat $(inputs.output_basename).result.vcf | perl -e 'while(<>){if ($_ =~ /^#/){print $_;} else{@a = split /\t/,$_; if($a[3] =~ /[KMRYSWBVHDXkmryswbvhdx]/){$a[3] = "N";} if($a[4] =~ /[KMRYSWBVHDXkmryswbvhdx]/){$a[4] = "N";} if($a[3] ne $a[4]){print join("\t", @a);}}}'
       > $(inputs.output_basename).canonical_base_only.$(inputs.bed.nameroot).vcf
@@ -35,6 +39,8 @@ inputs:
   input_tumor_name: string
   input_normal_bam: {type: File, secondaryFiles: [^.bai]}
   input_normal_name: string
+  cpus: {type: ['null', int], default: 9}
+  ram: {type: ['null', int], default: 18, doc: "In GB"}
   min_vaf:
     type: ['null', float]
     doc: "Recommend 0.05"
