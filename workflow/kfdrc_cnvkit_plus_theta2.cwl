@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_cnvkit_batch_wf
+id: kfdrc_cnvkit_baf_theta2_wf
 
 requirements:
   - class: ScatterFeatureRequirement
@@ -8,8 +8,8 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  input_sample: { type: File, secondaryFiles: [.crai] }
-  input_control: { type: ['null', File], secondaryFiles: [.crai] }
+  input_sample: {type: File}
+  input_control: {type: ['null', File]}
   reference: {type: File, secondaryFiles: [.fai]}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   paired_vcf: {type: File, doc: "Combined somatic and germline call file"}
@@ -22,8 +22,10 @@ inputs:
   tumor_sample_name: {type: string, doc: "For seg file output and theta2 input"}
   normal_sample_name:  {type: string, doc: "For theta2 input"}
   sex: {type: string, doc: "Set sample sex.  CNVkit isn't always great at guessing it"}
-  include_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
-  exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
+  b_allele_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS germline calls, use as-needed"}
+  b_allele_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS germline calls, use as-needed"}
+  combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}
+  combined_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}  
   min_theta2_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01", default: 0.01}
 
 outputs:
@@ -44,8 +46,8 @@ steps:
     run: ../tools/bcftools_filter_vcf.cwl
     in:
       input_vcf: b_allele_vcf
-      include_expression: include_expression
-      exclude_expression: exclude_expression
+      include_expression: b_allele_include_expression
+      exclude_expression: b_allele_exclude_expression
       output_basename: output_basename
     out:
       [filtered_vcf]
@@ -85,8 +87,8 @@ steps:
     run: ../tools/bcftools_filter_vcf.cwl
     in:
       input_vcf: paired_vcf
-      include_expression: include_expression
-      exclude_expression: exclude_expression
+      include_expression: combined_include_expression
+      exclude_expression: combined_exclude_expression
       output_basename: output_basename
     out:
       [filtered_vcf]
