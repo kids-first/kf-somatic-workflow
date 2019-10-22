@@ -77,9 +77,7 @@ arguments:
         return arg;
       }
       -o $(inputs.output_basename).call.cns
-      
-      cnvkit.py export vcf $(inputs.output_basename).call.cns -o $(inputs.output_basename).vcf
-      
+            
       ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
 
       cnvkit.py export seg $(inputs.tumor_sample_name).cns -o $(inputs.output_basename).call.seg
@@ -121,10 +119,6 @@ outputs:
     type: File
     outputBinding:
       glob: '*.cnr'
-  output_vcf:
-    type: File
-    outputBinding:
-      glob: '*.vcf'
   output_calls:
     type: File
     outputBinding:
