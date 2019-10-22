@@ -35,7 +35,9 @@ outputs:
   cnvkit_seg: {type: File, outputSource: cnvkit/output_seg}
   theta2_calls: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
   theta2_seg: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
-  theta2_subclonal_files: { type: 'File[]', outputSource: [cnvkit_import_theta2/theta2_subclone_cns, cnvkit_import_theta2/theta2_subclone_seg, run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
+  theta2_subclonal_results: {type: 'File[]', outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
+  theta2_subclonal_cns: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_cns}
+  theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
 
 steps:
   bcftools_filter_b_allele_vcf:
