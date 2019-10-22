@@ -77,7 +77,7 @@ steps:
       sex: sex
       tumor_sample_name: tumor_sample_name
       cnvkit_cnn: cnvkit_cnn_input
-    out: [output_cnr, output_vcf, output_calls, output_scatter, output_diagram, output_metrics, output_gainloss, output_seg, output_cnn]
+    out: [output_cnr, output_calls, output_scatter, output_diagram, output_metrics, output_gainloss, output_seg, output_cnn]
 
   bcftools_filter_combined_vcf:
     run: ../tools/bcftools_filter_vcf.cwl
