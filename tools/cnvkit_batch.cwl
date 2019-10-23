@@ -9,7 +9,7 @@ requirements:
     dockerPull: 'images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3'
   - class: ResourceRequirement
     ramMin: 32000
-    coresMin: 16
+    coresMin: $(inputs.threads)
 arguments: 
   - position: 1
     shellQuote: false
@@ -19,12 +19,13 @@ arguments:
       ${ 
           var cmd = "";
           if (inputs.input_control != null) {
-              cmd = "ln -s $(inputs.input_control.path) .; ln -s $(inputs.input_control.secondaryFiles[0].path) ./$(inputs.input_control.basename).bai"
+              cmd = "ln -s " + inputs.input_control.path + " .; ln -s " + inputs.input_control.secondaryFiles[0].path + " ./" + inputs.input_control.basename + ".bai"
           }
           return cmd;
       }
 
-      cnvkit.py batch 
+      cnvkit.py batch
+      -p $(inputs.threads)
       ${
           var cmd = "";
           if (inputs.wgs_mode == 'Y') {
@@ -32,15 +33,7 @@ arguments:
           }
           return cmd;
       }
-      $(inputs.input_sample.path) 
-      ${
-          var cmd = "--normal ";
-          if (inputs.input_control != null) {
-              cmd += inputs.input_control.path + " ";
-          }
-          return cmd;
-      }
-      --fasta $(inputs.reference.path) 
+      $(inputs.input_sample.path)
       ${
           var cmd = "";
           if (inputs.capture_regions != null) {
@@ -48,15 +41,48 @@ arguments:
           }
           return cmd;
       }
-      --annotate $(inputs.annotation_file.path)
-      --output-reference $(inputs.output_basename)_cnvkit_reference.cnn 
+      ${
+        if (inputs.cnv_kit_cnn == null){
+          var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn --fasta " + inputs.reference.path + " --annotate " + inputs.annotation_file.path;
+          if (inputs.input_control != null) {
+              arg += " --normal " + inputs.input_control.path;
+          }
+        }
+        else{
+          var arg = "--reference " + inputs.cnv_kit_cnn.path;
+          var msex = ['m','y','male','Male']
+          if (msex.indexOf(inputs.sex) >= 0){
+            arg += " --male-reference";
+          }
+        }
+        return arg;
+      }
       --diagram 
       --scatter
-    
-      cnvkit.py call $(inputs.input_sample.nameroot).cns 
+
+      cnvkit.py call $(inputs.input_sample.nameroot).cns
+      ${
+        var arg = "";
+        if (inputs.b_allele_vcf != null){
+          arg = "--vcf " + inputs.b_allele_vcf.path;
+        }
+        return arg;
+      }
+      ${
+        var arg = "--sample-sex " + inputs.sex;
+        var msex = ['m','y','male','Male']
+        if (msex.indexOf(inputs.sex) >= 0){
+          arg += " --male-reference";
+        }
+        return arg;
+      }
       -o $(inputs.output_basename).call.cns
-      
-      cnvkit.py export vcf $(inputs.output_basename).call.cns -o $(inputs.output_basename).vcf
+            
+      ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
+
+      cnvkit.py export seg $(inputs.tumor_sample_name).cns -o $(inputs.output_basename).call.seg
+
+      rm $(inputs.tumor_sample_name).cns
 
       cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
@@ -71,23 +97,28 @@ arguments:
 
 
 inputs:
-  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [.bai]}
-  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [.bai]}
-  reference: {type: File, doc: "fasta file", secondaryFiles: [.fai]}
+  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
+  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
+  reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
+  cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
+  b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
-  annotation_file: {type: File, doc: "refFlat.txt file"}
+  annotation_file: {type: ['null', File], doc: "refFlat.txt file,  needed if cnv kit cnn not already built"}
   output_basename: string
+  tumor_sample_name: string
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
+  threads:
+    type: ['null', int]
+    default: 16
+  sex:
+    type: string
+    doc: "Set sample sex.  CNVkit isn't always great at guessing it"
 
 outputs:
   output_cnr: 
     type: File
     outputBinding:
       glob: '*.cnr'
-  output_vcf:
-    type: File
-    outputBinding:
-      glob: '*.vcf'
   output_calls:
     type: File
     outputBinding:
@@ -108,3 +139,12 @@ outputs:
     type: File
     outputBinding:
       glob: '*.gainloss.txt'
+  output_cnn:
+    type: ['null', File]
+    outputBinding:
+      glob: '*_reference.cnn'
+    doc: "Output if starting from cnn scratch.  Should not appear if an existing .cnn was given as input."
+  output_seg:
+    type: File
+    outputBinding:
+      glob: '*.seg'
