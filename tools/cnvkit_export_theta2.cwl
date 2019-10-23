@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: cnvkit_export_theta
+id: cnvkit_export_theta2
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
