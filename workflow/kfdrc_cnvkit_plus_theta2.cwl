@@ -17,7 +17,7 @@ inputs:
   annotation_file: {type: File, doc: "refFlat.txt file"}
   output_basename: string
   cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
-  wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
+  wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode", default: "Y"}
   threads: {type: ['null', int], default: 16}
   tumor_sample_name: {type: string, doc: "For seg file output and theta2 input"}
   normal_sample_name:  {type: string, doc: "For theta2 input"}
