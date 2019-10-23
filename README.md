@@ -28,7 +28,7 @@ Default settings are used at run time.
 
 ### Variant Annotation
 
-[Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) release 93, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) v1.6.16 is used to annotate somatic variant and SV calls.
+[Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) release 93, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) v1.6.17 is used to annotate somatic variant and SV calls.
 Both the annotated vcf and maf file are made available.
 
 ### Tips To Run:
