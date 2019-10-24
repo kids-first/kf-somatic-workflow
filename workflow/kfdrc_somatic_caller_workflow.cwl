@@ -55,8 +55,6 @@ inputs:
   b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  VarDict input recommended.  Tool will prefilter for germline and pass if expression given"}
   coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
   contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
-  include_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
-  exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
   sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
   output_basename: string
 
@@ -100,15 +98,14 @@ steps:
       reference: indexed_reference_fasta
     out: [bam_file]
 
-  bcftools_filter_vcf:
-    run: ../tools/bcftools_filter_vcf.cwl
+  gatk_filter_germline:
+    run: ../tools/gatk_filter_germline_variant.cwl
     in:
       input_vcf: b_allele
-      include_expression: include_expression
-      exclude_expression: exclude_expression
+      reference_fasta: indexed_reference_fasta
       output_basename: output_basename
     out:
-      [filtered_vcf]
+      [filtered_vcf, filtered_pass_vcf]
 
   controlfreec_tumor_mini_pileup:
     run: ../tools/control_freec_mini_pileup.cwl
@@ -117,7 +114,7 @@ steps:
       threads:
         valueFrom: ${return 16}
       reference: indexed_reference_fasta
-      snp_vcf: b_allele
+      snp_vcf: gatk_filter_germline/filtered_pass_vcf
     out:
       [pileup]
 
@@ -128,7 +125,7 @@ steps:
       threads:
         valueFrom: ${return 16}
       reference: indexed_reference_fasta
-      snp_vcf: b_allele
+      snp_vcf: gatk_filter_germline/filtered_pass_vcf
     out:
       [pileup]
 
@@ -146,7 +143,7 @@ steps:
       capture_regions: capture_regions
       max_threads: threads
       reference: indexed_reference_fasta
-      snp_file: bcftools_filter_vcf/filtered_vcf
+      snp_file: gatk_filter_germline/filtered_pass_vcf
       coeff_var: coeff_var
       sex: sex
       contamination_adjustment: contamination_adjustment

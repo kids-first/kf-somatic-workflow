@@ -44,7 +44,7 @@ inputs:
   ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
   mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
-  b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
+  b_allele: {type: ['null', File], secondaryFiles: ['.tbi'],  doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
   paired_vcf: {type: File, doc: "Combined somatic and germline call file. VarDict input recommended."}
   cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode", default: "Y"}
@@ -102,6 +102,7 @@ steps:
     in:
       input_vcf: b_allele
       reference_fasta: indexed_reference_fasta
+      output_basename: output_basename
     out:
       [filtered_vcf, filtered_pass_vcf]
 
