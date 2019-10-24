@@ -51,10 +51,13 @@ steps:
       interval_list: wgs_calling_interval_list
       reference_dict: reference_dict
       exome_flag: exome_flag
+      break_by_chr:
+        valueFrom: ${return "Y"}
       scatter_ct:
-        valueFrom: ${return 100}
+        valueFrom: ${return 1}
       bands:
         valueFrom: ${return 20000}
+      
     out: [output]
 
   vardict:
