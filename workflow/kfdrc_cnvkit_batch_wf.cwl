@@ -20,9 +20,6 @@ inputs:
   threads: {type: ['null', int], default: 16}
   tumor_sample_name: {type: string, doc: "For seg file output"}
   sex: {type: string, doc: "Set sample sex.  CNVkit isn't always great at guessing it"}
-  include_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
-  exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
-
 
 outputs:
   cnvkit_cnr: {type: File, outputSource: cnvkit/output_cnr}
@@ -35,15 +32,14 @@ outputs:
   cnvkit_seg: {type: File, outputSource: cnvkit/output_seg}
 
 steps:
-  bcftools_filter_vcf:
-    run: ../tools/bcftools_filter_vcf.cwl
+  gatk_filter_germline:
+    run: ../tools/gatk_filter_germline_variant.cwl
     in:
       input_vcf: b_allele_vcf
-      include_expression: include_expression
-      exclude_expression: exclude_expression
+      reference_fasta: reference
       output_basename: output_basename
     out:
-      [filtered_vcf]
+      [filtered_vcf, filtered_pass_vcf]
 
   samtools_sample_cram2bam:
     run: ../tools/samtools_cram2bam.cwl
@@ -69,7 +65,7 @@ steps:
       output_basename: output_basename
       wgs_mode: wgs_mode
       capture_regions: capture_regions
-      b_allele_vcf: bcftools_filter_vcf/filtered_vcf
+      b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       threads: threads
       sex: sex
       tumor_sample_name: tumor_sample_name
