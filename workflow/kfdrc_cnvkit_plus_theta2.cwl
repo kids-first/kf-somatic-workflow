@@ -22,8 +22,6 @@ inputs:
   tumor_sample_name: {type: string, doc: "For seg file output and theta2 input"}
   normal_sample_name:  {type: string, doc: "For theta2 input"}
   sex: {type: string, doc: "Set sample sex.  CNVkit isn't always great at guessing it"}
-  b_allele_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS germline calls, use as-needed"}
-  b_allele_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS germline calls, use as-needed"}
   combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}
   combined_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}  
   min_theta2_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01", default: 0.01}
@@ -42,16 +40,15 @@ outputs:
   theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
 
 steps:
-  bcftools_filter_b_allele_vcf:
-    run: ../tools/bcftools_filter_vcf.cwl
+  gatk_filter_germline:
+    run: ../tools/gatk_filter_germline_variant.cwl
     in:
       input_vcf: b_allele_vcf
-      include_expression: b_allele_include_expression
-      exclude_expression: b_allele_exclude_expression
+      reference_fasta: reference
       output_basename: output_basename
     out:
-      [filtered_vcf]
-
+      [filtered_vcf, filtered_pass_vcf]
+  
   samtools_sample_cram2bam:
     run: ../tools/samtools_cram2bam.cwl
     in:
@@ -76,7 +73,7 @@ steps:
       output_basename: output_basename
       wgs_mode: wgs_mode
       capture_regions: capture_regions
-      b_allele_vcf: bcftools_filter_b_allele_vcf/filtered_vcf
+      b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       threads: threads
       sex: sex
       tumor_sample_name: tumor_sample_name
