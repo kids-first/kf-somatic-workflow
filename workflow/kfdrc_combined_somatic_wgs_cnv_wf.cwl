@@ -51,8 +51,6 @@ inputs:
   annotation_file: {type: File, doc: "refFlat.txt file"}
   coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
   contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
-  b_allele_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS germline calls, use as-needed"}
-  b_allele_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS germline calls, use as-needed"}
   combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}
   combined_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}  
   min_theta2_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01", default: 0.01}
@@ -80,7 +78,6 @@ outputs:
   theta2_subclonal_cns: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_cns}
   theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
 
-
 steps:
   samtools_tumor_cram2bam:
     run: ../tools/samtools_cram2bam.cwl
@@ -100,15 +97,13 @@ steps:
       reference: indexed_reference_fasta
     out: [bam_file]
 
-  bcftools_filter_b_allele_vcf:
-    run: ../tools/bcftools_filter_vcf.cwl
+  gatk_filter_germline:
+    run: ../tools/gatk_filter_germline_variant.cwl
     in:
       input_vcf: b_allele
-      include_expression: b_allele_include_expression
-      exclude_expression: b_allele_exclude_expression
-      output_basename: output_basename
+      reference_fasta: indexed_reference_fasta
     out:
-      [filtered_vcf]
+      [filtered_vcf, filtered_pass_vcf]
 
   controlfreec_tumor_mini_pileup:
     run: ../tools/control_freec_mini_pileup.cwl
@@ -117,7 +112,7 @@ steps:
       threads:
         valueFrom: ${return 16}
       reference: indexed_reference_fasta
-      snp_vcf: bcftools_filter_b_allele_vcf/filtered_vcf
+      snp_vcf: gatk_filter_germline/filtered_pass_vcf
     out:
       [pileup]
 
@@ -128,7 +123,7 @@ steps:
       threads:
         valueFrom: ${return 16}
       reference: indexed_reference_fasta
-      snp_vcf: bcftools_filter_b_allele_vcf/filtered_vcf
+      snp_vcf: gatk_filter_germline/filtered_pass_vcf
     out:
       [pileup]
 
@@ -146,7 +141,7 @@ steps:
       capture_regions: capture_regions
       max_threads: threads
       reference: indexed_reference_fasta
-      snp_file: bcftools_filter_b_allele_vcf/filtered_vcf
+      snp_file: gatk_filter_germline/filtered_pass_vcf
       coeff_var: coeff_var
       sex: cfree_sex
       contamination_adjustment: contamination_adjustment
@@ -179,7 +174,7 @@ steps:
       output_basename: output_basename
       wgs_mode: wgs_mode
       capture_regions: capture_regions
-      b_allele_vcf: bcftools_filter_b_allele_vcf/filtered_vcf
+      b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       threads: threads
       sex: cnvkit_sex
       tumor_sample_name: input_tumor_name
