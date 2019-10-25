@@ -7,14 +7,14 @@ requirements:
 
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
-  wgs_calling_interval_list: File
+  wgs_calling_interval_list: {type: File, doc: "WGS bed file with N's regions removed"}
   input_tumor_aligned: File
   input_tumor_name: string
   input_normal_aligned: File
   input_normal_name: string
   output_basename: string
   reference_dict: File
-  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
+  # exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   cpus: {type: ['null', int], default: 9}
@@ -45,20 +45,11 @@ steps:
       reference: indexed_reference_fasta
     out: [bam_file]
 
-  gatk_intervallisttools:
-    run: ../tools/gatk_intervallisttool.cwl
+  python_vardict_interval_split:
+    run: ../dev/python_vardict_interval_split.cwl
     in:
-      interval_list: wgs_calling_interval_list
-      reference_dict: reference_dict
-      exome_flag: exome_flag
-      break_by_chr:
-        valueFrom: ${return "Y"}
-      scatter_ct:
-        valueFrom: ${return 1}
-      bands:
-        valueFrom: ${return 20000}
-      
-    out: [output]
+      wgs_bed_file: wgs_calling_interval_list
+    out: [split_intervals_bed]
 
   vardict:
     hints:
@@ -74,7 +65,7 @@ steps:
       cpus: cpus
       ram: ram
       reference: indexed_reference_fasta
-      bed: gatk_intervallisttools/output
+      bed: python_vardict_interval_split/split_intervals_bed
       output_basename: output_basename
     scatter: [bed]
     out: [vardict_vcf]
