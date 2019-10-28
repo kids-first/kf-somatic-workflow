@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_vardict_wf
+id: kfdrc_vardict_1_7_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -46,7 +46,7 @@ steps:
     out: [bam_file]
 
   python_vardict_interval_split:
-    run: ../dev/python_vardict_interval_split.cwl
+    run: ../tools/python_vardict_interval_split.cwl
     in:
       wgs_bed_file: wgs_calling_interval_list
     out: [split_intervals_bed]
