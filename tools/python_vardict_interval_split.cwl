@@ -2,6 +2,12 @@ cwlVersion: v1.0
 class: CommandLineTool
 id: python_vardict_interval_split
 label: Create intervals for VarDict
+doc: "This tool takes in an interval list with the WGS coords split by N regions.
+It splits the bed files into bed files with a max total number of base bairs, unless the regions is already larger, it stays in it's own file.
+Then within the split lists, intervals are split the specified chunks for easier processing by vardict.  This method prevents FP calls caused by
+regions with valid ACGT bases from being split between interval lists.  For example, for hg38 canonical chromosomes, using bp_target=60000000 and
+intvl_target_size=20000 will yield about 55 bed files, each with about 60M bp worth of coverage (unless the interval was already larger, it will be in it's own list),
+split into 20kb chunks."
 requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/python:2.7.13'
