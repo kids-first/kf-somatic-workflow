@@ -24,7 +24,7 @@ arguments:
       /VarDict-1.7.0/bin/VarDict
       -G $(inputs.reference.path) -f $(inputs.min_vaf) -th $(inputs.cpus) --nosv -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
-      -z -c 1 -S 2 -E 3 -g 4 -y -F 0x700 -Q 10 -V 0.01 -x 150 $(inputs.bed.path) > vardict_results.txt
+      -z -c 1 -S 2 -E 3 -g 4 -F 0x700 -Q 10 -V 0.01 -x 150 $(inputs.bed.path) > vardict_results.txt
       && cat vardict_results.txt | /VarDict-1.7.0/bin/testsomatic.R > vardict_r_test_results.txt
       && cat vardict_r_test_results.txt | /VarDict-1.7.0/bin/var2vcf_paired.pl
       -N '$(inputs.input_tumor_name)|$(inputs.input_normal_name)' -f $(inputs.min_vaf) -M -m 4.25 > $(inputs.output_basename).result.vcf
