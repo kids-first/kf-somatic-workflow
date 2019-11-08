@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: prenormalize_vcf
+id: normalize_vcf
 doc: "Before consensus calling, left align indel calls, break up multi-allelic calls, but leave mnps intact"
 requirements:
   - class: ShellCommandRequirement
@@ -11,20 +11,23 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'migbro/vcfutils:latest'
 
-baseCommand: []
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
       VCF=$(inputs.input_vcf.path)
 
       ${
-          var cmd = "echo checking if strip flag given;";
+          var cmd = " >&2 echo checking if strip flag given;";
           if (inputs.strip_info != null){
-            cmd += "/vt/vt rminfo -t " + inputs.strip_info + " " + inputs.input_vcf.path + " -o stripped.vcf;"
-            cmd += "VCF=stripped.vcf;echo strip flag given;" 
+            cmd += "(bcftools annotate -x " + inputs.strip_info + " " + inputs.input_vcf.path + " -o stripped.vcf &&"
+            cmd += "VCF=stripped.vcf && >&2 echo strip flag given) ||"
+            cmd += (" >&2 echo strip failed, ignoring;") 
           }else{
-            cmd += "echo no strip flag given;"
+            cmd += " >&2 echo no strip flag given;"
           }
           return cmd;
       }
@@ -40,7 +43,7 @@ inputs:
     indexed_reference_fasta: {type: File, secondaryFiles: ['.fai']}
     output_basename: string
     tool_name: string
-    strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use ANN"}
+    strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
 
 outputs:
   normalized_vcf:
