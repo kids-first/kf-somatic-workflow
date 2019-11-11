@@ -5,7 +5,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: $(inputs.ram)
+    ramMin: ${return inputs.ram * 1000}
     coresMin: 6
   - class: DockerRequirement
     dockerPull: 'kfdrc/lancet:1.0.7'
@@ -43,7 +43,7 @@ inputs:
     reference: {type: File, secondaryFiles: [^.dict, .fai]}
     input_tumor_bam: {type: File, secondaryFiles: [^.bai]}
     input_normal_bam: {type: File, secondaryFiles: [^.bai]}
-    ram: {type: ['null', int], default: 12000, doc: "Adjust in rare circumstances in which 12000 MB is not enough.  NOTE IT IS IN MB!"}
+    ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough"}
     bed: {type: File}
     output_basename: {type: string}
     window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}

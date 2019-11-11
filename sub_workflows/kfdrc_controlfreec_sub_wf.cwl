@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_controlfreec_wf
+id: kfdrc_controlfreec_sub_wf
 
 requirements:
   - class: ScatterFeatureRequirement
@@ -8,8 +8,8 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  input_tumor: {type: File}
-  input_normal: {type: File}
+  input_tumor_aligned: {type: File, secondaryFiles: ['^.bai']}
+  input_normal_aligned: {type: File, secondaryFiles: ['^.bai']}
   input_tumor_name: {type: string, doc: "Sample name to put into the converted seg file"}
   threads: {type: int, doc: "Number of threads to run controlfreec.  Going above 16 is not recommended, there is no apparent added value"}
   output_basename: string
@@ -19,7 +19,7 @@ inputs:
   capture_regions: {type: ['null', File], doc: "If not WGS, provide "}
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
   reference_fai: {type: File, doc: "fasta index file for seg file conversion"}
-  b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
+  b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  VarDict input recommended.  Tool will prefilter for germline and pass if expression given"}
   chr_len: {type: File, doc: "TSV with chromsome names and lengths. Limit to chromosome you actually want analyzed"}
   coeff_var: {type: float, default: 0.05, doc: "Coefficient of variantion to set window size.  Default 0.05 recommended"}
   contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
@@ -35,19 +35,10 @@ outputs:
   ctrlfreec_info: {type: File, outputSource: rename_outputs/ctrlfreec_info}
 
 steps:
-  gatk_filter_germline:
-    run: ../tools/gatk_filter_germline_variant.cwl
-    in:
-      input_vcf: b_allele
-      reference_fasta: indexed_reference_fasta
-      output_basename: output_basename
-    out:
-      [filtered_vcf, filtered_pass_vcf]
-
   controlfreec_tumor_mini_pileup:
     run: ../tools/control_freec_mini_pileup.cwl
     in:
-      input_reads: samtools_tumor_cram2bam/bam_file
+      input_reads: input_tumor_aligned
       threads:
         valueFrom: ${return 16}
       reference: indexed_reference_fasta
@@ -58,7 +49,7 @@ steps:
   controlfreec_normal_mini_pileup:
     run: ../tools/control_freec_mini_pileup.cwl
     in:
-      input_reads: samtools_normal_cram2bam/bam_file
+      input_reads: input_normal_aligned
       threads:
         valueFrom: ${return 16}
       reference: indexed_reference_fasta
@@ -66,33 +57,13 @@ steps:
     out:
       [pileup]
 
-  samtools_tumor_cram2bam:
-    run: ../tools/samtools_cram2bam.cwl
-    in:
-      input_reads: input_tumor
-      threads:
-        valueFrom: ${return 16}
-      reference: indexed_reference_fasta
-    out:
-      [bam_file]
-
-  samtools_normal_cram2bam:
-    run: ../tools/samtools_cram2bam.cwl
-    in:
-      input_reads: input_normal
-      threads:
-        valueFrom: ${return 16}
-      reference: indexed_reference_fasta
-    out:
-      [bam_file]
-
   control_free_c: 
     run: ../tools/control-freec-11-6-sbg.cwl
     in: 
-      mate_file_sample: samtools_tumor_cram2bam/bam_file
+      mate_file_sample: input_tumor_aligned
       mate_orientation_sample: mate_orientation_sample
       mini_pileup_sample: controlfreec_tumor_mini_pileup/pileup
-      mate_file_control: samtools_normal_cram2bam/bam_file
+      mate_file_control: input_normal_aligned
       mate_orientation_control: mate_orientation_control
       mini_pileup_control: controlfreec_normal_mini_pileup/pileup
       chr_len: chr_len

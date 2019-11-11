@@ -216,7 +216,7 @@ steps:
     out: [mutect2_vcf, f1r2_counts, mutect_stats]
   
   mutect2_filter_support:
-    run: ../workflow/kfdrc_mutect2_filter_support_subwf.cwl
+    run: ../sub_workflows/kfdrc_mutect2_filter_support_subwf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       reference_dict: reference_dict
