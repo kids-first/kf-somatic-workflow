@@ -45,6 +45,8 @@ inputs:
   vardict_cpus: {type: ['null', int], default: 9}
   vardict_ram: {type: ['null', int], default: 18, doc: "In GB"}
   lancet_ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough"}
+  lancet_window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+", default: 600}
+  lancet_padding: {type: int, doc: "Recommend 0 if interval file padded already, half window size if not", default: 0}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   padded_capture_regions: {type: ['null', File], doc: "Recommend 100bp pad, for somatic variant"}
   unpadded_capture_regions: {type: ['null', File], doc: "Capture regions with NO padding for cnv calling"}
@@ -175,10 +177,8 @@ steps:
       reference_dict: reference_dict
       bed_invtl_split: gatk_intervallisttools/output
       ram: lancet_ram
-      window:
-        valueFrom: ${return 600}
-      padding:
-        valueFrom: ${return 0}
+      window: lancet_window
+      padding: lancet_padding
       vep_cache: vep_cache
     out:
       [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]

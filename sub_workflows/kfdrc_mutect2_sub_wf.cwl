@@ -58,7 +58,7 @@ steps:
   mutect2:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: c5.9xlarge
     run: ../tools/gatk_Mutect2.cwl
     in:
       input_tumor_aligned: input_tumor_aligned

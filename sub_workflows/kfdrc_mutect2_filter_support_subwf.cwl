@@ -113,6 +113,3 @@ steps:
 
 $namespaces:
   sbg: https://sevenbridges.com
-hints:
-  - class: 'sbg:AWSInstanceType'
-    value: c5.4xlarge;ebs-gp2;750

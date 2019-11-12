@@ -3,23 +3,27 @@
 ![data service logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9BnbvIsTkK3QlSGMDvlgu0tZQJ1q4crMvA-S3fcWfIq6y2d2Y)
 
 This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) Somatic Workflow, which includes somatic variant calling, copy number variation (CNV), and structural variant (SV) calls. 
-This workflow takes aligned cram input and performs somatic variant calling using Strelka2 and Mutect2, CNV estimation using ControlFreeC, and SV calls using Manta.
+This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
 Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
+We also have a whole [exome/targeted workflow](#KFDRC-Somatic-Whole Exome/Targeted-Sequence-Analysis-Workflow), which uses many of the same tools described for WGS.
 
 ### Somatic Variant Calling:
 
-[Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucelotide variants (SNVS) and insertions/deletions (INDELS).
-[Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute also calls SNVS and INDELS.
-Each caller has a different approach to variant calling, and together one can glean confident results.Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl).
-Futhermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag. 
-The pre-`PASS` filtered results can still be obtained from the workflow in the eent the user wishes to keep some calls that failed `PASS` criteria.
+[Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucelotide variants (SNV) and insertions/deletions (INDEL).
+[Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute calls SNV, multi-nucelotide variants (MNV, bascially equal length subsitutions with length > 1) and INDEL.
+[Lancet](https://github.com/nygenome/lancet) v1.0.7 from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
+[VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) v1.7.0 from AstraZeneca calls SNV, MNV, INDEL and more.
+Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run in what I'd call an "Exome+" mode, based on the NYGC methods described [here](https://www.biorxiv.org/content/biorxiv/early/2019/04/30/623702.full.pdf). In short, regions from GENCODE gtf with feature annotations `exon`, `UTR`, and start/stop `codon` are used as intervals, as well as regions flanking hits from `strelka2` and `mutect2`. Lastly, VarDict Java run params follow the protocol that the (Blue Collar Informatics)[https://bcbio-nextgen.readthedocs.io/en/latest/index.html] uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
+Futhermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
+The pre-`PASS` filtered results can still be obtained from the workflow in the event the user wishes to keep some calls that failed `PASS` criteria.
 
 ### CNV Estimation:
 
 [ControlFreeC](https://github.com/BoevaLab/FREEC) v11.6 is used for CNV estimation.
-The tool portion of the workflow is a port from the Seven Bridges Genomics team, with a slight tweak in image outputs.
+The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
 Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
 Outputs include raw ratio calls, copy number cals with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
+[CNVkit](https://cnvkit.readthedocs.io/en/stable/) v2.9.3 is a CNV second tool we currently use. [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls with purity estimations. For both tools, we take advantage of b allele frequency integration for copy number genotype estimation and increased CNV accuracy.
 
 ### SV Calls:
 
@@ -89,8 +93,13 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
 7) Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
     - `Strelka2`: obenauflab/strelka
     - `Mutect2` and all `GATK` tools: kfdrc/gatk:4.1.1.0
+    - `Lancet`: kfdrc/lancet:1.0.7
+    - `VarDict Java`: kfdrc/vardict:1.7.0
     - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
+    - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
     - `samtools`: kfdrc/samtools:1.9
-    - `Variant Effect Predictor`: kfdrc/vep:r93
+    - `Variant Effect Predictor`: kfdrc/vep:r93_v2
     - `Manta`: kfdrc/manta:latest
     - `bcftools` and `vcftools`: kfdrc/bvcftools:latest 
+
+# KFDRC Somatic Whole Exome/Targeted Sequence Analysis Workflow
