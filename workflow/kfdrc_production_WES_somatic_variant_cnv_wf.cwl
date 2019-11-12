@@ -53,8 +53,6 @@ inputs:
   cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   cfree_mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   b_allele: {type: ['null', File], secondaryFiles: ['.tbi'],  doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
-  cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
-  mutect2_wgs_calling_interval_list: File
   mutect2_af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   mutect2_exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi'], doc: "Bgzipped interval bed file. Recommned padding 100bp"}
@@ -73,28 +71,28 @@ outputs:
   ctrlfreec_config: {type: File, outputSource: run_controlfreec/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
   ctrlfreec_bam_ratio: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_ratio}
-  ctrlfreec_bam_seg: {type: File, outputSource: run_controlfreec/ctrlfreec_ratio2seg}
+  ctrlfreec_bam_seg: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_seg}
   ctrlfreec_baf: {type: File, outputSource: run_controlfreec/ctrlfreec_baf}
   ctrlfreec_info: {type: File, outputSource: run_controlfreec/ctrlfreec_info}
-  cnvkit_cnr: {type: File, outputSource: cnvkit/output_cnr}
-  cnvkit_cnn_output: {type: ['null', File], outputSource: cnvkit/output_cnn}
-  cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
-  cnvkit_metrics: {type: File, outputSource: cnvkit/output_metrics}
-  cnvkit_gainloss: {type: File, outputSource: cnvkit/output_gainloss}
-  cnvkit_seg: {type: File, outputSource: cnvkit/output_seg}
-  theta2_calls: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
-  theta2_seg: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: 'File[]', outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
-  theta2_subclonal_cns: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_cns}
-  theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
-  strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
-  strelka2_vep_tbi: {type: File, outputSource: vep_annot_strelka2/output_tbi}
-  strelka2_prepass_vcf: {type: File, outputSource: rename_strelka_samples/reheadered_vcf}
-  strelka2_vep_maf: {type: File, outputSource: vep_annot_strelka2/output_maf}
-  mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
-  mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
-  mutect2_prepass_vcf: {type: File, outputSource: filter_mutect2_vcf/filtered_vcf}
-  mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
+  cnvkit_cnr: {type: File, outputSource: run_cnvkit/cnvkit_cnr}
+  cnvkit_cnn_output: {type: ['null', File], outputSource: run_cnvkit/cnvkit_cnn_output}
+  cnvkit_calls: {type: File, outputSource: run_cnvkit/cnvkit_calls}
+  cnvkit_metrics: {type: File, outputSource: run_cnvkit/cnvkit_metrics}
+  cnvkit_gainloss: {type: File, outputSource: run_cnvkit/cnvkit_gainloss}
+  cnvkit_seg: {type: File, outputSource: run_cnvkit/cnvkit_seg}
+#   theta2_calls: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
+#   theta2_seg: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
+#   theta2_subclonal_results: {type: 'File[]', outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
+#   theta2_subclonal_cns: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_cns}
+#   theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
+  strelka2_vep_vcf: {type: File, outputSource: run_strelka2/strelka2_vep_vcf}
+  strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
+  strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
+  strelka2_vep_maf: {type: File, outputSource: run_strelka2/strelka2_vep_maf}
+  mutect2_vep_vcf: {type: File, outputSource: run_mutect2/mutect2_vep_vcf}
+  mutect2_vep_tbi: {type: File, outputSource: run_mutect2/mutect2_vep_tbi}
+  mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
+  mutect2_vep_maf: {type: File, outputSource: run_mutect2/mutect2_vep_maf}
   vardict_vep_somatic_only_vcf: {type: File, outputSource: run_vardict/vardict_vep_somatic_only_vcf}
   vardict_vep_somatic_only_tbi: {type: File, outputSource: run_vardict/vardict_vep_somatic_only_tbi}
   vardict_vep_somatic_only_maf: {type: File, outputSource: run_vardict/vardict_vep_somatic_only_maf}
@@ -108,7 +106,7 @@ steps:
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
-      interval_list: wgs_calling_interval_list
+      interval_list: padded_capture_regions
       reference_dict: reference_dict
       exome_flag:
         valueFrom: ${return "Y";}
@@ -132,8 +130,7 @@ steps:
     in:
       input_reads: input_tumor_aligned
       threads:
-        type: ['null', int]
-        default: 16
+        valueFrom: ${return 16;}
       reference: indexed_reference_fasta
     out: [bam_file]
 
@@ -142,8 +139,7 @@ steps:
     in:
       input_reads: input_normal_aligned
       threads:
-        type: ['null', int]
-        default: 16
+        valueFrom: ${return 16;}
       reference: indexed_reference_fasta
     out: [bam_file]
 
@@ -158,7 +154,7 @@ steps:
       output_basename: output_basename
       reference_dict: reference_dict
       bed_invtl_split: gatk_intervallisttools/output
-      min_vaf: min_vaf
+      min_vaf: vardict_min_vaf
       select_vars_mode: select_vars_mode
       cpus: vardict_cpus
       ram: vardict_ram
@@ -209,7 +205,56 @@ steps:
 
   run_cnvkit:
     run: ../sub_workflows/kfdrc_cnvkit_WES_sub_wf.cwl
+    in:
+      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
+      tumor_sample_name: input_tumor_name
+      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      normal_sample_name: input_normal_name
+      b_allele: b_allele
+      capture_regions: unpadded_capture_regions
+      annotation_file: cnvkit_annotation_file
+      output_basename: output_basename
+      sex: cnvkit_sex
+    out:
+      [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss, cnvkit_seg]
 
+  run_mutect2:
+    run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict: reference_dict
+      bed_invtl_split: gatk_intervallisttools/output
+      af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
+      exac_common_vcf: mutect2_exac_common_vcf
+      input_tumor_aligned: input_tumor_aligned
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: input_normal_aligned
+      input_normal_name: input_normal_name
+      exome_flag:
+        valueFrom: ${return "Y";}
+      vep_cache: vep_cache
+      output_basename: output_basename
+      select_vars_mode: select_vars_mode
+    out:
+      [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi, mutect2_vep_maf]
+
+  run_strelka2:
+    run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict: reference_dict
+      hg38_strelka_bed: hg38_strelka_bed
+      input_tumor_aligned: input_tumor_aligned
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: input_normal_aligned
+      input_normal_name: input_normal_name
+      exome_flag:
+        valueFrom: ${return "Y";}
+      vep_cache: vep_cache
+      output_basename: output_basename
+      select_vars_mode: select_vars_mode
+    out:
+      [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
 
 $namespaces:
   sbg: https://sevenbridges.com
