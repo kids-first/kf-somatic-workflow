@@ -16,7 +16,7 @@ inputs:
   reference_dict: File
   bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}
   ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough."}
-  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
   padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend half window size"}
@@ -58,9 +58,6 @@ steps:
     out: [merged_vcf]
 
   gatk_selectvariants_lancet:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Lancet PASS
     in:
@@ -83,3 +80,6 @@ steps:
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
+
+$namespaces:
+  sbg: https://sevenbridges.com

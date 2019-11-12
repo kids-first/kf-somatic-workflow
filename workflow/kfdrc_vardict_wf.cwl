@@ -89,7 +89,7 @@ steps:
     in:
       input_vcf: sort_merge_vardict_vcf/merged_vcf
       output_basename: output_basename
-    out: [filtered] 
+    out: [filtered_vcf] 
 
   gatk_selectvariants_vardict:
     hints:
@@ -116,7 +116,7 @@ steps:
         valueFrom: ${return "vardict_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
 
 
 $namespaces:

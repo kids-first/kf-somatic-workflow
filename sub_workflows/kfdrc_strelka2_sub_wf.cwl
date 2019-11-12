@@ -41,7 +41,7 @@ inputs:
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
-  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
   strelka2_vep_vcf: {type: File, outputSource: vep_annot_strelka2/output_vcf}
@@ -80,9 +80,6 @@ steps:
     out: [reheadered_vcf]
 
   gatk_selectvariants_strelka2:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Strelka2 PASS
     in:

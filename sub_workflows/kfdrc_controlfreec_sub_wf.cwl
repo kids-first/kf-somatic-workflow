@@ -71,7 +71,7 @@ steps:
       capture_regions: capture_regions
       max_threads: threads
       reference: indexed_reference_fasta
-      snp_file: gatk_filter_germline/filtered_pass_vcf
+      snp_file: b_allele
       coeff_var: coeff_var
       sex: cfree_sex
       contamination_adjustment: contamination_adjustment
@@ -93,8 +93,3 @@ steps:
       sample_name: input_tumor_name
       output_basename: output_basename
     out: [ctrlfreec_ratio2seg]
-$namespaces:
-  sbg: https://sevenbridges.com
-hints:
-  - class: 'sbg:maxNumberOfParallelInstances'
-    value: 2

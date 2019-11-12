@@ -41,11 +41,11 @@ inputs:
   input_normal_name: string
   cfree_threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
   vardict_min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
-  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vardict_cpus: {type: ['null', int], default: 9}
   vardict_ram: {type: ['null', int], default: 18, doc: "In GB"}
   lancet_ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   padded_capture_regions: {type: ['null', File], doc: "Recommend 100bp pad, for somatic variant"}
   unpadded_capture_regions: {type: ['null', File], doc: "Capture regions with NO padding for cnv calling"}
   cfree_chr_len: {type: File, doc: "file with chromosome lengths"}
@@ -171,6 +171,7 @@ steps:
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       input_normal_name: input_normal_name
       output_basename: output_basename
+      select_vars_mode: select_vars_mode
       reference_dict: reference_dict
       bed_invtl_split: gatk_intervallisttools/output
       ram: lancet_ram
@@ -178,6 +179,7 @@ steps:
         valueFrom: ${return 600}
       padding:
         valueFrom: ${return 0}
+      vep_cache: vep_cache
     out:
       [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
 
@@ -209,6 +211,7 @@ steps:
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
       b_allele: b_allele
       capture_regions: unpadded_capture_regions

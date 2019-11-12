@@ -15,7 +15,7 @@ inputs:
   reference_dict: File
   bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}
   min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
-  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   cpus: {type: ['null', int], default: 9}
   ram: {type: ['null', int], default: 18, doc: "In GB"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
@@ -42,7 +42,7 @@ steps:
       cpus: cpus
       ram: ram
       reference: indexed_reference_fasta
-      bed: python_vardict_interval_split/split_intervals_bed
+      bed: bed_invtl_split
       output_basename: output_basename
     scatter: [bed]
     out: [vardict_vcf]
@@ -59,19 +59,13 @@ steps:
     out: [merged_vcf]
 
   bcbio_filter_fp_somatic:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/bcbio_filter_vardict_somatic.cwl
     in:
       input_vcf: sort_merge_vardict_vcf/merged_vcf
       output_basename: output_basename
-    out: [filtered] 
+    out: [filtered_vcf] 
 
   gatk_selectvariants_vardict:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Vardict PASS
     in:
@@ -93,4 +87,7 @@ steps:
         valueFrom: ${return "vardict_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
-    out: [output_vcf, output_tbi, output_html, warn_txt]
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
+
+$namespaces:
+  sbg: https://sevenbridges.com

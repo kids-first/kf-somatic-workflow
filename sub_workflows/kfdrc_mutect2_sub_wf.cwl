@@ -45,7 +45,7 @@ inputs:
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
-  select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
   mutect2_filtered_stats: {type: File, outputSource: filter_mutect2_vcf/stats_table}
@@ -86,9 +86,6 @@ steps:
     out: [contamination_table, segmentation_table, f1r2_bias]
 
   merge_mutect2_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_mergevcfs.cwl
     label: Merge mutect2 vcf
     in:
@@ -100,9 +97,6 @@ steps:
     out: [merged_vcf]
 
   merge_mutect2_stats:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_mergemutectstats.cwl
     label: Merge mutect2 stats
     in:
@@ -111,9 +105,6 @@ steps:
     out: [merged_stats]
   
   filter_mutect2_vcf:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_filtermutectcalls.cwl
     in:
       mutect_vcf: merge_mutect2_vcf/merged_vcf
@@ -126,9 +117,6 @@ steps:
     out: [stats_table, filtered_vcf]
 
   gatk_selectvariants:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.2xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select PASS
     in:
@@ -154,3 +142,6 @@ steps:
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
+
+$namespaces:
+  sbg: https://sevenbridges.com

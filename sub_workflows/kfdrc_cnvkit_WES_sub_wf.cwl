@@ -13,6 +13,7 @@ inputs:
   reference: {type: File, secondaryFiles: [.fai]}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   # paired_vcf: {type: File, doc: "Combined somatic and germline call file"}
+  wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
   annotation_file: {type: File, doc: "refFlat.txt file"}
   output_basename: string
@@ -50,7 +51,7 @@ steps:
       output_basename: output_basename
       wgs_mode: wgs_mode
       capture_regions: capture_regions
-      b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
+      b_allele_vcf: b_allele_vcf
       threads: threads
       sex: sex
       tumor_sample_name: tumor_sample_name
