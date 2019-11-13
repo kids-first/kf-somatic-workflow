@@ -9,7 +9,7 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: DockerRequirement
-    dockerPull: 'migbro/vcfutils:latest'
+    dockerPull: 'kfdrc/vcfutils:latest'
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:

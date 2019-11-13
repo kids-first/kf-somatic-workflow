@@ -32,7 +32,7 @@ arguments:
       && /ensembl-vep/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf.gz
 
 inputs:
-  reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
+  reference: {type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index}
   input_vcf:
     type: File
     secondaryFiles: [.tbi]
@@ -40,7 +40,7 @@ inputs:
   tumor_id: string
   normal_id: string
   tool_name: string
-  cache: { type: File, label: tar gzipped cache from ensembl/local converted cache }
+  cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
 
 outputs:
   output_vcf:
