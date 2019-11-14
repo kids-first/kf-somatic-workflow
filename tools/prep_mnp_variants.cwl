@@ -152,8 +152,4 @@ outputs:
     outputBinding:
       glob: "mnps_sorted.txt"
     doc: "Intermediate file with all called mnps from phasing callers"
-  new_strelka2:
-    type: File
-    outputBinding:
-      glob: '*.strelka2.mnp_phased.vcf.gz'
-    doc: "Strelka2 file with reconstructed mnp calls"
+
