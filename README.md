@@ -4,18 +4,18 @@
 
 This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) Somatic Workflow, which includes somatic variant calling, copy number variation (CNV), and structural variant (SV) calls. 
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
-Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
-The `workflow/kfdrc_somatic_caller_workflow.cwl`, `workflow/kfdrc_cnvkit_plus_theta2.cwl`, `workflow/kfdrc_vardict_wf.cwl` and `workflow/kfdrc_lancet_wf.cwl` workd run all tools described below for WGS.
+Somatic variant and SV call results are annotated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
+The `workflow/kfdrc_somatic_caller_workflow.cwl`, `workflow/kfdrc_cnvkit_plus_theta2.cwl`, `workflow/kfdrc_vardict_wf.cwl` and `workflow/kfdrc_lancet_wf.cwl` would run all tools described below for WGS.
 We also have a whole [exome/targeted workflow](#KFDRC-Somatic-Whole Exome/Targeted-Sequence-Analysis-Workflow), which uses many of the same tools described for WGS.
 
 ### Somatic Variant Calling:
 
-[Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucelotide variants (SNV) and insertions/deletions (INDEL).
-[Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute calls SNV, multi-nucelotide variants (MNV, bascially equal length subsitutions with length > 1) and INDEL.
+[Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucleotide variants (SNV) and insertions/deletions (INDEL).
+[Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
 [Lancet](https://github.com/nygenome/lancet) v1.0.7 from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
 [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) v1.7.0 from AstraZeneca calls SNV, MNV, INDEL and more.
-Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run in what I'd call an "Exome+" mode, based on the NYGC methods described [here](https://www.biorxiv.org/content/biorxiv/early/2019/04/30/623702.full.pdf). In short, regions from GENCODE gtf with feature annotations `exon`, `UTR`, and start/stop `codon` are used as intervals, as well as regions flanking hits from `strelka2` and `mutect2`. Lastly, VarDict Java run params follow the protocol that the [Blue Collar Informatics](https://bcbio-nextgen.readthedocs.io/en/latest/index.html) uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
-Futhermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
+Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run in what I'd call an "Exome+" mode, based on the NYGC methods described [here](https://www.biorxiv.org/content/biorxiv/early/2019/04/30/623702.full.pdf). In short, regions from GENCODE gtf with feature annotations `exon`, `UTR`, and start/stop `codon` are used as intervals, as well as regions flanking hits from `strelka2` and `mutect2`. Lastly, VarDict Java run params follow the protocol that the [Blue Collar Bioinformatics](https://bcbio-nextgen.readthedocs.io/en/latest/index.html) uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
+Furthermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
 The pre-`PASS` filtered results can still be obtained from the workflow in the event the user wishes to keep some calls that failed `PASS` criteria.
 
 ### CNV Estimation:
@@ -23,7 +23,7 @@ The pre-`PASS` filtered results can still be obtained from the workflow in the e
 [ControlFreeC](https://github.com/BoevaLab/FREEC) v11.6 is used for CNV estimation.
 The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
 Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
-Outputs include raw ratio calls, copy number cals with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
+Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
 [CNVkit](https://cnvkit.readthedocs.io/en/stable/) v2.9.3 is a CNV second tool we currently use. [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls with purity estimations. For both tools, we take advantage of b allele frequency integration for copy number genotype estimation and increased CNV accuracy.
 
 ### SV Calls:
@@ -59,12 +59,12 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `wgs_calling_interval_list`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M.M may need to be added.
     - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
-    - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file.You will need to bgzip this file.
+    - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
      - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
      Current production workflow uses this version, and is compatible with the release used in the vcf2maf tool.
      - `threads`: 16
      - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
-      The first column must be chromosomes, optionally the secnod can be an alternate format of chromosomes.
+      The first column must be chromosomes, optionally the second can be an alternate format of chromosomes.
       Last column must be chromosome length.
       Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
     - `coeff_var`: 0.05
@@ -103,7 +103,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
         - ControlFREEC
             - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualtitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
             - `ctrlfreec_config`: Config file used to run ControlFreeC.  Has some useful information on what parameters were used to run the tool.
-            - `ctrlfreec_pngs`: Plots of b allele freqency (baf) log2 ratio and ratio of tumor/normal copy number coverage.  Pink line in the middle of ratio plots is the median ratio.
+            - `ctrlfreec_pngs`: Plots of b allele frequency (baf) log2 ratio and ratio of tumor/normal copy number coverage.  Pink line in the middle of ratio plots is the median ratio.
             - `ctrlfreec_bam_ratio`: Bam ratio text file.  Contain ratio, median ratio (used to inform `ctrlfreec_pval`), cnv estimates, baf estimate, and genotype estimate.
             - `ctrlfreec_bam_seg`: In-house generated seg file based on ratio file.  Provided asa a convenience for compatibility with tools that require inputs in legacy microarray format.
             - `ctrlfreec_baf`: baf estimations.
@@ -138,17 +138,17 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
 # KFDRC Somatic Whole Exome/Targeted Sequence Analysis Workflow
 Run this workflow if you have the exome/capture regions used.  If not, it is recommneded to use the WGS workflow instead, without the CNV and SV callers.  This is the Kids First Data Resource Center (DRC) Whole Exome/Targeted Sequencing (WXS) Somatic Workflow, which includes somatic variant calling and copy number variation (CNV). 
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit.
-Somatic variant  call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
+Somatic variant  call results are anntoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
 The `workflow/kfdrc_production_WES_somatic_variant_cnv_wf.cwl` runs all tools described below.
 
 ### Somatic Variant Calling:
 
-[Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucelotide variants (SNV) and insertions/deletions (INDEL).
-[Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute calls SNV, multi-nucelotide variants (MNV, bascially equal length subsitutions with length > 1) and INDEL.
+[Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucleotide variants (SNV) and insertions/deletions (INDEL).
+[Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
 [Lancet](https://github.com/nygenome/lancet) v1.0.7 from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
 [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) v1.7.0 from AstraZeneca calls SNV, MNV, INDEL and more.
-Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run with mostly default settings, with `max-indel-len=50`.  PAdding nd window size are adjustubel, default 600 and 0 respectively, as input bed file is exptected to be padded already. Lastly, VarDict Java run params follow the protocol that the [Blue Collar Informatics](https://bcbio-nextgen.readthedocs.io/en/latest/index.html) uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
-Futhermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
+Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run with mostly default settings, with `max-indel-len=50`.  Padding nd window size are adjustubel, default 600 and 0 respectively, as input bed file is expected to be padded already. Lastly, VarDict Java run params follow the protocol that the [Blue Collar Informatics](https://bcbio-nextgen.readthedocs.io/en/latest/index.html) uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
+Furthermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
 The pre-`PASS` filtered results can still be obtained from the workflow in the event the user wishes to keep some calls that failed `PASS` criteria.
 
 ### CNV Estimation:
@@ -156,7 +156,7 @@ The pre-`PASS` filtered results can still be obtained from the workflow in the e
 [ControlFreeC](https://github.com/BoevaLab/FREEC) v11.6 is used for CNV estimation.
 The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
 Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
-Outputs include raw ratio calls, copy number cals with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
+Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
 [CNVkit](https://cnvkit.readthedocs.io/en/stable/) v2.9.3 is a CNV second tool we currently use. [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls with purity estimations. For both tools, we take advantage of b allele frequency integration for copy number genotype estimation and increased CNV accuracy.
 
 ### Variant Annotation
@@ -193,7 +193,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
      Current production workflow uses this version, and is compatible with the release used in the vcf2maf tool.
      - `threads`: 16
      - `cfree_chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
-      The first column must be chromosomes, optionally the secnod can be an alternate format of chromosomes.
+      The first column must be chromosomes, optionally the second can be an alternate format of chromosomes.
       Last column must be chromosome length. This is needed for ControlFreeC
     - `coeff_var`: 0.05
     - `contamination_adjustment`: FALSE
@@ -225,7 +225,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
         - ControlFreeeC
             - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualtitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
             - `ctrlfreec_config`: Config file used to run ControlFreeC.  Has some useful information on what parameters were used to run the tool.
-            - `ctrlfreec_pngs`: Plots of b allele freqency (baf) log2 ratio and ratio of tumor/normal copy number coverage.  Pink line in the middle of ratio plots is the median ratio.
+            - `ctrlfreec_pngs`: Plots of b allele frequency (baf) log2 ratio and ratio of tumor/normal copy number coverage.  Pink line in the middle of ratio plots is the median ratio.
             - `ctrlfreec_bam_ratio`: Bam ratio text file.  Contain ratio, median ratio (used to inform `ctrlfreec_pval`), cnv estimates, baf estimate, and genotype estimate.
             - `ctrlfreec_bam_seg`: In-house generated seg file based on ratio file.  Provided asa a convenience for compatibility with tools that require inputs in legacy microarray format.
             - `ctrlfreec_baf`: baf estimations.
