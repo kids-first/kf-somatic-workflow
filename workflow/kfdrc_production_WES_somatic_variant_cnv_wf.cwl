@@ -45,8 +45,8 @@ inputs:
   vardict_cpus: {type: ['null', int], default: 9}
   vardict_ram: {type: ['null', int], default: 18, doc: "In GB"}
   lancet_ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough"}
-  lancet_window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+", default: 600}
-  lancet_padding: {type: int, doc: "Recommend 0 if interval file padded already, half window size if not", default: 0}
+  lancet_window: {type: ['null', int], doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+", default: 600}
+  lancet_padding: {type: ['null', int], doc: "Recommend 0 if interval file padded already, half window size if not", default: 0}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   padded_capture_regions: {type: ['null', File], doc: "Recommend 100bp pad, for somatic variant"}
   unpadded_capture_regions: {type: ['null', File], doc: "Capture regions with NO padding for cnv calling"}
@@ -55,6 +55,7 @@ inputs:
   cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   cfree_mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   b_allele: {type: ['null', File], secondaryFiles: ['.tbi'],  doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
+  i_flag: {type: ['null', string], doc: "Flag to intersect germline calls on padded regions.  Use N if you want to skip this."}
   mutect2_af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
   mutect2_exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi'], doc: "Bgzipped interval bed file. Recommned padding 100bp"}
@@ -117,11 +118,21 @@ steps:
       bands:
         valueFrom: ${return 80000000}
     out: [output]
+  
+  bedtools_intersect_germline:
+    run: ../tools/bedtools_intersect.cwl
+    in:
+      input_vcf: b_allele
+      output_basename: output_basename
+      input_bed_file: padded_capture_regions
+      flag: i_flag
+    out:
+      [intersected_vcf]
 
   gatk_filter_germline:
     run: ../tools/gatk_filter_germline_variant.cwl
     in:
-      input_vcf: b_allele
+      input_vcf: bedtools_intersect_germline/intersected_vcf
       reference_fasta: indexed_reference_fasta
       output_basename: output_basename
     out:
@@ -197,7 +208,7 @@ steps:
       capture_regions: unpadded_capture_regions
       indexed_reference_fasta: indexed_reference_fasta
       reference_fai: reference_fai
-      b_allele: b_allele
+      b_allele: gatk_filter_germline/filtered_pass_vcf
       chr_len: cfree_chr_len
       coeff_var: cfree_coeff_var
       contamination_adjustment: cfree_contamination_adjustment
@@ -213,7 +224,7 @@ steps:
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
-      b_allele: b_allele
+      b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       capture_regions: unpadded_capture_regions
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
