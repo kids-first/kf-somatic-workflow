@@ -10,7 +10,7 @@ requirements:
     ramMin: 10000
     coresMin: 36
   - class: DockerRequirement
-    dockerPull: 'kfdrc/manta:latest'
+    dockerPull: 'kfdrc/manta:1.4.0'
 
 baseCommand: [/manta-1.4.0.centos6_x86_64/bin/configManta.py]
 arguments:
