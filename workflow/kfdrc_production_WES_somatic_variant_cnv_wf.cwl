@@ -157,7 +157,7 @@ steps:
     out: [bam_file]
 
   run_vardict:
-    run: ../sub_workflows/kfdrc_vardict_WES_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file

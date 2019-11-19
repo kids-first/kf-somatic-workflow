@@ -48,6 +48,7 @@ inputs:
   lancet_ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough"}
   lancet_window: {type: ['null', int], doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+", default: 600}
   lancet_padding: {type: ['null', int], doc: "Recommend 0 if interval file padded already, half window size if not", default: 300}
+  vardict_padding: {type: ['null', int], doc: "Padding to add to input intervals, recommened 0 if intervals already padded, 150 if not", default: 150}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   cfree_chr_len: {type: File, doc: "file with chromosome lengths"}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
@@ -60,7 +61,7 @@ inputs:
   cnvkit_annotation_file: {type: File, doc: "refFlat.txt file"}
   cfree_coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
   cfree_contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
-  combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}
+  combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed, i.e. for VarDict: FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\")"}
   combined_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}  
   min_theta2_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01", default: 0.01}
   cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
@@ -155,7 +156,7 @@ steps:
     out: [bam_file]
 
   run_vardict:
-    run: ../sub_workflows/kfdrc_vardict_WGS_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
@@ -165,6 +166,7 @@ steps:
       output_basename: output_basename
       reference_dict: reference_dict
       bed_invtl_split: python_vardict_interval_split/split_intervals_bed
+      padding: vardict_padding
       min_vaf: vardict_min_vaf
       select_vars_mode: select_vars_mode
       cpus: vardict_cpus
