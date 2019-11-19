@@ -39,7 +39,7 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
-  wgs_calling_interval_list: {type: File, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"
+  wgs_calling_interval_list: {type: File, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
   cfree_threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
   vardict_min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
@@ -83,13 +83,17 @@ outputs:
   cnvkit_seg: {type: File, outputSource: run_cnvkit/cnvkit_seg}
   theta2_calls: {type: File, outputSource: run_theta2_purity/theta2_adjusted_cns}
   theta2_seg: {type: File, outputSource: run_theta2_purity/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: 'File[]', outputSource: [run_theta2_purity/n3_graph, run_theta2_purity/n2_results, run_theta2_purity/best_results]}
-  theta2_subclonal_cns: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclone_cns}
+  theta2_subclonal_results: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclonal_results}
+  theta2_subclonal_cns: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclonal_cns}
   theta2_subclone_seg: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclone_seg}
   strelka2_vep_vcf: {type: File, outputSource: run_strelka2/strelka2_vep_vcf}
   strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
   strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
   strelka2_vep_maf: {type: File, outputSource: run_strelka2/strelka2_vep_maf}
+  manta_vep_vcf: {type: File, outputSource: run_manta/manta_vep_vcf}
+  manta_vep_tbi: {type: File, outputSource: run_manta/manta_vep_tbi}
+  manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
+  manta_vep_maf: {type: File, outputSource: run_manta/manta_vep_maf}
   mutect2_vep_vcf: {type: File, outputSource: run_mutect2/mutect2_vep_vcf}
   mutect2_vep_tbi: {type: File, outputSource: run_mutect2/mutect2_vep_tbi}
   mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
@@ -126,7 +130,7 @@ steps:
   gatk_filter_germline:
     run: ../tools/gatk_filter_germline_variant.cwl
     in:
-      input_vcf: bedtools_intersect_germline/intersected_vcf
+      input_vcf: b_allele
       reference_fasta: indexed_reference_fasta
       output_basename: output_basename
     out:
@@ -237,7 +241,7 @@ steps:
       min_theta2_frac: min_theta2_frac
       output_basename: output_basename
     out:
-      [theta2_calls, theta2_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
+      [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
 
   run_mutect2:
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
@@ -276,6 +280,22 @@ steps:
       select_vars_mode: select_vars_mode
     out:
       [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
+
+  run_manta:
+    run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict: reference_dict
+      hg38_strelka_bed: hg38_strelka_bed
+      input_tumor_aligned: input_tumor_aligned
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: input_normal_aligned
+      input_normal_name: input_normal_name
+      vep_cache: vep_cache
+      output_basename: output_basename
+      select_vars_mode: select_vars_mode
+    out:
+      [manta_vep_vcf, manta_vep_tbi, manta_prepass_vcf, manta_vep_maf]
 
 $namespaces:
   sbg: https://sevenbridges.com

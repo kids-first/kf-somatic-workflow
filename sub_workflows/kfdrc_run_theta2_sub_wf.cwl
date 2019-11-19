@@ -19,8 +19,8 @@ inputs:
   output_basename: string
 
 outputs:
-  theta2_calls: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
-  theta2_seg: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
+  theta2_adjusted_cns: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
+  theta2_adjusted_seg: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
   theta2_subclonal_results: {type: 'File[]', outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
   theta2_subclonal_cns: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_cns}
   theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
@@ -61,7 +61,7 @@ steps:
   cnvkit_import_theta2:
     run: ../tools/cnvkit_import_theta2.cwl
     in:
-      tumor_cns: cnvkit/output_calls
+      tumor_cns: tumor_cns
       tumor_sample_name: tumor_sample_name
       output_basename: output_basename
       theta2_best_results: run_theta2/best_results
