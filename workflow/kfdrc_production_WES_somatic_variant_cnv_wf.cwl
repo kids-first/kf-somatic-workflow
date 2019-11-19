@@ -176,7 +176,7 @@ steps:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
 
   run_lancet:
-    run: ../sub_workflows/kfdrc_lancet_WES_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
@@ -217,7 +217,7 @@ steps:
       [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg, ctrlfreec_baf, ctrlfreec_info]
 
   run_cnvkit:
-    run: ../sub_workflows/kfdrc_cnvkit_WES_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_cnvkit_sub_wf.cwl
     in:
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name

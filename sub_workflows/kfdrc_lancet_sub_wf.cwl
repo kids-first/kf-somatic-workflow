@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_lancet_WGS_sub_wf
-doc: "Sub wf for whole genome sequencing"
+id: kfdrc_lancet_sub_wf
+doc: "Lancet sub workflow, meant to be wrapped"
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement

@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_production_somatic_wes_variant_cnv_wf
+id: kfdrc_production_somatic_wgs_variant_cnv_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -114,7 +114,7 @@ steps:
       interval_list: wgs_calling_interval_list
       reference_dict: reference_dict
       exome_flag:
-        valueFrom: ${return "Y";}
+        valueFrom: ${return "N";}
       scatter_ct:
         valueFrom: ${return 50}
       bands:
@@ -155,7 +155,7 @@ steps:
     out: [bam_file]
 
   run_vardict:
-    run: ../sub_workflows/kfdrc_vardict_WES_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_vardict_WGS_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
@@ -174,7 +174,7 @@ steps:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
 
   run_lancet:
-    run: ../sub_workflows/kfdrc_lancet_WES_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
@@ -214,13 +214,15 @@ steps:
       [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg, ctrlfreec_baf, ctrlfreec_info]
 
   run_cnvkit:
-    run: ../sub_workflows/kfdrc_cnvkit_WES_sub_wf.cwl
+    run: ../sub_workflows/kfdrc_cnvkit_sub_wf.cwl
     in:
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
+      wgs_mode:
+        valueFrom: ${return "Y";}
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
