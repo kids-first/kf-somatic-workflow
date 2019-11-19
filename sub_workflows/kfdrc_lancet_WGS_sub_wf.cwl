@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_lancet_WXS_sub_wf
-doc: "Sub wf for whole exome AND targeted sequencing processing"
+id: kfdrc_lancet_WGS_sub_wf
+doc: "Sub wf for whole genome sequencing"
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
