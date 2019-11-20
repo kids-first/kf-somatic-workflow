@@ -1,27 +1,25 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_lancet_wf
+id: kfdrc_lancet_sub_wf
+doc: "Sub wf for whole exome AND targeted sequencing processing"
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
 
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
-  calling_interval_list: File
-  input_tumor_aligned: {type: File, secondaryFiles: [.crai]}
+  input_tumor_aligned: {type: File, secondaryFiles: [^.bai]}
   input_tumor_name: string
-  input_normal_aligned: {type: File, secondaryFiles: [.crai]}
+  input_normal_aligned: {type: File, secondaryFiles: [^.bai]}
   input_normal_name: string
   output_basename: string
   reference_dict: File
-  exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode, most likely given run time"}
-  ram: {type: ['null', int], default: 12000, doc: "Adjust in rare circumstances in which 12000 MB is not enough.  NOTE IT IS IN MB!"}
+  bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}
+  ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough."}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
   padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend half window size"}
-  strelka2_vcf: {type: ['null', File], doc: "PASS vcf from strelka2 run for the sample to be analyzed. Optional and recommneded to augment an exome interval list"}
-  mutect2_vcf: {type: ['null', File], doc: "PASS vcf from mutect2 run for the sample to be analyzed, Optional and recommneded to augment an exome interval list"}
 
 outputs:
   lancet_vep_vcf: {type: File, outputSource: vep_annot_lancet/output_vcf}
@@ -30,57 +28,17 @@ outputs:
   lancet_prepass_vcf: {type: File, outputSource: sort_merge_lancet_vcf/merged_vcf}
 
 steps:
-  bedops_gen_lancet_intervals:
-    run: ../tools/preprocess_lancet_intervals.cwl
-    in:
-      strelka2_vcf: strelka2_vcf
-      mutect2_vcf: mutect2_vcf
-      ref_bed: calling_interval_list
-      output_basename: output_basename
-    out: [run_bed]
-
-  gatk_intervallisttools:
-    run: ../tools/gatk_intervallisttool.cwl
-    in:
-      interval_list: bedops_gen_lancet_intervals/run_bed
-      reference_dict: reference_dict
-      exome_flag: exome_flag
-      scatter_ct:
-        valueFrom: ${return 50}
-      bands:
-        valueFrom: ${return 80000000}
-    out: [output]
-
-  samtools_cram2bam_plus_calmd_tumor:
-    run: ../tools/samtools_cram2bam_plus_calmd.cwl
-    in:
-      input_reads: input_tumor_aligned
-      threads:
-        type: ['null', int]
-        default: 16
-      reference: indexed_reference_fasta
-    out: [bam_file]
-
-  samtools_cram2bam_plus_calmd_normal:
-    run: ../tools/samtools_cram2bam_plus_calmd.cwl
-    in:
-      input_reads: input_normal_aligned
-      threads:
-        type: ['null', int]
-        default: 16
-      reference: indexed_reference_fasta
-    out: [bam_file]
 
   lancet:
     hints:
       - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge;ebs-gp2;500
+        value: c5.9xlarge
     run: ../tools/lancet.cwl
     in:
-      input_tumor_bam: samtools_cram2bam_plus_calmd_tumor/bam_file
-      input_normal_bam: samtools_cram2bam_plus_calmd_normal/bam_file
+      input_tumor_bam: input_tumor_aligned
+      input_normal_bam: input_normal_aligned
       reference: indexed_reference_fasta
-      bed: gatk_intervallisttools/output
+      bed: bed_invtl_split
       output_basename: output_basename
       window: window
       padding: padding
@@ -100,9 +58,6 @@ steps:
     out: [merged_vcf]
 
   gatk_selectvariants_lancet:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.xlarge;ebs-gp2;250
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Lancet PASS
     in:
@@ -126,9 +81,5 @@ steps:
       cache: vep_cache
     out: [output_vcf, output_tbi, output_maf, warn_txt]
 
-
 $namespaces:
   sbg: https://sevenbridges.com
-hints:
-  - class: 'sbg:maxNumberOfParallelInstances'
-    value: 4

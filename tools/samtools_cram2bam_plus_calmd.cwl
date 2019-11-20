@@ -10,22 +10,24 @@ requirements:
     ramMin: 12000
     coresMin: $(inputs.threads)
   
-baseCommand: [samtools, view]
+baseCommand: ["/bin/bash -c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -@ $(inputs.threads)
-      -h
-      -T $(inputs.reference.path)
-      $(inputs.input_reads.path)
-      | samtools calmd
-      -@ 16
-      -b
-      --reference $(inputs.reference.path)
-      -
-      > $(inputs.input_reads.nameroot).bam
-      && samtools index $(inputs.input_reads.nameroot).bam $(inputs.input_reads.nameroot).bai
+      set -eo pipefail
+
+      ${
+        var bam_name = inputs.input_reads.nameroot + ".bam";
+        var cmd = "samtools view -@ " + inputs.threads + " -h -T " + inputs.reference.path + " " + inputs.input_reads.path
+        + " | samtools calmd -@ " + inputs.threads + " -b --reference " + inputs.reference.path + " - > " + bam_name + ";";
+        if(inputs.input_reads.basename == bam_name){
+          cmd = ">&2 echo input reads already have bam extension, indexing and passing through; cp " + inputs.input_reads.path
+          + " " + bam_name + ";"
+        }
+        cmd += "samtools index -@ " + inputs.threads + " " + bam_name + " " + inputs.input_reads.nameroot + ".bai;"
+        return cmd;
+      }
 inputs:
   input_reads: File
   threads:
