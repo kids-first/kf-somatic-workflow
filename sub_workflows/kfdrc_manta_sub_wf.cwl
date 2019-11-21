@@ -43,10 +43,8 @@ inputs:
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
-  manta_vep_vcf: {type: File, outputSource: vep_annot_manta/output_vcf}
-  manta_vep_tbi: {type: File, outputSource: vep_annot_manta/output_tbi}
   manta_prepass_vcf: {type: File, outputSource: rename_manta_samples/reheadered_vcf}
-  manta_vep_maf: {type: File, outputSource: vep_annot_manta/output_maf}
+  manta_pass_vcf: {type: File, outputSource: gatk_selectvariants_manta/pass_vcf}
 
 steps:
   manta:
@@ -78,15 +76,3 @@ steps:
       mode: select_vars_mode
     out: [pass_vcf]
 
-  vep_annot_manta:
-    run: ../tools/vep_vcf2maf.cwl
-    in:
-      input_vcf: gatk_selectvariants_manta/pass_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        valueFrom: ${return "manta_somatic"}
-      reference: indexed_reference_fasta
-      cache: vep_cache
-    out: [output_vcf, output_tbi, output_maf, warn_txt]

@@ -30,9 +30,6 @@ outputs:
 steps:
 
   vardict:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
     run: ../tools/vardictjava.cwl
     in:
       input_tumor_bam: input_tumor_aligned

@@ -40,6 +40,7 @@ inputs:
 
   input_normal_name: string
   wgs_calling_interval_list: {type: File, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
+  lancet_calling_interval_bed: {type: File, doc: "For WGS, highly recommended to use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can still give calling list as bed if true WGS calling desired instead of exome+."}
   cfree_threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
   vardict_min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
@@ -59,6 +60,7 @@ inputs:
   mutect2_exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
   hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi'], doc: "Bgzipped interval bed file. Recommend canonical chromosomes"}
   cnvkit_annotation_file: {type: File, doc: "refFlat.txt file"}
+  cnvkit_wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode", default: "Y"}
   cfree_coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
   cfree_contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
   combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed, i.e. for VarDict: FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\")"}
@@ -91,10 +93,8 @@ outputs:
   strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
   strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
   strelka2_vep_maf: {type: File, outputSource: run_strelka2/strelka2_vep_maf}
-  manta_vep_vcf: {type: File, outputSource: run_manta/manta_vep_vcf}
-  manta_vep_tbi: {type: File, outputSource: run_manta/manta_vep_tbi}
+  manta_pass_vcf: {type: File, outputSource: run_manta/manta_pass_vcf}
   manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
-  manta_vep_maf: {type: File, outputSource: run_manta/manta_vep_maf}
   mutect2_vep_vcf: {type: File, outputSource: run_mutect2/mutect2_vep_vcf}
   mutect2_vep_tbi: {type: File, outputSource: run_mutect2/mutect2_vep_tbi}
   mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
@@ -124,6 +124,7 @@ steps:
 
   python_vardict_interval_split:
     run: ../tools/python_vardict_interval_split.cwl
+    doc: "Custom interval list generation for vardict input. Briefly, ~60M bp per interval list, 20K bp intervals, lists break on chr and N reginos only"
     in:
       wgs_bed_file: wgs_calling_interval_list
     out: [split_intervals_bed]
@@ -175,25 +176,6 @@ steps:
     out:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
 
-  run_lancet:
-    run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
-    in:
-      indexed_reference_fasta: indexed_reference_fasta
-      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
-      input_tumor_name: input_tumor_name
-      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
-      input_normal_name: input_normal_name
-      output_basename: output_basename
-      select_vars_mode: select_vars_mode
-      reference_dict: reference_dict
-      bed_invtl_split: gatk_intervallisttools/output
-      ram: lancet_ram
-      window: lancet_window
-      padding: lancet_padding
-      vep_cache: vep_cache
-    out:
-      [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
-
   run_controlfreec:
     run: ../sub_workflows/kfdrc_controlfreec_sub_wf.cwl
     in:
@@ -223,8 +205,7 @@ steps:
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
-      wgs_mode:
-        valueFrom: ${return "Y";}
+      wgs_mode: cnvkit_wgs_mode
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
@@ -285,6 +266,47 @@ steps:
     out:
       [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
 
+  bedops_gen_lancet_intervals:
+    run: ../tools/preprocess_lancet_intervals.cwl
+    in:
+      strelka2_vcf: run_strelka2/strelka2_vep_vcf
+      mutect2_vcf: run_mutect2/mutect2_vep_vcf
+      ref_bed: lancet_calling_interval_bed
+      output_basename: output_basename
+    out: [run_bed]
+
+  gatk_intervallisttools_exome_plus:
+    run: ../tools/gatk_intervallisttool.cwl
+    in:
+      interval_list: bedops_gen_lancet_intervals/run_bed
+      reference_dict: reference_dict
+      exome_flag:
+        valueFrom: ${return "Y";}
+      scatter_ct:
+        valueFrom: ${return 50}
+      bands:
+        valueFrom: ${return 80000000}
+    out: [output]
+
+  run_lancet:
+    run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      input_normal_name: input_normal_name
+      output_basename: output_basename
+      select_vars_mode: select_vars_mode
+      reference_dict: reference_dict
+      bed_invtl_split: gatk_intervallisttools_exome_plus/output
+      ram: lancet_ram
+      window: lancet_window
+      padding: lancet_padding
+      vep_cache: vep_cache
+    out:
+      [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
+
   run_manta:
     run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
     in:
@@ -299,10 +321,12 @@ steps:
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
-      [manta_vep_vcf, manta_vep_tbi, manta_prepass_vcf, manta_vep_maf]
+      [manta_prepass_vcf, manta_pass_vcf]
 
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
     value: 6
+  - class: 'sbg:AWSInstanceType'
+    value: c5.9xlarge
