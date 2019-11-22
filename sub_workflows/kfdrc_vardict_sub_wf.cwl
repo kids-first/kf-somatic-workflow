@@ -15,6 +15,7 @@ inputs:
   reference_dict: File
   padding: {type: ['null', int], doc: "Padding to add to input intervals, recommened 0 if intervals already padded, 150 if not", default: 150}
   bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}
+  padding: {type: ['null', int], doc: "Padding to add to input intervals, recommend 0 if intervals already padded, 150 if not", default: 0}
   min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   cpus: {type: ['null', int], default: 9}
@@ -36,6 +37,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_bam: input_normal_aligned
       input_normal_name: input_normal_name
+      padding: padding
       min_vaf: min_vaf
       cpus: cpus
       ram: ram
