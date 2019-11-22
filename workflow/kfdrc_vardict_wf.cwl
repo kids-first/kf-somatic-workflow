@@ -14,7 +14,6 @@ inputs:
   input_normal_name: string
   output_basename: string
   reference_dict: File
-  # exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: string, doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   cpus: {type: ['null', int], default: 9}

@@ -8,7 +8,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
-    coresMin: 36
+    coresMin: $(inputs.cores)
   - class: DockerRequirement
     dockerPull: 'kfdrc/manta:1.4.0'
 
@@ -18,7 +18,7 @@ arguments:
     shellQuote: false
     valueFrom: >-
       ${
-        var std = " --ref " + inputs.reference.path + " --callRegions " + inputs.hg38_strelka_bed.path + " --runDir=./ && ./runWorkflow.py -m local -j 36 --quiet ";
+        var std = " --ref " + inputs.reference.path + " --callRegions " + inputs.hg38_strelka_bed.path + " --runDir=./ && ./runWorkflow.py -m local -j " + inputs.cores + " --quiet ";
         var mv = " && mv results/variants/";
         if (typeof inputs.input_tumor_cram === 'undefined' || inputs.input_tumor_cram === null){
           var mv_cmd = mv + "diploidSV.vcf.gz " +  inputs.output_basename + ".manta.diploidSV.vcf.gz" + mv + "diploidSV.vcf.gz.tbi " + inputs.output_basename + ".manta.diploidSV.vcf.gz.tbi";
@@ -39,6 +39,7 @@ inputs:
     hg38_strelka_bed: {type: File, secondaryFiles: [.tbi]}
     input_tumor_cram: {type: ["null", File], secondaryFiles: [.crai]}
     input_normal_cram: {type: ["null", File], secondaryFiles: [.crai]}
+    cores: {type: ['null', int], default: 18}
     output_basename: string
 outputs:
   - id: output_sv

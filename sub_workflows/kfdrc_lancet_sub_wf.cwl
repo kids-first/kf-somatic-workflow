@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: Workflow
 id: kfdrc_lancet_sub_wf
-doc: "Sub wf for whole exome AND targeted sequencing processing"
+doc: "Lancet sub workflow, meant to be wrapped"
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
@@ -28,11 +28,7 @@ outputs:
   lancet_prepass_vcf: {type: File, outputSource: sort_merge_lancet_vcf/merged_vcf}
 
 steps:
-
   lancet:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
     run: ../tools/lancet.cwl
     in:
       input_tumor_bam: input_tumor_aligned

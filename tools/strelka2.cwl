@@ -6,7 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 10000
-    coresMin: 36
+    coresMin: $(inputs.cores)
   - class: DockerRequirement
     dockerPull: 'obenauflab/strelka'
 
@@ -27,7 +27,7 @@ arguments:
         return arg
       } && ./runWorkflow.py
       -m local
-      -j 36
+      -j $(inputs.cores)
 
 inputs:
   reference: { type: File, secondaryFiles: [^.dict, .fai] }
@@ -59,6 +59,7 @@ inputs:
         }
       }
     doc: "normal BAM or CRAM"
+  cores: {type: ['null', int], default: 18}
 outputs:
   output_snv:
     type: File

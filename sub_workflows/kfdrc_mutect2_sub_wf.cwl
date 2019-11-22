@@ -56,9 +56,6 @@ outputs:
   
 steps:
   mutect2:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
     run: ../tools/gatk_Mutect2.cwl
     in:
       input_tumor_aligned: input_tumor_aligned
@@ -128,9 +125,6 @@ steps:
     out: [pass_vcf]
 
   vep_annot_mutect2:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.4xlarge;ebs-gp2;250
     run: ../tools/vep_vcf2maf.cwl
     in:
       input_vcf: gatk_selectvariants/pass_vcf
