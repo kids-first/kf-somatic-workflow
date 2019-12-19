@@ -125,7 +125,7 @@ steps:
     in:
       input_vcf: b_allele
       output_basename: output_basename
-      input_bed_file: padded_capture_regions
+      input_bed_file: unpadded_capture_regions
       flag: i_flag
     out:
       [intersected_vcf]
