@@ -33,7 +33,7 @@ arguments:
       }
 
       bcftools norm -m '-any' $VCF > $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
-      && /vt/vt normalize -r $(inputs.indexed_reference_fasta.path) $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
+      && /vt/vt normalize -n -r $(inputs.indexed_reference_fasta.path) $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
       > $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf
       && bgzip $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf
       && tabix $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf.gz

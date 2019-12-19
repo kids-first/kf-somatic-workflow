@@ -11,12 +11,17 @@ inputs:
   mutect2_vcf: {type: File, secondaryFiles: ['.tbi']}
   lancet_vcf: {type: File, secondaryFiles: ['.tbi']}
   vardict_vcf: {type: File, secondaryFiles: ['.tbi']}
+  input_tumor_name: string
+  input_normal_name: string
   output_basename: string
   min_overlap: {type: ['null', int], default: 2, doc: "Min number of callers to declare consensus.  Default is 2"}
-  strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
+  strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/CSQ or INFO/ANN depending on hoe VEP wa run for instance"}
 
 outputs:
-  consensus_vcf: {type: File, outputSource: bcbio_variant_recall_ensemble/consensus_vcf}
+  vep_consensus_vcf: {type: File, outputSource: vep_annot_consensus/output_vcf}
+  vep_consensus_tbi: {type: File, outputSource: vep_annot_consensus/output_tbi}
+  vep_consensus_maf: {type: File, outputSource: vep_annot_consensus/output_maf}
 
 steps:
   normalize_strelka2_vcf:
@@ -26,7 +31,7 @@ steps:
       indexed_reference_fasta: indexed_reference_fasta
       output_basename: output_basename
       tool_name:
-        valueFrom: ${return "strelka2";}
+        valueFrom: ${return "strelka2_somatic";}
       strip_info: strip_info
     out: [normalized_vcf]
 
@@ -37,7 +42,7 @@ steps:
       indexed_reference_fasta: indexed_reference_fasta
       output_basename: output_basename
       tool_name:
-        valueFrom: ${return "mutect2";}
+        valueFrom: ${return "mutect2_somatic";}
       strip_info: strip_info
     out: [normalized_vcf]
 
@@ -48,7 +53,7 @@ steps:
       indexed_reference_fasta: indexed_reference_fasta
       output_basename: output_basename
       tool_name:
-        valueFrom: ${return "lancet";}
+        valueFrom: ${return "lancet_somatic";}
       strip_info: strip_info
     out: [normalized_vcf]
 
@@ -59,7 +64,7 @@ steps:
       indexed_reference_fasta: indexed_reference_fasta
       output_basename: output_basename
       tool_name: 
-        valueFrom: ${return "vardict";}
+        valueFrom: ${return "vardict_somatic";}
       strip_info: strip_info
     out: [normalized_vcf]
 
@@ -81,3 +86,16 @@ steps:
         valueFrom: ${return "strelka2,mutect2,lancet,vardict"}
       output_basename: output_basename
     out: [consensus_vcf]
+
+  vep_annot_consensus:
+    run: ../tools/vep_vcf2maf.cwl
+    in:
+      input_vcf: bcbio_variant_recall_ensemble/consensus_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name:
+        valueFrom: ${return "consensus_somatic"}
+      reference: indexed_reference_fasta
+      cache: vep_cache
+    out: [output_vcf, output_tbi, output_maf, warn_txt]
