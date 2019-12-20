@@ -16,7 +16,7 @@ inputs:
   output_basename: string
   min_overlap: {type: ['null', int], default: 2, doc: "Min number of callers to declare consensus.  Default is 2"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/CSQ or INFO/ANN depending on hoe VEP wa run for instance"}
+  strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/CSQ or INFO/ANN depending on how VEP was run for instance"}
 
 outputs:
   vep_consensus_vcf: {type: File, outputSource: vep_annot_consensus/output_vcf}
