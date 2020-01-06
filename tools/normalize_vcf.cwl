@@ -43,7 +43,7 @@ inputs:
     indexed_reference_fasta: {type: File, secondaryFiles: ['.fai']}
     output_basename: string
     tool_name: string
-    strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN"}
+    strip_info: {type: ['null', string], doc: "If given, remove previous annotation information based on INFO file, i.e. to strip VEP info, use INFO/ANN or INFO/CSQ - check vcf"}
 
 outputs:
   normalized_vcf:
