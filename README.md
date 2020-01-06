@@ -6,7 +6,7 @@ This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) 
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
 Somatic variant and SV call results are annotated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
 The `workflow/kfdrc_production_WGS_somatic_variant_cnv.cwl` would run all tools described below for WGS.
-We also have a whole [exome/targeted workflow](#kfdrc-somatic-whole-exome/targeted-sequence-snalysis-workflow), which uses many of the same tools described for WGS.
+We also have a whole [exome/targeted workflow](#kfdrc-somatic-whole-exometargeted-sequence-analysis-workflow), which uses many of the same tools described for WGS.
 
 ### Somatic Variant Calling:
 
