@@ -31,7 +31,7 @@ outputs:
   ctrlfreec_pngs: {type: 'File[]', outputSource: rename_outputs/ctrlfreec_pngs}
   ctrlfreec_bam_ratio: {type: File, outputSource: rename_outputs/ctrlfreec_bam_ratio}
   ctrlfreec_bam_seg: {type: File, outputSource: convert_ratio_to_seg/ctrlfreec_ratio2seg}
-  ctrlfreec_baf: {type: File, outputSource: rename_outputs/ctrlfreec_baf}
+  ctrlfreec_baf: {type: File?, outputSource: rename_outputs/ctrlfreec_baf}
   ctrlfreec_info: {type: File, outputSource: rename_outputs/ctrlfreec_info}
 
 steps:

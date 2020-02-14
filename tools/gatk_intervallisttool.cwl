@@ -65,3 +65,6 @@ outputs:
     type: 'File[]'
     outputBinding:
       glob: '*.bed'
+
+$namespaces:
+  sbg: https://sevenbridges.com
