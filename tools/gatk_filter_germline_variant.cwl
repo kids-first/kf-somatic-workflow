@@ -10,16 +10,29 @@ requirements:
     coresMax: 4
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
-baseCommand: [/gatk]
+baseCommand: []
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      ${
+        if (inputs.input_vcf == null){
+          return "echo No vcf provided, skipping >&2 && exit 0;";
+        }
+        else{
+          return "echo Filtering vcf >&2 && ";
+        }
+      }
+      /gatk
       --java-options "-Xmx7000m"
       SelectVariants
       --exclude-filtered TRUE
       -select-type SNP
-      -V $(inputs.input_vcf.path)
+      ${
+        if (inputs.input_vcf != null){
+          return "-V " + inputs.input_vcf.path;
+        }
+      }
       -O snp_pass.vcf.gz
 
       /gatk VariantFiltration
@@ -46,16 +59,16 @@ arguments:
 
 inputs:
   reference_fasta: File
-  input_vcf: {type: File, secondaryFiles: [.tbi]}
+  input_vcf: {type: File?, secondaryFiles: [.tbi]}
   output_basename: string
 outputs:
   filtered_vcf:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.gatk.hardfiltered.vcf.gz'
     secondaryFiles: [.tbi]
   filtered_pass_vcf:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.gatk.hardfiltered.PASS.vcf.gz'
     secondaryFiles: [.tbi]
