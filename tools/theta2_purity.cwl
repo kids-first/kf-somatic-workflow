@@ -21,38 +21,40 @@ arguments:
       --NUM_PROCESSES 8
       --MIN_FRAC $(inputs.min_frac)
       $(inputs.interval_count.path)
+      ||
+      echo "Theta2 failed, likely due to insufficient copy number variation to calculate purity, or due to an input error, skipping >&2;"
 inputs:
   tumor_snp: File
   normal_snp: File
   interval_count: File
   output_basename: string
-  min_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05", default: 0.05}
+  min_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy number alterations.  Default is 0.05", default: 0.05}
 outputs:
   n2_graph:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.n2.graph.pdf'
   n2_results:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.n2.results'
   n2_withBounds:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.n2.withBounds'
   n3_graph:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.n3.graph.pdf'
   n3_results:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.n3.results'
   n3_withBounds:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.n3.withBounds'
   best_results:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.BEST.results'

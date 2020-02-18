@@ -10,11 +10,18 @@ requirements:
     ramMin: 8000
     coresMin: 4
 
-baseCommand: [cnvkit.py, import-theta]  
+baseCommand: []  
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >- 
+      ${
+        if (inputs.theta2_n2_results == null){
+          return "echo Theta 2 input is null, skipping purity adjustment >&2; exit 0;"
+        }
+      }
+
+      cnvkit.py import-theta
       $(inputs.tumor_cns.path)
       $(inputs.theta2_n2_results.path)
       -d ./
@@ -48,7 +55,7 @@ arguments:
           cnvkit.py export seg $(inputs.tumor_sample_name).cns -o $(inputs.output_basename).theta2.subclone2.seg;
           rm $(inputs.tumor_sample_name).cns;
       else
-        echo "second subclone file not found.  skipping!";
+        echo "second subclone file not found.  skipping! >&2;";
       fi
 
 inputs:
@@ -60,19 +67,19 @@ inputs:
 
 outputs:
   theta2_adjusted_cns:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.theta2.total.cns'
   theta2_adjusted_seg:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.theta2.total.seg'
   theta2_subclone_cns:
-    type: File[]
+    type: ['null', 'File[]']
     outputBinding:
       glob: '*.theta2.subclone*.cns'
   theta2_subclone_seg:
-    type: File[]
+    type: ['null', 'File[]']
     outputBinding:
       glob: '*.theta2.subclone*.seg'
     

@@ -72,11 +72,11 @@ outputs:
   cnvkit_metrics: {type: File, outputSource: cnvkit/output_metrics}
   cnvkit_gainloss: {type: File, outputSource: cnvkit/output_gainloss}
   cnvkit_seg: {type: File, outputSource: cnvkit/output_seg}
-  theta2_calls: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
-  theta2_seg: {type: File, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: 'File[]', outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
-  theta2_subclonal_cns: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_cns}
-  theta2_subclone_seg: {type: 'File[]', outputSource: cnvkit_import_theta2/theta2_subclone_seg}
+  theta2_calls: {type: File?, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
+  theta2_seg: {type: File?, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
+  theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
+  theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: cnvkit_import_theta2/theta2_subclone_cns}
+  theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: cnvkit_import_theta2/theta2_subclone_seg}
 
 steps:
   samtools_tumor_cram2bam:
