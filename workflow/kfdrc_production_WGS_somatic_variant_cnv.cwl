@@ -84,11 +84,11 @@ outputs:
   cnvkit_metrics: {type: File, outputSource: run_cnvkit/cnvkit_metrics}
   cnvkit_gainloss: {type: File, outputSource: run_cnvkit/cnvkit_gainloss}
   cnvkit_seg: {type: File, outputSource: run_cnvkit/cnvkit_seg}
-  theta2_calls: {type: File, outputSource: run_theta2_purity/theta2_adjusted_cns}
-  theta2_seg: {type: File, outputSource: run_theta2_purity/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclonal_results}
-  theta2_subclonal_cns: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclonal_cns}
-  theta2_subclone_seg: {type: 'File[]', outputSource: run_theta2_purity/theta2_subclone_seg}
+  theta2_calls: {type: File?, outputSource: run_theta2_purity/theta2_adjusted_cns}
+  theta2_seg: {type: File?, outputSource: run_theta2_purity/theta2_adjusted_seg}
+  theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_results}
+  theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_cns}
+  theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclone_seg}
   strelka2_vep_vcf: {type: File, outputSource: run_strelka2/strelka2_vep_vcf}
   strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
   strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
