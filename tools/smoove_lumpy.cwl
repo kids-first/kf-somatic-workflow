@@ -8,7 +8,7 @@ requirements:
     ramMin: ${return inputs.cores * 2000}
     coresMin: $(inputs.cpus)
   - class: DockerRequirement
-    dockerPull: 'migbro/smoove:0.2.5'
+    dockerPull: 'kfdrc/smoove:0.2.5'
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
@@ -19,6 +19,15 @@ arguments:
       mkdir TMP
 
       export TMPDIR=/$PWD/TMP
+
+      ${
+        if (inputs.input_tumor_align == null && inputs.input_normal_align == null){
+          throw new Error('Need to provide one or both of a tumor bam/cram and normal bam/cram');
+        }
+        else{
+          return "echo Simple alignment file input check passed";
+        }
+      }
 
       /samtools-1.9/misc/seq_cache_populate.pl
       -root $PWD/ref_cache
@@ -45,7 +54,12 @@ arguments:
           if (inputs.support != null){
               args += " --support " + inputs.support;
           }
-          args += " " + inputs.input_tumor_align.path + " " + inputs.input_normal_align.path;
+          if (inputs.input_tumor_align != null){
+            args += " " + inputs.input_tumor_align.path;
+          }
+          if (inputs.input_normal_align != null){
+            args += " " + inputs.input_normal_align.path;
+          }
           return args;
       }
 
@@ -54,7 +68,7 @@ arguments:
 inputs:
   reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
   input_tumor_align:
-    type: File
+    type: File?
     secondaryFiles: |
       ${
         var path = inputs.input_tumor_align.location+".crai";
@@ -65,7 +79,7 @@ inputs:
       }
 
   input_normal_align:
-      type: File
+      type: File?
       secondaryFiles: |
         ${
           var path = inputs.input_normal_align.location+".crai";
