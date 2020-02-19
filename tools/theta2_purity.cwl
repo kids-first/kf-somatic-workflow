@@ -10,11 +10,14 @@ requirements:
     ramMin: 32000
     coresMin: 8
 
-baseCommand: [/THetA/bin/RunTHetA]
+baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      set -eo pipefail
+
+      /THetA/bin/RunTHetA
       --TUMOR_FILE $(inputs.tumor_snp.path)
       --NORMAL_FILE $(inputs.normal_snp.path)
       --OUTPUT_PREFIX $(inputs.output_basename)
@@ -22,7 +25,7 @@ arguments:
       --MIN_FRAC $(inputs.min_frac)
       $(inputs.interval_count.path)
       ||
-      echo "Theta2 failed, likely due to insufficient copy number variation to calculate purity, or due to an input error, skipping >&2;"
+      (echo "Theta2 failed, likely due to insufficient copy number variation to calculate purity, or due to an input error, skipping >&2"; exit 0;)
 inputs:
   tumor_snp: File
   normal_snp: File
