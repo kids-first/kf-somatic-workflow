@@ -55,15 +55,15 @@ arguments:
           cnvkit.py export seg ${return inputs.tumor_sample_name}.cns -o ${return inputs.output_basename}.theta2.subclone2.seg;
           rm ${return inputs.tumor_sample_name}.cns;
       else
-        echo "second subclone file not found.  skipping! >&2;";
+        echo "second subclone file not found. Skipping!" >&2;
       fi
 
 inputs:
   tumor_cns: File
   tumor_sample_name: string
   output_basename: string
-  theta2_best_results: File
-  theta2_n2_results: File
+  theta2_best_results: File?
+  theta2_n2_results: File?
 
 outputs:
   theta2_adjusted_cns:
