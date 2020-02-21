@@ -8,6 +8,12 @@ doc: >-
   This workflow takes aligned cram input and performs somatic variant calling using Strelka2 and Mutect2, CNV estimation using ControlFreeC, and SV calls using Manta.
   Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
   
+  ### Recent updates
+  
+  As of February 21, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
+  A brief description of what this file is and a way to generate it is found in the CNV section.
+  Also, vcf2maf version has been updated as the previous version had bug handling Strelka2 input.
+
   ### Somatic Variant Calling:
   
   [Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucelotide variants (SNVS) and insertions/deletions (INDELS).
@@ -37,7 +43,8 @@ doc: >-
 
   1) For input cram files, be sure to have indexed them beforehand as well.
   
-  2) For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls, GATK Haplotype caller recommended.
+  2) For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls (`b_allele` file input), GATK Haplotype caller (can use [this workflow](https://github.com/kids-first/kf-jointgenotyping-workflow/blob/master/workflow/kfdrc_single_sample_genotype_basic.cwl) from our git repo) recommended.
+  This input is optional, but has been shown to increase copy number call accuracy.
   Please also make sure the index for this file is available.
   Also, a range of input ploidy possibilities for the inputs are needed.  You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
   
@@ -90,7 +97,7 @@ inputs:
   reference_fasta: {type: File, doc: "Genome reference fasta file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6c', name: 'Homo_sapiens_assembly38.fasta'}}
   reference_dict: {type: File, doc: "Sequence dictionary created using GATK CreateSequenceDictionary from genome fasta file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe71', name: 'Homo_sapiens_assembly38.dict'}}
   wgs_calling_interval_list: {type: File, doc: "GATK interval calling list", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6e', name: 'wgs_canonical_calling_regions.hg38.interval_list'}}
-  af_only_gnomad_vcf: {type: File, doc: "Broad GATK gnomad reference file", doc: "GATK interval calling list", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe70', name: 'af-only-gnomad.hg38.vcf.gz'}}
+  af_only_gnomad_vcf: {type: File, doc: "Broad GATK gnomad reference file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe70', name: 'af-only-gnomad.hg38.vcf.gz'}}
   exac_common_vcf: {type: File, doc: "Broad GATK exac reference file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe72', name: 'small_exac_common_3.hg38.vcf.gz'}}
   hg38_strelka_bed: {type: File, doc: "bgzipped chromosome bed file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6d', name: 'hg38_strelka.bed.gz'}}
   input_tumor_aligned:
@@ -123,42 +130,38 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
-  threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
+  cfree_threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
   # exome_flag: {type: ['null', string], doc: "insert 'Y' if exome mode"}
   # capture_regions: {type: ['null', File], doc: "If not WGS, provide this bed file"}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6f', name: 'homo_sapiens_vep_93_GRCh38_convert_cache.tar.gz'}}
-  chr_len: {type: File, doc: "file with chromosome lengths", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe73', name: 'hs38_chr.len'}}
   output_basename: string
-  ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
-  mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
-  mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
-  b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  VarDict input recommended.  Tool will prefilter for germline and pass if expression given"}
-  chr_len: {type: File, doc: "TSV with chromsome names and lengths. Limit to chromosomes you actually want analyzed in ControlFreeC", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe73', name: 'hs38_chr.len'}}
-  coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
-  contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
-  include_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
-  exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has mixed somatic/germline calls, use as-needed"}
-  sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
+  cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
+  cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+  cfree_mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+  b_allele: {type: ['null', File], doc: "germline calls, needed for BAF, optional.  Calls from GATK haplotype caller are recommended.  Tool will prefilter germline PASS and apply GATK-recommended filter options"}
+  cfree_chr_len: {type: File, doc: "TSV with chromsome names and lengths. Limit to chromosomes you actually want analyzed in ControlFreeC", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe73', name: 'hs38_chr.len'}}
+  cfree_coeff_var: {type: ['null', float], default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
+  cfree_contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
+  cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
 
 outputs:
-  strelka2_vep_vcf: {type: File, outputSource: run_strelka2/output_vcf}
-  strelka2_vep_tbi: {type: File, outputSource: run_strelka2/output_tbi}
-  strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/reheadered_vcf}
-  strelka2_vep_maf: {type: File, outputSource: run_strelka2/output_maf}
-  mutect2_vep_vcf: {type: File, outputSource: run_mutect2/output_vcf}
-  mutect2_vep_tbi: {type: File, outputSource: run_mutect2/output_tbi}
-  mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/filtered_vcf}
-  mutect2_vep_maf: {type: File, outputSource: run_mutect2/output_maf}
-  manta_vep_vcf: {type: File, outputSource: run_manta/output_vcf}
-  manta_vep_tbi: {type: File, outputSource: run_manta/output_tbi}
-  manta_prepass_vcf: {type: File, outputSource: run_manta/reheadered_vcf}
+  strelka2_vep_vcf: {type: File, outputSource: run_strelka2/strelka2_vep_vcf}
+  strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
+  strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
+  strelka2_vep_maf: {type: File, outputSource: run_strelka2/strelka2_vep_maf}
+  mutect2_vep_vcf: {type: File, outputSource: run_mutect2/mutect2_vep_vcf}
+  mutect2_vep_tbi: {type: File, outputSource: run_mutect2/mutect2_vep_tbi}
+  mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
+  mutect2_vep_maf: {type: File, outputSource: run_mutect2/mutect2_vep_maf}
+  manta_pass_vcf: {type: File, outputSource: run_manta/manta_pass_vcf}
+  manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
   ctrlfreec_pval: {type: File, outputSource: run_controlfreec/ctrlfreec_pval}
   ctrlfreec_config: {type: File, outputSource: run_controlfreec/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
   ctrlfreec_bam_ratio: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_ratio}
-  ctrlfreec_bam_seg: {type: File, outputSource: run_controlfreec/ctrlfreec_ratio2seg}
-  ctrlfreec_baf: {type: File, outputSource: run_controlfreec/ctrlfreec_baf}
+  ctrlfreec_bam_seg: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_seg}
+  ctrlfreec_baf: {type: File?, outputSource: run_controlfreec/ctrlfreec_baf}
   ctrlfreec_info: {type: File, outputSource: run_controlfreec/ctrlfreec_info}
 
 steps:
@@ -225,7 +228,7 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: wgs_calling_interval_list
-      reference_dict: index_references/reference_dict
+      reference_dict: reference_dict
       # exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 50}
@@ -238,7 +241,7 @@ steps:
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
-      hg38_strelka_bed: index_references/hg38_strelka_bed
+      hg38_strelka_bed: index_references/indexed_hg38_strelka_bed
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -256,7 +259,7 @@ steps:
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
-      hg38_strelka_bed: index_references/hg38_strelka_bed
+      hg38_strelka_bed: index_references/indexed_hg38_strelka_bed
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -274,8 +277,8 @@ steps:
       indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
       bed_invtl_split: gatk_intervallisttools/output
-      af_only_gnomad_vcf: index_references/index_references/mutect2_af_only_gnomad_vcf
-      exac_common_vcf: index_references/mutect2_exac_common_vcf
+      af_only_gnomad_vcf: index_references/indexed_af_only_gnomad_vcf
+      exac_common_vcf: index_references/indexed_exac_common_vcf
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -287,8 +290,7 @@ steps:
       select_vars_mode: select_vars_mode
     out:
       [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi, mutect2_vep_maf]
-  
- 
+
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
