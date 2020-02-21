@@ -272,6 +272,9 @@ steps:
 
 
   run_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
