@@ -153,7 +153,6 @@ outputs:
   manta_vep_vcf: {type: File, outputSource: vep_annot_manta/output_vcf}
   manta_vep_tbi: {type: File, outputSource: vep_annot_manta/output_tbi}
   manta_prepass_vcf: {type: File, outputSource: rename_manta_samples/reheadered_vcf}
-  manta_vep_maf: {type: File, outputSource: vep_annot_manta/output_maf}
   ctrlfreec_pval: {type: File, outputSource: rename_outputs/ctrlfreec_pval}
   ctrlfreec_config: {type: File, outputSource: rename_outputs/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: rename_outputs/ctrlfreec_pngs}
@@ -312,7 +311,7 @@ steps:
     out: [mutect2_vcf, f1r2_counts, mutect_stats]
   
   mutect2_filter_support:
-    run: ../workflow/kfdrc_mutect2_filter_support_subwf.cwl
+    run: ../sub_workflows/kfdrc_mutect2_filter_support_subwf.cwl
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
