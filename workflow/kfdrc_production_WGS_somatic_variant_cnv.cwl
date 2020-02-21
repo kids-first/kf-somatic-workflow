@@ -157,6 +157,9 @@ steps:
     out: [bam_file]
 
   run_vardict:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
@@ -229,6 +232,9 @@ steps:
       [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
 
   run_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
@@ -289,6 +295,9 @@ steps:
     out: [output]
 
   run_lancet:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
