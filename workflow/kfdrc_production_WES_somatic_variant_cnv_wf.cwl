@@ -158,6 +158,9 @@ steps:
     out: [bam_file]
 
   run_vardict:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
@@ -178,6 +181,9 @@ steps:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
 
   run_lancet:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
@@ -235,6 +241,9 @@ steps:
       [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss, cnvkit_seg]
 
   run_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
