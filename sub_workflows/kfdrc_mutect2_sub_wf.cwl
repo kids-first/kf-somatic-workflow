@@ -108,6 +108,7 @@ steps:
       mutect_vcf: merge_mutect2_vcf/merged_vcf
       mutect_stats: merge_mutect2_stats/merged_stats
       reference: indexed_reference_fasta
+      reference_dict: reference_dict
       output_basename: output_basename
       contamination_table: mutect2_filter_support/contamination_table
       segmentation_table: mutect2_filter_support/segmentation_table
