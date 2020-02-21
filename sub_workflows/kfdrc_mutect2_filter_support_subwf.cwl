@@ -50,7 +50,7 @@ steps:
 
   gatk_learn_orientation_bias:
     run: ../tools/gatk_learnorientationbias.cwl
-    label: Gatk learn bias
+    label: GATK learn bias
     in:
       input_tgz: f1r2_counts
       output_basename: output_basename

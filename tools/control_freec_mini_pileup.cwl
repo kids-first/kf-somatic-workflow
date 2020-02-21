@@ -16,7 +16,16 @@ arguments:
     valueFrom: >-
       set -eo pipefail
 
-      zcat $(inputs.snp_vcf.path) | grep -v "#" | awk {'printf ("%s\t%s\t%s\t%s\t%s\n", $1,$2-1,$2,$4,$5)'} > snps.bed
+      ${
+        if (inputs.snp_vcf == null){
+          return "echo No vcf provided, skipping >&2 && exit 0;"
+        }
+        else{
+          return "echo Creating pileup >&2;";
+        }
+      }
+
+      zcat ${if (inputs.snp_vcf != null) {return inputs.snp_vcf.path}} | grep -v "#" | awk {'printf ("%s\t%s\t%s\t%s\t%s\n", $1,$2-1,$2,$4,$5)'} > snps.bed
 
       /opt/sambamba_0.5.9/sambamba_v0.5.9 mpileup
       -t $(inputs.threads)
@@ -29,9 +38,9 @@ inputs:
     type: ['null', int]
     default: 16
   reference: {type: File, secondaryFiles: [.fai]}
-  snp_vcf: {type: File, doc: "Germline vcf with sites to filter pielup on"}
+  snp_vcf: {type: File?, doc: "Germline vcf with sites to filter pileup on. Made optional to skip if needed during pipeline run"}
 outputs:
   pileup:
-    type: File
+    type: File?
     outputBinding:
       glob: $(inputs.input_reads.nameroot).miniPileup

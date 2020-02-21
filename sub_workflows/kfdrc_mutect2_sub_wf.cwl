@@ -63,6 +63,7 @@ steps:
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
       reference: indexed_reference_fasta
+      reference_dict: reference_dict
       interval_list: bed_invtl_split
       af_only_gnomad_vcf: af_only_gnomad_vcf
       exome_flag: exome_flag
