@@ -8,7 +8,7 @@ requirements:
     ramMin: 24000
     coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vep:r93'
+    dockerPull: 'kfdrc/vep:r93_v2'
 baseCommand: [tar, -xzf ]
 arguments:
   - position: 1
@@ -23,7 +23,8 @@ arguments:
       --vep-path /ensembl-vep/
       --vep-data $PWD
       --vep-forks 16
-      --ncbi-build GRCh38
+      --ncbi-build $(inputs.ref_build)
+      --cache-version $(inputs.cache_version)
       --ref-fasta $(inputs.reference.path)
       --tumor-id $(inputs.tumor_id)
       --normal-id $(inputs.normal_id)
@@ -32,7 +33,7 @@ arguments:
       && /ensembl-vep/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf.gz
 
 inputs:
-  reference: { type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index }
+  reference: {type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index}
   input_vcf:
     type: File
     secondaryFiles: [.tbi]
@@ -41,6 +42,9 @@ inputs:
   normal_id: string
   tool_name: string
   cache: { type: File, label: tar gzipped cache from ensembl/local converted cache }
+  cache_version: {type: ['null', int], doc: "Version being used, should match build version", default: 93}
+  ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
+
 
 outputs:
   output_vcf:
@@ -48,7 +52,7 @@ outputs:
     outputBinding:
       glob: '*.vcf.gz'
   output_tbi:
-    type: File
+    type: File  
     outputBinding:
       glob: '*.vcf.gz.tbi'
   output_maf:

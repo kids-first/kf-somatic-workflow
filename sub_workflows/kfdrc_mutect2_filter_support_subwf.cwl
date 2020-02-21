@@ -6,7 +6,7 @@ requirements:
   - class: MultipleInputFeatureRequirement
 
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
+  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
   wgs_calling_interval_list: "File[]"
   input_tumor_aligned:
@@ -64,7 +64,6 @@ steps:
     in:
       aligned_reads: input_tumor_aligned
       reference: indexed_reference_fasta
-      reference_dict: reference_dict
       interval_list: wgs_calling_interval_list
       exac_common_vcf: exac_common_vcf
     scatter: [interval_list]
@@ -77,7 +76,6 @@ steps:
     in:
       aligned_reads: input_normal_aligned
       reference: indexed_reference_fasta
-      reference_dict: reference_dict
       interval_list: wgs_calling_interval_list
       exac_common_vcf: exac_common_vcf
     scatter: [interval_list]
@@ -115,6 +113,3 @@ steps:
 
 $namespaces:
   sbg: https://sevenbridges.com
-hints:
-  - class: 'sbg:AWSInstanceType'
-    value: c5.4xlarge;ebs-gp2;750
