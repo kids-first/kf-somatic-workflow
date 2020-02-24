@@ -1,10 +1,12 @@
 cwlVersion: v1.0
 class: Workflow
 doc: >-
+  This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) Somatic Workflow, which includes somatic variant calling, copy number variation (CNV), and structural variant (SV) calls.
+  
+  
   ![data service logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9BnbvIsTkK3QlSGMDvlgu0tZQJ1q4crMvA-S3fcWfIq6y2d2Y)
   
   
-  This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) Somatic Workflow, which includes somatic variant calling, copy number variation (CNV), and structural variant (SV) calls. 
   This workflow takes aligned cram input and performs somatic variant calling using Strelka2 and Mutect2, CNV estimation using ControlFreeC, and SV calls using Manta.
   Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
   
