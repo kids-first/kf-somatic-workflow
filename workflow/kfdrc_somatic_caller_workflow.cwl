@@ -10,7 +10,8 @@ doc: >-
   
   ### Recent updates
   
-  As of February 21, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
+  As of February 24, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
+  Also, some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
   A brief description of what this file is and a way to generate it is found in the CNV section.
   Also, vcf2maf version has been updated as the previous version had bug handling Strelka2 input.
 
@@ -269,9 +270,18 @@ steps:
       select_vars_mode: select_vars_mode
     out:
       [manta_prepass_vcf, manta_pass_vcf]
+<<<<<<< HEAD
 
 
   run_mutect2:
+=======
+
+
+  run_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
+>>>>>>> e80c40df3cbb2a23e3ba11d78130c5af4f8acae5
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta

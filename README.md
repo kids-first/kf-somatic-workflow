@@ -6,6 +6,14 @@ This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) 
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2 and Mutect2, CNV estimation using ControlFreeC, and SV calls using Manta.
 Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
 
+### Recent updates
+
+As of February 24, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
+Also, some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
+A brief description of what this file is and a way to generate it is found in the CNV section.
+Also, vcf2maf version has been updated as the previous version had bug handling Strelka2 input.
+
+
 ### Somatic Variant Calling:
 
 [Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucelotide variants (SNVS) and insertions/deletions (INDELS).
@@ -35,11 +43,11 @@ Both the annotated vcf and maf file are made available.
 
 1) For input cram files, be sure to have indexed them beforehand as well.
 
-2) For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls, GATK Haplotype caller recommended.
+2) For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls (`b_allele` file input), GATK Haplotype caller (can use [this workflow](https://github.com/kids-first/kf-jointgenotyping-workflow/blob/master/workflow/kfdrc_single_sample_genotype_basic.cwl) from our git repo) recommended.
+This input is optional, but has been shown to increase copy number call accuracy.
 Please also make sure the index for this file is available.
-Also, a range of input ploidy possibilities for the inputs are needed.
-You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
-For mate orientation, you will need to specify, the drop down and tool doc explains your options.
+Also, a range of input ploidy possibilities for the inputs are needed.  You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
+For mate orientation, you may need to re-specify, the drop down and tool doc explains your options.
 
 3) As a cavatica app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for ControlFreec, and `PASS` filter tool mode.
 
