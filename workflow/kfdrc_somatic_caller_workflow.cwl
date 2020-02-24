@@ -270,18 +270,12 @@ steps:
       select_vars_mode: select_vars_mode
     out:
       [manta_prepass_vcf, manta_pass_vcf]
-<<<<<<< HEAD
-
-
-  run_mutect2:
-=======
 
 
   run_mutect2:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.9xlarge
->>>>>>> e80c40df3cbb2a23e3ba11d78130c5af4f8acae5
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
