@@ -10,7 +10,8 @@ doc: >-
   
   ### Recent updates
   
-  As of February 21, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
+  As of February 24, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
+  Also, some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
   A brief description of what this file is and a way to generate it is found in the CNV section.
   Also, vcf2maf version has been updated as the previous version had bug handling Strelka2 input.
 
