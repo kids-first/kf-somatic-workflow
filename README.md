@@ -36,7 +36,7 @@ Default settings are used at run time.
 
 ### Variant Annotation
 
-[Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) release 93, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) v1.6.16 is used to annotate somatic variant and SV calls.
+[Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) release 93, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) v1.6.17 is used to annotate somatic variant and SV calls.
 Both the annotated vcf and maf file are made available.
 
 ### Tips To Run:
@@ -100,6 +100,6 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `Mutect2` and all `GATK` tools: kfdrc/gatk:4.1.1.0
     - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
     - `samtools`: kfdrc/samtools:1.9
-    - `Variant Effect Predictor`: kfdrc/vep:r93
+    - `Variant Effect Predictor`: kfdrc/vep:r93_v2
     - `Manta`: kfdrc/manta:latest
     - `bcftools` and `vcftools`: kfdrc/bvcftools:latest 
