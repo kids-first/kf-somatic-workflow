@@ -27,9 +27,9 @@ arguments:
 
       tabix $(inputs.exac_common_vcf.basename)
 
-      cp $(inputs.hg38_strelka_bed.path) .
+      cp $(inputs.strelka2_bed.path) .
 
-      tabix $(inputs.hg38_strelka_bed.basename)
+      tabix $(inputs.strelka2_bed.basename)
 
 inputs:
   input_fasta_file: File
@@ -60,5 +60,5 @@ outputs:
   indexed_strelka2_bed:
     type: File
     outputBinding:
-      glob: '$(inputs.hg38_strelka_bed.basename)'
+      glob: '$(inputs.strelka2_bed.basename)'
     secondaryFiles: [.tbi]
