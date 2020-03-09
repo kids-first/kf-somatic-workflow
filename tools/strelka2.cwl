@@ -18,7 +18,7 @@ arguments:
       --normalBam $(inputs.input_normal_aligned.path)
       --tumorBam $(inputs.input_tumor_aligned.path)
       --ref $(inputs.reference.path)
-      --callRegions $(inputs.hg38_strelka_bed.path)
+      --callRegions $(inputs.strelka2_bed.path)
       ${
         var arg = "--runDir=./";
         if (inputs.exome_flag == 'Y'){
