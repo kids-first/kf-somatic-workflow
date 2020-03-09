@@ -11,6 +11,8 @@ doc: >-
   Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
   
   ### Recent updates
+  As of March 9, 2020, the input for setting VEP reference version has been added.
+  Also, the input bed var name for strelka2 has been renamed for better accuracy
   
   As of February 24, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
   Also, some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
@@ -69,7 +71,7 @@ doc: >-
   
     - exac_common_vcf: small_exac_common_3.hg38.vcf.gz # Broad GATK exac reference file
   
-    - hg38_strelka_bed: hg38_strelka.bed.gz # bgzipped chromosome bed file, chr 1-22, X, Y ,M
+    - strelka2_bed: hg38_strelka.bed.gz # bgzipped chromosome bed file, chr 1-22, X, Y ,M
   
     - threads: 16
   
@@ -80,8 +82,10 @@ doc: >-
     - contamination_adjustment: FALSE
   
     - vep_cache: homo_sapiens_vep_93_GRCh38_convert_cache.tar.gz # tar gzipped cache from ensembl/local converted cache
+
+    - vep_ref_build: GRCh38 # reference build that vep_cache is based on
   
-   - include_expression: `Filter="PASS"`
+    - include_expression: `Filter="PASS"`
 
   ### Links/Resources:
   
@@ -102,7 +106,7 @@ inputs:
   wgs_calling_interval_list: {type: File, doc: "GATK interval calling list", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6e', name: 'wgs_canonical_calling_regions.hg38.interval_list'}}
   af_only_gnomad_vcf: {type: File, doc: "Broad GATK gnomad reference file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe70', name: 'af-only-gnomad.hg38.vcf.gz'}}
   exac_common_vcf: {type: File, doc: "Broad GATK exac reference file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe72', name: 'small_exac_common_3.hg38.vcf.gz'}}
-  hg38_strelka_bed: {type: File, doc: "bgzipped chromosome bed file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6d', name: 'hg38_strelka.bed.gz'}}
+  strelka2_bed: {type: File, doc: "bgzipped chromosome bed file", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6d', name: 'hg38_strelka.bed.gz'}}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -176,9 +180,9 @@ steps:
       input_fasta_file: reference_fasta
       af_only_gnomad_vcf: af_only_gnomad_vcf
       exac_common_vcf: exac_common_vcf
-      hg38_strelka_bed: hg38_strelka_bed
+      strelka2_bed: strelka2_bed
     out:
-      [indexed_reference_fasta, indexed_af_only_gnomad_vcf, indexed_exac_common_vcf, indexed_hg38_strelka_bed, reference_fai]
+      [indexed_reference_fasta, indexed_af_only_gnomad_vcf, indexed_exac_common_vcf, indexed_strelka2_bed, reference_fai]
 
   gatk_filter_germline:
     run: ../tools/gatk_filter_germline_variant.cwl
@@ -245,7 +249,7 @@ steps:
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
-      hg38_strelka_bed: index_references/indexed_hg38_strelka_bed
+      strelka2_bed: index_references/indexed_strelka2_bed
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -264,7 +268,7 @@ steps:
     in:
       indexed_reference_fasta: index_references/indexed_reference_fasta
       reference_dict: reference_dict
-      hg38_strelka_bed: index_references/indexed_hg38_strelka_bed
+      strelka2_bed: index_references/indexed_strelka2_bed
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned

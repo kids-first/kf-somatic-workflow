@@ -35,7 +35,7 @@ inputs:
   input_fasta_file: File
   af_only_gnomad_vcf: File
   exac_common_vcf: File
-  hg38_strelka_bed: File
+  strelka2_bed: File
 
 outputs:
   indexed_reference_fasta:
@@ -57,7 +57,7 @@ outputs:
     outputBinding:
       glob: '$(inputs.exac_common_vcf.basename)'
     secondaryFiles: [.tbi]
-  indexed_hg38_strelka_bed:
+  indexed_strelka2_bed:
     type: File
     outputBinding:
       glob: '$(inputs.hg38_strelka_bed.basename)'

@@ -9,7 +9,7 @@ requirements:
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi']}
+  strelka2_bed: {type: File, secondaryFiles: ['.tbi']}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -54,7 +54,7 @@ steps:
       input_normal_cram: input_normal_aligned
       output_basename: output_basename
       reference: indexed_reference_fasta
-      hg38_strelka_bed: hg38_strelka_bed
+      strelka2_bed: strelka2_bed
     out: [output_sv]
 
   rename_manta_samples:

@@ -8,6 +8,9 @@ Somatic variant and SV call results are annoated using Variant Effect Predictor,
 
 ### Recent updates
 
+As of March 9, 2020, the input for setting VEP reference version has been added.
+Also, the input bed var name for strelka2 has been renamed for better accuracy.
+
 As of February 24, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
 Also, some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
 A brief description of what this file is and a way to generate it is found in the Tips to Run section.
@@ -62,14 +65,15 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `wgs_calling_interval_list`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M.M may need to be added.
     - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
-    - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
-     - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
-     Current production workflow uses this version, and is compatible with the release used in the vcf2maf tool.
-     - `threads`: 16
-     - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths.
+    - `strelka2_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
+    - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
+    - `vep_ref_build`: `GRCh38` - reference version of `vep_cache`
+    Current production workflow uses this version, and is compatible with the release used in the vcf2maf tool.
+    - `threads`: 16
+    - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths.
       The first column must be chromosomes, optionally the secnod can be an alternate format of chromosomes.
       Last column must be chromosome length.
-      Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
+      Using the `strelka2_bed`, and removing chrM can be a good source for this.
     - `coeff_var`: 0.05
     - `contamination_adjustment`: FALSE
 
