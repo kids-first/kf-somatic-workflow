@@ -37,6 +37,7 @@ inputs:
   mutect_vcf: {type: File, secondaryFiles: [.tbi]}
   mutect_stats: File
   reference: File
+  reference_dict: File
   output_basename: string
   contamination_table: File
   segmentation_table: File
