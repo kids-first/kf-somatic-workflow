@@ -33,6 +33,7 @@ arguments:
 inputs:
   aligned_reads: {type: File, secondaryFiles: ['.crai']}
   reference: File
+  reference_dict: File
   interval_list: File
   exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
 
