@@ -11,13 +11,20 @@ doc: >-
   Somatic variant and SV call results are annoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
   
   ### Recent updates
-  As of March 9, 2020, the input for setting VEP reference version has been added.
-  Also, the input bed var name for strelka2 has been renamed for better accuracy
+   - March 9, 2020
+   
+     - The input for setting VEP reference version has been added
+   
+     - Bug fix: `reference_dict` was not properly being passed to some of the mutect2 steps
+   
+     - The input bed var name for strelka2 has been renamed for better accuracy
   
-  As of February 24, 2020, this workflow has been updated to make b allele (germline call) input file for copy number truly optional.
-  Also, some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
-  A brief description of what this file is and a way to generate it is found in the Tips to Run section.
-  Also, vcf2maf version has been updated as the previous version had bug handling Strelka2 input.
+   - February 24, 2020
+   
+     - This workflow has been updated to make b allele (germline call) input file for copy number truly optional
+     - Some [GATK-recommended](https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set) filters are applied to input file, plus a min DP 10 requirement, when given
+       A brief description of what this file is and a way to generate it is found in the Tips to Run section
+     - vcf2maf version has been updated as the previous version had bug handling Strelka2 input
 
   ### Somatic Variant Calling:
   
