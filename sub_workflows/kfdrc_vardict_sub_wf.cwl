@@ -20,6 +20,7 @@ inputs:
   cpus: {type: ['null', int], default: 9}
   ram: {type: ['null', int], default: 18, doc: "In GB"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
 
 outputs:
   vardict_vep_somatic_only_vcf: {type: File, outputSource: vep_annot_vardict/output_vcf}
@@ -86,6 +87,7 @@ steps:
         valueFrom: ${return "vardict_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
+      ref_build: vep_ref_build
     out: [output_vcf, output_tbi, output_maf, warn_txt]
 
 $namespaces:

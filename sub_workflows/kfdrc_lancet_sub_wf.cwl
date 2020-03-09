@@ -18,6 +18,7 @@ inputs:
   ram: {type: ['null', int], default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough."}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
   padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend half window size"}
 
@@ -75,6 +76,7 @@ steps:
         valueFrom: ${return "lancet_somatic"}
       reference: indexed_reference_fasta
       cache: vep_cache
+      ref_build: vep_ref_build
     out: [output_vcf, output_tbi, output_maf, warn_txt]
 
 $namespaces:

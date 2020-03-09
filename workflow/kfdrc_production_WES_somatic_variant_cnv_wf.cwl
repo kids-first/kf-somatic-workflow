@@ -49,6 +49,7 @@ inputs:
   lancet_padding: {type: ['null', int], doc: "Recommend 0 if interval file padded already, half window size if not", default: 0}
   vardict_padding: {type: ['null', int], doc: "Padding to add to input intervals, recommend 0 if intervals already padded, 150 if not", default: 0}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
+  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   padded_capture_regions: {type: ['null', File], doc: "Recommend 100bp pad, for somatic variant"}
   unpadded_capture_regions: {type: ['null', File], doc: "Capture regions with NO padding for cnv calling"}
   cfree_chr_len: {type: File, doc: "file with chromosome lengths"}
@@ -177,6 +178,7 @@ steps:
       cpus: vardict_cpus
       ram: vardict_ram
       vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
     out:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
 
@@ -199,6 +201,7 @@ steps:
       window: lancet_window
       padding: lancet_padding
       vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
     out:
       [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
 
@@ -258,6 +261,7 @@ steps:
       exome_flag:
         valueFrom: ${return "Y";}
       vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
@@ -276,6 +280,7 @@ steps:
       exome_flag:
         valueFrom: ${return "Y";}
       vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
