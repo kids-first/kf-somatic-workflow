@@ -138,6 +138,7 @@ inputs:
   # capture_regions: {type: ['null', File], doc: "If not WGS, provide this bed file"}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache", sbg:suggestedValue: {class: 'File', path: '5d9e3424e4b0950cce15fe6f', name: 'homo_sapiens_vep_93_GRCh38_convert_cache.tar.gz'}}
+  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   output_basename: string
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
   cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
@@ -252,6 +253,7 @@ steps:
       exome_flag:
         valueFrom: ${return "N";}
       vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
@@ -292,6 +294,7 @@ steps:
       exome_flag:
         valueFrom: ${return "N";}
       vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
