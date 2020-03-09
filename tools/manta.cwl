@@ -36,7 +36,7 @@ arguments:
 
 inputs:
     reference: {type: File, secondaryFiles: [.fai]}
-    hg38_strelka_bed: {type: File, secondaryFiles: [.tbi]}
+    strelka2_bed: {type: File, secondaryFiles: [.tbi]}
     input_tumor_cram: {type: ["null", File], secondaryFiles: [.crai]}
     input_normal_cram: {type: ["null", File], secondaryFiles: [.crai]}
     output_basename: string
