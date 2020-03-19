@@ -39,6 +39,7 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
+  exome_flag: {type: string?, default: "Y", doc: "Whether to run in exome mode for callers. Should be Y or leave blank as default is Y. Only make N if you are certain"}
   cfree_threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
   vardict_min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
@@ -113,8 +114,7 @@ steps:
     in:
       interval_list: padded_capture_regions
       reference_dict: reference_dict
-      exome_flag:
-        valueFrom: ${return "Y";}
+      exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 50}
       bands:
@@ -258,8 +258,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      exome_flag:
-        valueFrom: ${return "Y";}
+      exome_flag: exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
@@ -277,8 +276,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      exome_flag:
-        valueFrom: ${return "Y";}
+      exome_flag: exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
