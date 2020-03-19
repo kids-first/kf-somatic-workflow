@@ -39,6 +39,7 @@ inputs:
     doc: "normal BAM or CRAM"
 
   input_normal_name: string
+  exome_flag: {type: string?, default: "N", doc: "Whether to run in exome mode for callers. Should be N or leave blank as default is N. Only make Y if you are certain"}
   wgs_calling_interval_list: {type: File, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
   lancet_calling_interval_bed: {type: File, doc: "For WGS, highly recommended to use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can still give calling list as bed if true WGS calling desired instead of exome+."}
   cfree_threads: {type: ['null', int], doc: "For ControlFreeC.  Recommend 16 max, as I/O gets saturated after that losing any advantage.", default: 16}
@@ -115,8 +116,7 @@ steps:
     in:
       interval_list: wgs_calling_interval_list
       reference_dict: reference_dict
-      exome_flag:
-        valueFrom: ${return "N";}
+      exome_flag: exome_flag
       scatter_ct:
         valueFrom: ${return 50}
       bands:
@@ -248,8 +248,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      exome_flag:
-        valueFrom: ${return "N";}
+      exome_flag: exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
@@ -267,8 +266,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      exome_flag:
-        valueFrom: ${return "N";}
+      exome_flag: exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
