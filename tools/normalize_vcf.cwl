@@ -23,16 +23,15 @@ arguments:
       ${
           var cmd = " >&2 echo checking if strip flag given;";
           if (inputs.strip_info != null){
-            cmd += "(bcftools annotate -x " + inputs.strip_info + " " + inputs.input_vcf.path + " -o stripped.vcf &&"
-            cmd += "VCF=stripped.vcf && >&2 echo strip flag given) ||"
-            cmd += (" >&2 echo strip failed, ignoring;") 
+            cmd += ">&2 echo strip flag given; VCF=stripped.vcf;"
+            cmd += "bcftools annotate -x " + inputs.strip_info + " " + inputs.input_vcf.path + " -o $VCF"
+            cmd += " || VCF=" + inputs.input_vcf.path
           }else{
-            cmd += " >&2 echo no strip flag given;"
+            cmd += " >&2 echo no strip flag given"
           }
           return cmd;
       }
-
-      bcftools norm -m '-any' $VCF > $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
+      && bcftools norm -m '-any' $VCF > $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
       && /vt/vt normalize -n -r $(inputs.indexed_reference_fasta.path) $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
       > $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf
       && bgzip $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf
