@@ -232,6 +232,14 @@ steps:
     out:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
 
+  select_mutect_bed_interval:
+    run: ../tools/mode_selector.cwl
+    in:
+      input_mode: wgs_or_wxs
+      wgs_input: gatk_intervallisttools/output
+      wxs_input: gatk_intervallisttools/output
+    out: [output]
+
   run_mutect2:
     hints:
       - class: 'sbg:AWSInstanceType'
@@ -240,7 +248,7 @@ steps:
     in:
       indexed_reference_fasta: indexed_reference_fasta
       reference_dict: reference_dict
-      bed_invtl_split: gatk_intervallisttools/output
+      bed_invtl_split: select_mutect_bed_interval/output
       af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
       exac_common_vcf: mutect2_exac_common_vcf
       input_tumor_aligned: input_tumor_aligned
