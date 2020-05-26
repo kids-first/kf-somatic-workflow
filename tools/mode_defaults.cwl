@@ -11,7 +11,7 @@ arguments:
       Selecting $(inputs.input_mode) default values
 
 inputs:
-  input_mode: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
+  input_mode: {type: {type: enum, name: "input_mode", symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
   exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers."}
   cnvkit_wgs_mode: {type: 'string?', doc: "Entering Y will run cnvkit in WGS mode, otherwise it will run in hybrid mode. Defaults to Y in wgs mode."}
   i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions.  Use N if you want to skip this. Defaults to N in WGS mode."}

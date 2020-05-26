@@ -30,6 +30,7 @@ arguments:
                 f = 0
                 if i not in intvl_set:
                     intvl_set[i] = []
+                # chr(9) is ASCII code for tab; chr(10) is ASCII code for newline
                 data = cur_intvl.rstrip(chr(10)).split(chr(9))
                 (chrom, start, end) = (data[0], data[1], data[2])
                 intvl_size = int(end) - int(start)
