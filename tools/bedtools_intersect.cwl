@@ -21,9 +21,6 @@ arguments:
       ${
           var cmd = " >&2 echo checking if skip intersect flag given;";
           var out_vcf = inputs.output_basename + ".bed_intersect.vcf";
-          if (inputs.input_vcf == null){
-            return "echo No vcf provided, skipping >&2 && exit 0;"
-          }
           if (inputs.flag != "N"){
             cmd += "bedtools intersect -a " + inputs.input_vcf.path + " -b " + inputs.input_bed_file.path + " -header -wa > " + out_vcf + " && ";
             cmd +=  "bgzip " + out_vcf + " && tabix " + out_vcf + ".gz;";
@@ -35,14 +32,14 @@ arguments:
       }
 
 inputs:
-    input_vcf: {type: File?, secondaryFiles: ['.tbi'], doc: "Made optional so that in a pipeline, this can be skipped"}
+    input_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "Input VCF file"}
     input_bed_file: File
     output_basename: string
     flag: {type: ['null', string], doc: "If N, skip and pass through vcf without intersect"}
 
 outputs:
   intersected_vcf:
-    type: File?
+    type: File
     outputBinding:
       glob: '*.bed_intersect.vcf.gz'
     secondaryFiles: ['.tbi']
