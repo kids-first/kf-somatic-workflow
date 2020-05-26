@@ -53,7 +53,7 @@ outputs:
       outputEval: >-
         ${
           if (inputs.lancet_padding) { return inputs.lancet_padding }
-          if (inputs.input_mode == 'WGS') { return 300 }
+          else if (inputs.input_mode == 'WGS') { return 300 }
           else if (inputs.input_mode == 'WXS') { return 0 }
         }
   out_lancet_window:
@@ -62,7 +62,7 @@ outputs:
       outputEval: >-
         ${
           if (inputs.lancet_window) { return inputs.lancet_window }
-          if (inputs.input_mode == 'WGS') { return 500 }
+          else if (inputs.input_mode == 'WGS') { return 500 }
           else if (inputs.input_mode == 'WXS') { return 600 }
         }
   out_vardict_padding:
@@ -71,6 +71,6 @@ outputs:
       outputEval: >-
         ${
           if (inputs.vardict_padding) { return inputs.vardict_padding }
-          if (inputs.input_mode == 'WGS') { return 150 }
+          else if (inputs.input_mode == 'WGS') { return 150 }
           else if (inputs.input_mode == 'WXS') { return 0 }
         }
