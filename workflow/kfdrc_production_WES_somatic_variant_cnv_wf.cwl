@@ -109,6 +109,16 @@ outputs:
   lancet_prepass_vcf: {type: File, outputSource: run_lancet/lancet_prepass_vcf}
 
 steps:
+  bedtools_intersect_germline:
+    run: ../tools/bedtools_intersect.cwl
+    in:
+      input_vcf: b_allele
+      output_basename: output_basename
+      input_bed_file: unpadded_capture_regions
+      flag: i_flag
+    out:
+      [intersected_vcf]
+
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -121,16 +131,6 @@ steps:
         valueFrom: ${return 80000000}
     out: [output]
   
-  bedtools_intersect_germline:
-    run: ../tools/bedtools_intersect.cwl
-    in:
-      input_vcf: b_allele
-      output_basename: output_basename
-      input_bed_file: unpadded_capture_regions
-      flag: i_flag
-    out:
-      [intersected_vcf]
-
   gatk_filter_germline:
     run: ../tools/gatk_filter_germline_variant.cwl
     in:
@@ -181,6 +181,47 @@ steps:
       vep_ref_build: vep_ref_build
     out:
       [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf, vardict_prepass_vcf]
+
+  run_mutect2:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
+    run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict: reference_dict
+      bed_invtl_split: gatk_intervallisttools/output
+      af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
+      exac_common_vcf: mutect2_exac_common_vcf
+      input_tumor_aligned: input_tumor_aligned
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: input_normal_aligned
+      input_normal_name: input_normal_name
+      exome_flag: exome_flag
+      vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
+      output_basename: output_basename
+      select_vars_mode: select_vars_mode
+    out:
+      [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi, mutect2_vep_maf]
+
+  run_strelka2:
+    run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict: reference_dict
+      hg38_strelka_bed: hg38_strelka_bed
+      input_tumor_aligned: input_tumor_aligned
+      input_tumor_name: input_tumor_name
+      input_normal_aligned: input_normal_aligned
+      input_normal_name: input_normal_name
+      exome_flag: exome_flag
+      vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
+      output_basename: output_basename
+      select_vars_mode: select_vars_mode
+    out:
+      [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
 
   run_lancet:
     hints:
@@ -242,47 +283,6 @@ steps:
       sex: cnvkit_sex
     out:
       [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss, cnvkit_seg]
-
-  run_mutect2:
-    hints:
-      - class: 'sbg:AWSInstanceType'
-        value: c5.9xlarge
-    run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
-    in:
-      indexed_reference_fasta: indexed_reference_fasta
-      reference_dict: reference_dict
-      bed_invtl_split: gatk_intervallisttools/output
-      af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
-      exac_common_vcf: mutect2_exac_common_vcf
-      input_tumor_aligned: input_tumor_aligned
-      input_tumor_name: input_tumor_name
-      input_normal_aligned: input_normal_aligned
-      input_normal_name: input_normal_name
-      exome_flag: exome_flag
-      vep_cache: vep_cache
-      vep_ref_build: vep_ref_build
-      output_basename: output_basename
-      select_vars_mode: select_vars_mode
-    out:
-      [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi, mutect2_vep_maf]
-
-  run_strelka2:
-    run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
-    in:
-      indexed_reference_fasta: indexed_reference_fasta
-      reference_dict: reference_dict
-      hg38_strelka_bed: hg38_strelka_bed
-      input_tumor_aligned: input_tumor_aligned
-      input_tumor_name: input_tumor_name
-      input_normal_aligned: input_normal_aligned
-      input_normal_name: input_normal_name
-      exome_flag: exome_flag
-      vep_cache: vep_cache
-      vep_ref_build: vep_ref_build
-      output_basename: output_basename
-      select_vars_mode: select_vars_mode
-    out:
-      [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
 
 $namespaces:
   sbg: https://sevenbridges.com

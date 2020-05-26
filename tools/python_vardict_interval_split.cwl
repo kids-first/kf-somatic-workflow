@@ -15,6 +15,7 @@ requirements:
 baseCommand: [python, -c]
 arguments:
   - position: 0
+    shellQuote: true
     valueFrom: >-
         def main():
             import sys
@@ -29,7 +30,7 @@ arguments:
                 f = 0
                 if i not in intvl_set:
                     intvl_set[i] = []
-                data = cur_intvl.rstrip("\n").split("\t")
+                data = cur_intvl.rstrip(chr(10)).split(chr(9))
                 (chrom, start, end) = (data[0], data[1], data[2])
                 intvl_size = int(end) - int(start)
                 if intvl_size >= bp_target:
@@ -61,8 +62,8 @@ arguments:
                         new_end = j + intvl_target_size
                         if new_end > int(end):
                             new_end = end
-                        out.write(chrom + "\t" + str(j) + "\t" + str(new_end) + "\n")
-                sys.stderr.write("Set " + str(set_i) + " size:\t" + str(set_size) + "\n")
+                        out.write(chrom + chr(9) + str(j) + chr(9) + str(new_end) + chr(10))
+                sys.stderr.write("Set " + str(set_i) + " size:" + chr(9) + str(set_size) + chr(10))
                 out.close()
 
         if __name__ == "__main__":

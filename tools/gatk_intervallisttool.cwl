@@ -17,24 +17,29 @@ arguments:
       set -eo pipefail
       
       ${
-        var cmd = "";
-        if (inputs.interval_list.nameext == '.interval_list'){
-          cmd = "LIST=" + inputs.interval_list.path + ";";
+        if (inputs.interval_list == null) {
+          return "echo No interval list exiting without input >&2 && exit 0;";
         }
-        else{
-          cmd = "/gatk BedToIntervalList -I " + inputs.interval_list.path + " -O " + inputs.interval_list.nameroot 
-          + ".interval_list -SD " + inputs.reference_dict.path + "; LIST=" + inputs.interval_list.nameroot 
-          + ".interval_list;";
-
-        }
-        if (inputs.exome_flag == "Y"){
-            cmd += "BANDS=0;";
+        else {
+          var cmd = "";
+          if (inputs.interval_list.nameext == '.interval_list'){
+            cmd = "LIST=" + inputs.interval_list.path + ";";
           }
-          
-        else{
-          cmd += "BANDS=" + inputs.bands + ";";
+          else{
+            cmd = "/gatk BedToIntervalList -I " + inputs.interval_list.path + " -O " + inputs.interval_list.nameroot 
+            + ".interval_list -SD " + inputs.reference_dict.path + "; LIST=" + inputs.interval_list.nameroot 
+            + ".interval_list;";
+
+          }
+          if (inputs.exome_flag == "Y"){
+              cmd += "BANDS=0;";
+            }
+            
+          else{
+            cmd += "BANDS=" + inputs.bands + ";";
+          }
+          return cmd;
         }
-        return cmd;
       }
 
       ${
@@ -54,7 +59,7 @@ arguments:
       }
 
 inputs:
-  interval_list: File
+  interval_list: {type: 'File?'}
   bands: int
   scatter_ct: int
   reference_dict: {type: ['null', File], doc: "Provide only if input is bed file instead of gatk style .interval_list", sbg:suggestedValue: {name:  "Provide only if input is bed file instead of gatk style .interval_list"}}
@@ -62,7 +67,7 @@ inputs:
   break_by_chr: {type: ['null', string], doc: "If Y, break up files by chr.  If creating smaler intervals, recommend scatter_ct=1", default: "N"}
 outputs:
   output:
-    type: 'File[]'
+    type: 'File[]?'
     outputBinding:
       glob: '*.bed'
 
