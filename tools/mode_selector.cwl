@@ -24,7 +24,7 @@ arguments:
       }
        
 inputs:
-  input_mode: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"} 
+  input_mode: {type: {type: enum, name: "input_mode", symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
   wgs_input: {type: 'Any?', doc: "Input that should be passed when mode is WGS"}
   wxs_input: {type: 'Any?', doc: "Input that should be passed when mode is WXS"}
 
