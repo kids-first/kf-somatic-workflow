@@ -7,9 +7,9 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
-  reference_fai: File
-  reference_dict: File
+  reference_fasta: {type: File }
+  reference_fai: { type: 'File?' }
+  reference_dict: { type: 'File?' }
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -42,11 +42,14 @@ inputs:
   cfree_chr_len: {type: File, doc: "file with chromosome lengths"}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
   cnvkit_annotation_file: {type: File, doc: "refFlat.txt file"}
-  hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi'], doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS"}
-  mutect2_af_only_gnomad_vcf: {type: File, secondaryFiles: ['.tbi']}
-  mutect2_exac_common_vcf: {type: File, secondaryFiles: ['.tbi']}
+  hg38_strelka_bed: {type: File, doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS"}
+  hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed"}
+  mutect2_af_only_gnomad_vcf: {type: File}
+  mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf"}
+  mutect2_exac_common_vcf: {type: File}
+  mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf"}
   output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}  
+  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
 
   # Optional with One Default
   cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any advantage"}
@@ -69,7 +72,8 @@ inputs:
   i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS run"}
 
   # Optional
-  b_allele: {type: 'File?', secondaryFiles: ['.tbi'],  doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
+  b_allele: {type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
+  b_allele_index: {type: 'File?', doc: "Tabix index for b_allele"}
   cfree_coeff_var: {type: 'float?', default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
   cfree_contamination_adjustment: {type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
   cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
@@ -135,12 +139,49 @@ steps:
       lancet_window: lancet_window
       vardict_padding: vardict_padding
     out: [out_exome_flag,out_cnvkit_wgs_mode,out_i_flag,out_lancet_padding,out_lancet_window,out_vardict_padding]
+
+  prepare_reference:
+    run: ../sub_workflows/prepare_reference.cwl
+    in:
+      input_fasta: reference_fasta
+      input_fai: reference_fai
+      input_dict: reference_dict
+    out: [indexed_fasta,reference_dict]
+
+  index_b_allele:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: b_allele
+      input_index: b_allele_index
+    out: [output]
+
+  index_strelka_bed:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: hg38_strelka_bed
+      input_index: hg38_strelka_tbi
+    out: [output]
+
+  index_mutect_gnomad:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: mutect2_af_only_gnomad_vcf
+      input_index: mutect2_af_only_gnomad_tbi
+    out: [output]
+
+  index_mutect_exac:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: mutect2_exac_common_vcf
+      input_index: mutect2_exac_common_tbi
+    out: [output]
+
   select_interval_list:
     run: ../tools/mode_selector.cwl
     in:
       input_mode: wgs_or_wxs
-      wgs_input: wgs_calling_interval_list 
-      wxs_input: padded_capture_regions 
+      wgs_input: wgs_calling_interval_list
+      wxs_input: padded_capture_regions
     out: [output]
 
   # WGS only
@@ -154,7 +195,7 @@ steps:
   bedtools_intersect_germline:
     run: ../tools/bedtools_intersect.cwl
     in:
-      input_vcf: b_allele
+      input_vcf: index_b_allele/output
       output_basename: output_basename
       input_bed_file: unpadded_capture_regions
       flag: choose_defaults/out_i_flag
@@ -165,7 +206,7 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: select_interval_list/output
-      reference_dict: reference_dict
+      reference_dict: prepare_reference/reference_dict
       exome_flag: choose_defaults/out_exome_flag
       scatter_ct:
         valueFrom: ${return 50}
@@ -177,7 +218,7 @@ steps:
     run: ../tools/gatk_filter_germline_variant.cwl
     in:
       input_vcf: bedtools_intersect_germline/intersected_vcf
-      reference_fasta: indexed_reference_fasta
+      reference_fasta: prepare_reference/indexed_fasta
       output_basename: output_basename
     out:
       [filtered_vcf, filtered_pass_vcf]
@@ -188,7 +229,7 @@ steps:
       input_reads: input_tumor_aligned
       threads:
         valueFrom: ${return 16;}
-      reference: indexed_reference_fasta
+      reference: prepare_reference/indexed_fasta
     out: [bam_file]
 
   samtools_cram2bam_plus_calmd_normal:
@@ -197,7 +238,7 @@ steps:
       input_reads: input_normal_aligned
       threads:
         valueFrom: ${return 16;}
-      reference: indexed_reference_fasta
+      reference: prepare_reference/indexed_fasta
     out: [bam_file]
 
   select_vardict_bed_interval:
@@ -214,13 +255,13 @@ steps:
         value: c5.9xlarge
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
-      indexed_reference_fasta: indexed_reference_fasta
+      indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       input_normal_name: input_normal_name
       output_basename: output_basename
-      reference_dict: reference_dict
+      reference_dict: prepare_reference/reference_dict
       bed_invtl_split: select_vardict_bed_interval/output
       padding: choose_defaults/out_vardict_padding
       min_vaf: vardict_min_vaf
@@ -246,11 +287,11 @@ steps:
         value: c5.9xlarge
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
-      indexed_reference_fasta: indexed_reference_fasta
-      reference_dict: reference_dict
+      indexed_reference_fasta: prepare_reference/indexed_fasta
+      reference_dict: prepare_reference/reference_dict
       bed_invtl_split: select_mutect_bed_interval/output
-      af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
-      exac_common_vcf: mutect2_exac_common_vcf
+      af_only_gnomad_vcf: index_mutect_gnomad/output
+      exac_common_vcf: index_mutect_exac/output
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -266,14 +307,14 @@ steps:
   run_strelka2:
     run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
     in:
-      indexed_reference_fasta: indexed_reference_fasta
-      reference_dict: reference_dict
-      hg38_strelka_bed: hg38_strelka_bed
+      indexed_reference_fasta: prepare_reference/indexed_fasta
+      reference_dict: prepare_reference/reference_dict
+      hg38_strelka_bed: index_strelka_bed/output
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      exome_flag: exome_flag
+      exome_flag: choose_defaults/out_exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
@@ -294,7 +335,7 @@ steps:
     run: ../tools/gatk_intervallisttool.cwl
     in:
       interval_list: bedops_gen_lancet_intervals/run_bed
-      reference_dict: reference_dict
+      reference_dict: prepare_reference/reference_dict
       exome_flag:
         valueFrom: ${return "Y";}
       scatter_ct:
@@ -307,7 +348,7 @@ steps:
     run: ../tools/mode_selector.cwl
     in:
       input_mode: wgs_or_wxs
-      wgs_input: gatk_intervallisttools_exome_plus/output 
+      wgs_input: gatk_intervallisttools_exome_plus/output
       wxs_input: gatk_intervallisttools/output
     out: [output]
 
@@ -317,14 +358,14 @@ steps:
         value: c5.9xlarge
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
-      indexed_reference_fasta: indexed_reference_fasta
+      indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       input_normal_name: input_normal_name
       output_basename: output_basename
       select_vars_mode: select_vars_mode
-      reference_dict: reference_dict
+      reference_dict: prepare_reference/reference_dict
       bed_invtl_split: select_lancet_bed_inteval/output
       ram: lancet_ram
       window: choose_defaults/out_lancet_window
@@ -346,7 +387,7 @@ steps:
       mate_orientation_sample: cfree_mate_orientation_sample
       mate_orientation_control: cfree_mate_orientation_control
       capture_regions: unpadded_capture_regions
-      indexed_reference_fasta: indexed_reference_fasta
+      indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_fai: reference_fai
       b_allele: gatk_filter_germline/filtered_pass_vcf
       chr_len: cfree_chr_len
@@ -362,7 +403,7 @@ steps:
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
-      reference: indexed_reference_fasta
+      reference: prepare_reference/indexed_fasta
       normal_sample_name: input_normal_name
       capture_regions: unpadded_capture_regions
       wgs_mode: choose_defaults/out_cnvkit_wgs_mode
@@ -391,9 +432,9 @@ steps:
   run_manta:
     run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
     in:
-      indexed_reference_fasta: indexed_reference_fasta
-      reference_dict: reference_dict
-      hg38_strelka_bed: hg38_strelka_bed
+      indexed_reference_fasta: prepare_reference/indexed_fasta
+      reference_dict: prepare_reference/reference_dict
+      hg38_strelka_bed: index_strelka_bed/output
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
