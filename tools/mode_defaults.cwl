@@ -62,7 +62,7 @@ outputs:
       outputEval: >-
         ${
           if (inputs.lancet_window) { return inputs.lancet_window }
-          else if (inputs.input_mode == 'WGS') { return 500 }
+          else if (inputs.input_mode == 'WGS') { return 600 }
           else if (inputs.input_mode == 'WXS') { return 600 }
         }
   out_vardict_padding:
