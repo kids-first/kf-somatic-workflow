@@ -19,6 +19,9 @@ arguments:
         if (inputs.theta2_n2_results == null){
           return "echo Theta 2 input is null, skipping purity adjustment >&2; exit 0;"
         }
+        else{
+          return "echo running Theta 2;";
+        }
       }
 
       cnvkit.py import-theta

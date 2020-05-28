@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 id: bedtools_intersect
-doc: "Before consensus calling, left align indel calls, break up multi-allelic calls, but leave mnps intact"
+doc: "Intersect VCF with bedtools intersect, i.e. for WXS filter germline on unpadded intervals to ensure accurate CNV calls"
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
