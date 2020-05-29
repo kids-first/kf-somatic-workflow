@@ -1,14 +1,14 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_production_controllfreec_wf
+id: kfdrc_production_controlfreec_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File }
-  reference_fai: { type: 'File?' }
+  reference_fasta: { type: File }
+  reference_fai: { type: File }
   reference_dict: { type: 'File?' }
   input_tumor_aligned:
     type: File
@@ -37,38 +37,37 @@ inputs:
         }
       }
     doc: "normal BAM or CRAM"
-  input_normal_name: string
-  cfree_chr_len: {type: File, doc: "file with chromosome lengths"}
-  cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
+  cfree_chr_len: { type: File, doc: "file with chromosome lengths" }
+  cfree_ploidy: { type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try" }
+  output_basename: { type: string, doc: "String value to use as basename for outputs" }
+  wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
   # Optional with One Default
-  cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any advantage"}
-  cfree_mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
-  cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+  cfree_threads: { type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any advantage" }
+  cfree_mate_orientation_control: { type: ['null', { type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"] }], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)" }
+  cfree_mate_orientation_sample: { type: ['null', { type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"] }], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)" }
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS run"}
+  i_flag: { type: 'string?', doc: "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS run" }
 
   # Optional
-  b_allele: {type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
-  b_allele_index: {type: 'File?', doc: "Tabix index for b_allele"}
-  cfree_coeff_var: {type: 'float?', default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
-  cfree_contamination_adjustment: {type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
-  cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
+  b_allele: { type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given" }
+  b_allele_index: { type: 'File?', doc: "Tabix index for b_allele" }
+  cfree_coeff_var: { type: 'float?', default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended" }
+  cfree_contamination_adjustment: { type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec estimate normal contam" }
+  cfree_sex: { type: ['null', { type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male" }
 
   # WXS only Fields
-  unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding for cnv calling"}
+  unpadded_capture_regions: { type: 'File?', doc: "Capture regions with NO padding for cnv calling" }
 
 outputs:
-  ctrlfreec_pval: {type: File, outputSource: run_controlfreec/ctrlfreec_pval}
-  ctrlfreec_config: {type: File, outputSource: run_controlfreec/ctrlfreec_config}
-  ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
-  ctrlfreec_bam_ratio: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_ratio}
-  ctrlfreec_bam_seg: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_seg}
-  ctrlfreec_baf: {type: File, outputSource: run_controlfreec/ctrlfreec_baf}
-  ctrlfreec_info: {type: File, outputSource: run_controlfreec/ctrlfreec_info}
+  ctrlfreec_pval: { type: File, outputSource: run_controlfreec/ctrlfreec_pval }
+  ctrlfreec_config: { type: File, outputSource: run_controlfreec/ctrlfreec_config }
+  ctrlfreec_pngs: { type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs }
+  ctrlfreec_bam_ratio: { type: File, outputSource: run_controlfreec/ctrlfreec_bam_ratio }
+  ctrlfreec_bam_seg: { type: File, outputSource: run_controlfreec/ctrlfreec_bam_seg }
+  ctrlfreec_baf: { type: File, outputSource: run_controlfreec/ctrlfreec_baf }
+  ctrlfreec_info: { type: File, outputSource: run_controlfreec/ctrlfreec_info }
 
 steps:
   choose_defaults:

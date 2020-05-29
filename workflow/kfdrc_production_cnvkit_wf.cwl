@@ -7,7 +7,7 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File }
+  reference_fasta: { type: File }
   reference_fai: { type: 'File?' }
   reference_dict: { type: 'File?' }
   input_tumor_aligned:
@@ -38,29 +38,29 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  cnvkit_annotation_file: {type: File, doc: "refFlat.txt file"}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
+  cnvkit_annotation_file: { type: File, doc: "refFlat.txt file" }
+  output_basename: { type: string, doc: "String value to use as basename for outputs" }
+  wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  cnvkit_wgs_mode: {type: 'string?', doc: "for WGS mode, input Y. leave blank for WXS/hybrid mode"}
-  i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS run"}
+  cnvkit_wgs_mode: { type: 'string?', doc: "for WGS mode, input Y. leave blank for WXS/hybrid mode" }
+  i_flag: { type: 'string?', doc: "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS run" }
 
   # Optional
-  b_allele: {type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
-  b_allele_index: {type: 'File?', doc: "Tabix index for b_allele"}
-  cnvkit_sex: {type: 'string?', doc: "If known, choices are m,y,male,Male,f,x,female,Female"}
+  b_allele: { type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given" }
+  b_allele_index: { type: 'File?', doc: "Tabix index for b_allele" }
+  cnvkit_sex: { type: 'string?', doc: "If known, choices are m,y,male,Male,f,x,female,Female" }
 
   # WXS only Fields
-  unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding for cnv calling"}
+  unpadded_capture_regions: { type: 'File?', doc: "Capture regions with NO padding for cnv calling" }
 
 outputs:
-  cnvkit_cnr: {type: File, outputSource: run_cnvkit/cnvkit_cnr}
-  cnvkit_cnn_output: {type: ['null', File], outputSource: run_cnvkit/cnvkit_cnn_output}
-  cnvkit_calls: {type: File, outputSource: run_cnvkit/cnvkit_calls}
-  cnvkit_metrics: {type: File, outputSource: run_cnvkit/cnvkit_metrics}
-  cnvkit_gainloss: {type: File, outputSource: run_cnvkit/cnvkit_gainloss}
-  cnvkit_seg: {type: File, outputSource: run_cnvkit/cnvkit_seg}
+  cnvkit_cnr: { type: File, outputSource: run_cnvkit/cnvkit_cnr }
+  cnvkit_cnn_output: { type: ['null', File], outputSource: run_cnvkit/cnvkit_cnn_output }
+  cnvkit_calls: { type: File, outputSource: run_cnvkit/cnvkit_calls }
+  cnvkit_metrics: { type: File, outputSource: run_cnvkit/cnvkit_metrics }
+  cnvkit_gainloss: { type: File, outputSource: run_cnvkit/cnvkit_gainloss }
+  cnvkit_seg: { type: File, outputSource: run_cnvkit/cnvkit_seg }
 
 steps:
   choose_defaults:

@@ -7,7 +7,7 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File }
+  reference_fasta: { type: File }
   reference_fai: { type: 'File?' }
   reference_dict: { type: 'File?' }
   input_tumor_aligned:
@@ -38,17 +38,17 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  hg38_strelka_bed: {type: File, doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS"}
-  hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed"}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
+  vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
+  hg38_strelka_bed: { type: File, doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS" }
+  hg38_strelka_tbi: { type: 'File?', doc: "Tabix index for hg38_strelka_bed" }
+  output_basename: { type: string, doc: "String value to use as basename for outputs" }
 
   # Optional with One Default
-  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
+  select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
 
 outputs:
-  manta_pass_vcf: {type: File, outputSource: run_manta/manta_pass_vcf}
-  manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
+  manta_pass_vcf: { type: File, outputSource: run_manta/manta_pass_vcf }
+  manta_prepass_vcf: { type: File, outputSource: run_manta/manta_prepass_vcf }
 
 steps:
   prepare_reference:
