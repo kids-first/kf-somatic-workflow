@@ -7,7 +7,7 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File }
+  reference_fasta: { type: File }
   reference_fai: { type: 'File?' }
   reference_dict: { type: 'File?' }
   input_tumor_aligned:
@@ -38,24 +38,24 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  hg38_strelka_bed: {type: File, doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS"}
-  hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed"}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
+  vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
+  hg38_strelka_bed: { type: File, doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS" }
+  hg38_strelka_tbi: { type: 'File?', doc: "Tabix index for hg38_strelka_bed" }
+  output_basename: { type: string, doc: "String value to use as basename for outputs" }
+  wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
   # Optional with One Default
-  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  vep_ref_build: {type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache"}
+  select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
+  vep_ref_build: { type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache" }
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  exome_flag: {type: string?, doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS"}
+  exome_flag: { type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS" }
 
 outputs:
-  strelka2_vep_vcf: {type: File, outputSource: run_strelka2/strelka2_vep_vcf}
-  strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
-  strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
-  strelka2_vep_maf: {type: File, outputSource: run_strelka2/strelka2_vep_maf}
+  strelka2_vep_vcf: { type: File, outputSource: run_strelka2/strelka2_vep_vcf }
+  strelka2_vep_tbi: { type: File, outputSource: run_strelka2/strelka2_vep_tbi }
+  strelka2_prepass_vcf: { type: File, outputSource: run_strelka2/strelka2_prepass_vcf }
+  strelka2_vep_maf: { type: File, outputSource: run_strelka2/strelka2_vep_maf }
 
 steps:
   choose_defaults:

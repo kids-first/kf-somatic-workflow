@@ -7,7 +7,7 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File }
+  reference_fasta: { type: File }
   reference_fai: { type: 'File?' }
   reference_dict: { type: 'File?' }
   input_tumor_aligned:
@@ -38,32 +38,32 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  mutect2_af_only_gnomad_vcf: {type: File}
-  mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf"}
-  mutect2_exac_common_vcf: {type: File}
-  mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf"}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
+  vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
+  mutect2_af_only_gnomad_vcf: { type: File }
+  mutect2_af_only_gnomad_tbi: { type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf" }
+  mutect2_exac_common_vcf: { type: File }
+  mutect2_exac_common_tbi: { type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf" }
+  output_basename: { type: string, doc: "String value to use as basename for outputs" }
+  wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
   # Optional with One Default
-  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  vep_ref_build: {type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache"}
+  select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
+  vep_ref_build: { type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache" }
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  exome_flag: {type: string?, doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS"}
+  exome_flag: { type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS" }
 
   # WGS only Fields
-  wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
+  wgs_calling_interval_list: { type: 'File?', doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed" }
 
   # WXS only Fields
-  padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
+  padded_capture_regions: { type: 'File?', doc: "Recommend 100bp pad, for somatic variant" }
 
 outputs:
-  mutect2_vep_vcf: {type: File, outputSource: run_mutect2/mutect2_vep_vcf}
-  mutect2_vep_tbi: {type: File, outputSource: run_mutect2/mutect2_vep_tbi}
-  mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
-  mutect2_vep_maf: {type: File, outputSource: run_mutect2/mutect2_vep_maf}
+  mutect2_vep_vcf: { type: File, outputSource: run_mutect2/mutect2_vep_vcf }
+  mutect2_vep_tbi: { type: File, outputSource: run_mutect2/mutect2_vep_tbi }
+  mutect2_prepass_vcf: { type: File, outputSource: run_mutect2/mutect2_filtered_vcf }
+  mutect2_vep_maf: { type: File, outputSource: run_mutect2/mutect2_vep_maf }
 
 steps:
   choose_defaults:

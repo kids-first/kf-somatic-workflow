@@ -7,7 +7,7 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File }
+  reference_fasta: { type: File }
   reference_fai: { type: 'File?' }
   reference_dict: { type: 'File?' }
   input_tumor_aligned:
@@ -38,36 +38,36 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
+  vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache"
+  output_basename: { type: string, doc: "String value to use as basename for outputs" }
+  wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
   # Optional with One Default
-  lancet_ram: {type: 'int?', default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough"}
-  select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression"}
-  vep_ref_build: {type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache"}
+  lancet_ram: { type: 'int?', default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough" }
+  select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
+  vep_ref_build: { type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache" }
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  exome_flag: {type: string?, doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS"}
-  lancet_window: {type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS; 600 for exome+"}
-  lancet_padding: {type: 'int?', doc: "Recommend 0 if interval file padded already, half window size if not. Recommended: 0 for WXS; 300 for WGS"}
+  exome_flag: { type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS" }
+  lancet_window: { type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS; 600 for exome+" }
+  lancet_padding: { type: 'int?', doc: "Recommend 0 if interval file padded already, half window size if not. Recommended: 0 for WXS; 300 for WGS" }
 
   # WGS only Fields
-  wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
-  lancet_calling_interval_bed: {type: File?, doc: "For WGS, highly recommended to use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can still give calling list as bed if true WGS calling desired instead of exome+"}
+  wgs_calling_interval_list: { type: 'File?', doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed" }
+  lancet_calling_interval_bed: { type: 'File?', doc: "For WGS, highly recommended to use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can still give calling list as bed if true WGS calling desired instead of exome+" }
 
   # WXS only Fields
-  padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
+  padded_capture_regions: { type: 'File?', doc: "Recommend 100bp pad, for somatic variant" }
 
   # Inputs from other solo callers
-  strelka2_vep_vcf: {type: 'File?', doc: "VEP VCF output from Strelka2 caller"}
-  mutect2_vep_vcf: {type: 'File?', doc: "VEP VCF output from Mutect2 caller"}
+  strelka2_vep_vcf: { type: 'File?', doc: "VEP VCF output from Strelka2 caller" }
+  mutect2_vep_vcf: { type: 'File?', doc: "VEP VCF output from Mutect2 caller" }
 
 outputs:
-  lancet_vep_vcf: {type: File, outputSource: run_lancet/lancet_vep_vcf}
-  lancet_vep_tbi: {type: File, outputSource: run_lancet/lancet_vep_tbi}
-  lancet_vep_maf: {type: File, outputSource: run_lancet/lancet_vep_maf}
-  lancet_prepass_vcf: {type: File, outputSource: run_lancet/lancet_prepass_vcf}
+  lancet_vep_vcf: { type: File, outputSource: run_lancet/lancet_vep_vcf }
+  lancet_vep_tbi: { type: File, outputSource: run_lancet/lancet_vep_tbi }
+  lancet_vep_maf: { type: File, outputSource: run_lancet/lancet_vep_maf }
+  lancet_prepass_vcf: { type: File, outputSource: run_lancet/lancet_prepass_vcf }
 
 steps:
   choose_defaults:
