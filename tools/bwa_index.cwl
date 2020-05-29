@@ -1,6 +1,11 @@
 class: CommandLineTool
 cwlVersion: v1.0
 id: bwa_index
+doc: |-
+  This tool conditionally generates the bwa 64 indexes for an input fasta file using bwa index.
+  The tool will generate the indexes only of generate_bwa_indexes is set to true AND any of the alt,
+  amb, ann, bwt, pac, or sa files is missing.
+  The tool returns the six indexes as its output.
 requirements:
   - class: ShellCommandRequirement
   - class: ResourceRequirement
