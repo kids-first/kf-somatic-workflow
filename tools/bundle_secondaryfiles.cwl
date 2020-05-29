@@ -1,6 +1,9 @@
 cwlVersion: v1.0
 class: CommandLineTool
 id: bundle_secondaryfiles 
+doc: |-
+  This tool takes a primary file and list of secondary files as input and passes the primary_file as
+  the output with the secondary_files as secondaryFiles.
 requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement

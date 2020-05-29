@@ -1,6 +1,10 @@
 cwlVersion: v1.0
 class: CommandLineTool
 id: picard_createsequencedictionary
+doc: |-
+  This tool conditionally creats a sequence dictionary from an input fasta using Picard CreateSequenceDictionary.
+  The tool will only generate the index if an the input_dict is not passed.
+  The tool returnts the dict as its only output.
 requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.7.0R'
