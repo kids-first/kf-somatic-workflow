@@ -2,7 +2,7 @@
 
 ![data service logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9BnbvIsTkK3QlSGMDvlgu0tZQJ1q4crMvA-S3fcWfIq6y2d2Y)
 
-This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) Somatic Workflow, which includes somatic variant calling, copy number variation (CNV), and structural variant (SV) calls. 
+This is the Kids First Data Resource Center (DRC) Whole Genome Sequencing (WGS) Somatic Workflow, which includes somatic variant calling, copy number variation (CNV), and structural variant (SV) calls.
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
 Somatic variant and SV call results are annotated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
 The `workflow/kfdrc_production_WGS_somatic_variant_cnv.cwl` would run all tools described below for WGS.
@@ -134,10 +134,10 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `samtools`: kfdrc/samtools:1.9
     - `Variant Effect Predictor`: kfdrc/vep:r93_v2
     - `Manta`: kfdrc/manta:latest
-    - `bcftools` and `vcftools`: kfdrc/bvcftools:latest 
+    - `bcftools` and `vcftools`: kfdrc/bvcftools:latest
 
 # KFDRC Somatic Whole Exome/Targeted Sequence Analysis Workflow
-Run this workflow if you have the exome/capture regions used.  If not, it is recommneded to use the WGS workflow instead, without the CNV and SV callers.  This is the Kids First Data Resource Center (DRC) Whole Exome/Targeted Sequencing (WXS) Somatic Workflow, which includes somatic variant calling and copy number variation (CNV). 
+Run this workflow if you have the exome/capture regions used.  If not, it is recommneded to use the WGS workflow instead, without the CNV and SV callers.  This is the Kids First Data Resource Center (DRC) Whole Exome/Targeted Sequencing (WXS) Somatic Workflow, which includes somatic variant calling and copy number variation (CNV).
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit.
 Somatic variant  call results are anntoated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
 The `workflow/kfdrc_production_WES_somatic_variant_cnv_wf.cwl` runs all tools described below.
@@ -248,4 +248,30 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
     - `samtools`: kfdrc/samtools:1.9
     - `Variant Effect Predictor`: kfdrc/vep:r93_v2
-    - `bcftools` and `vcftools`: kfdrc/bvcftools:latest 
+    - `bcftools` and `vcftools`: kfdrc/bvcftools:latest
+
+# KFDRC Combined WGS/WXS Somatic Analysis Workflow
+Workflow for calling somatic variant calling, copy number variation (CNV), and structural variant (SV) calls from a tumor/normal
+pair of WGS or WXS aligned reads. All of the same information and tips provided for [WXS](#kfdrc-somatic-whole-exometargeted-sequence-analysis-workflow)
+and [WGS](#kfdrc-somatic-whole-genome-sequence-analysis-workflow) apply here. The workflow is found here: `workflow/kfdrc_production_somatic_variant_cnv.cwl`.
+
+## Running WGS or WXS
+This workflow is designed to be able to process either WGS or WXS inputs. This functionality comes from usage of the `wgs_or_wxs`
+input enum. Depending on what is provided for this input, the tool will set the appropriate default values and check that the user
+has provided the correct inputs. For example, if the user sets the input to WGS the lancet_padding value will be defaulted to 300;
+alternatively, if the user sets the input to WXS the lancet_padding value will be defaulted to 0. In either case, the user can
+override the defaults simply by providing their own value for lanet_padding in the inputs.
+
+The `wgs_or_wxs` flag also controls which inputs are used for certain steps. For example, the bed_interval input for Lancet comes
+from different sources in the WGS and WXS pipelines. In the WGS pipeline separate processing is done ahead of time to generate
+a new interval file. A tool in the workflow will take in the presumptive inputs for WGS and WXS modes. If the mode is WGS, then
+the pipeline will pass on the file provided as the wgs_input and vice versa. If the wgs_input is missing and the mode is WGS, then
+the pipeline will fail.
+
+### WGS-only Fields
+There are two WGS only fields `wgs_calling_interval_list` and `lancet_calling_interval_bed`. If these are not provided in a WGS run,
+the pipeline will fail.
+
+### WXS-only Fields
+There are two WXS only fields `padded_capture_regions` and `unpadded_capture_regions`. If these are not provided in a WXS run,
+the pipeline will fail.
