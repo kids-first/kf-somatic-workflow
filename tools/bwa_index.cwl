@@ -26,7 +26,7 @@ arguments:
       index -6 -a bwtsw 
 inputs:
   generate_bwa_indexes: { type: 'boolean?' }
-  input_fasta: { type: File, inputBinding: { position: 2 } }
+  input_fasta: { type: File, inputBinding: { position: 2, valueFrom: $(self.basename) } }
   input_alt: { type: 'File?' }
   input_amb: { type: 'File?' }
   input_ann: { type: 'File?' }
