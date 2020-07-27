@@ -19,6 +19,7 @@ arguments:
       --tumorBam $(inputs.input_tumor_aligned.path)
       --ref $(inputs.reference.path)
       --callRegions $(inputs.hg38_strelka_bed.path)
+      $(inputs.manta_small_indels ? '--indelCandidates ' + inputs.manta_small_indels.path : '')
       ${
         var arg = "--runDir=./";
         if (inputs.exome_flag == 'Y'){
@@ -33,6 +34,7 @@ inputs:
   reference: { type: File, secondaryFiles: [^.dict, .fai] }
   hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: gzipped bed file }
   exome_flag: { type: ['null', string], doc: "Y if exome/capture, defaults to WGS"}
+  manta_small_indels: { type: File?, secondaryFiles: [.tbi] }
   input_tumor_aligned:
     type: File
     secondaryFiles: |

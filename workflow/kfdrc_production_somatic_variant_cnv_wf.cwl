@@ -475,6 +475,7 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
+      manta_small_indels: run_manta/manta_small_indels
       exome_flag: choose_defaults/out_exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
@@ -604,7 +605,7 @@ steps:
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
-      [manta_prepass_vcf, manta_pass_vcf]
+      [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
 
 $namespaces:
   sbg: https://sevenbridges.com

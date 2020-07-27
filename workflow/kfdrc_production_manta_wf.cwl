@@ -49,6 +49,7 @@ inputs:
 outputs:
   manta_pass_vcf: { type: File, outputSource: run_manta/manta_pass_vcf }
   manta_prepass_vcf: { type: File, outputSource: run_manta/manta_prepass_vcf }
+  manta_small_indels: { type: File, outputSource: run_manta/manta_small_indels }
 
 steps:
   prepare_reference:
@@ -80,7 +81,7 @@ steps:
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
-      [manta_prepass_vcf, manta_pass_vcf]
+      [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
 
 $namespaces:
   sbg: https://sevenbridges.com
