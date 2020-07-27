@@ -45,6 +45,7 @@ inputs:
 outputs:
   manta_prepass_vcf: {type: File, outputSource: rename_manta_samples/reheadered_vcf}
   manta_pass_vcf: {type: File, outputSource: gatk_selectvariants_manta/pass_vcf}
+  manta_small_indels: {type: File, outputSource: manta/small_indels}
 
 steps:
   manta:
@@ -55,7 +56,7 @@ steps:
       output_basename: output_basename
       reference: indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
-    out: [output_sv]
+    out: [output_sv, small_indels]
 
   rename_manta_samples:
     run: ../tools/bcftools_reheader_vcf.cwl

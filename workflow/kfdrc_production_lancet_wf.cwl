@@ -38,7 +38,7 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache"
+  vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
   output_basename: { type: string, doc: "String value to use as basename for outputs" }
   wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
