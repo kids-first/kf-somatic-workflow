@@ -241,6 +241,7 @@ inputs:
   cnvkit_sex: {type: 'string?', doc: "If known, choices are m,y,male,Male,f,x,female,Female"}
   combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed, i.e. for VarDict: FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\")"}
   combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed"}
+  use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program use the small indels output from Manta in Strelka2 calling?"}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
@@ -476,6 +477,7 @@ steps:
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
       manta_small_indels: run_manta/manta_small_indels
+      use_manta_small_indels: use_manta_small_indels
       exome_flag: choose_defaults/out_exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build

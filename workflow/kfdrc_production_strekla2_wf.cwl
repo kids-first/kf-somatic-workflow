@@ -39,6 +39,7 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   manta_small_indels: { type: 'File?', doc: "Small indels output from Manta workflow", secondaryFiles: [.tbi] }
+  use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program use the small indels output from Manta in Strelka2 calling?"}
   vep_cache: { type: File, doc: "tar gzipped cache from ensembl/local converted cache" }
   hg38_strelka_bed: { type: File, doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes for WGS" }
   hg38_strelka_tbi: { type: 'File?', doc: "Tabix index for hg38_strelka_bed" }
@@ -92,6 +93,7 @@ steps:
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
       manta_small_indels: manta_small_indels
+      use_manta_small_indels: use_manta_small_indels
       exome_flag: exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build

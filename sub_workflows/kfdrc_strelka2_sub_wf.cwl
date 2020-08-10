@@ -11,6 +11,7 @@ inputs:
   reference_dict: File
   hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi']}
   manta_small_indels: {type: File?, secondaryFiles: ['.tbi']}
+  use_manta_small_indels: {type: boolean?, default: false}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -60,6 +61,7 @@ steps:
       reference: indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
       manta_small_indels: manta_small_indels
+      use_manta_small_indels: use_manta_small_indels
       exome_flag: exome_flag
     out: [output_snv, output_indel]
 
