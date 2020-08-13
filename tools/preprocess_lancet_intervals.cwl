@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: bcftools_reheader_vcf
+id: preprocess_lancet_intervals
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
