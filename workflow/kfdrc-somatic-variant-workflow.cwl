@@ -162,6 +162,12 @@ doc: |
       - `Manta`: kfdrc/manta:latest
       - `bcftools` and `vcftools`: kfdrc/bvcftools:latest
 
+  ## Other Resources
+  - tool images: https://hub.docker.com/r/kfdrc/
+  - dockerfiles: https://github.com/d3b-center/bixtools
+
+  ![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.png)
+
 requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
