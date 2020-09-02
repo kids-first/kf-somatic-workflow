@@ -242,6 +242,8 @@ inputs:
   combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed, i.e. for VarDict: FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\")"}
   combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed"}
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program use the small indels output from Manta in Strelka2 calling?"}
+  learnorientation_memory: {type: 'int?', doc: "MB of memory to allocate to GATK learn orientation; defaults to 4000"}
+  getpileup_memory: {type: 'int?', doc: "MB of memory to allocate to GATK get pileup; defaults to 2000"}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
@@ -462,6 +464,8 @@ steps:
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
+      learnorientation_memory: learnorientation_memory
+      getpileup_memory: getpileup_memory
       select_vars_mode: select_vars_mode
     out:
       [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi, mutect2_vep_maf]

@@ -38,6 +38,8 @@ inputs:
     doc: "normal BAM or CRAM"
 
   exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
+  getpileup_memory: {type: int?}
+  learnorientation_memory: {type: int?}
   output_basename: string
   f1r2_counts: {type: "File[]", doc: "orientation counts from mutect2 outputs"}
 
@@ -56,6 +58,7 @@ steps:
       output_basename: output_basename
       tool_name:
         valueFrom: ${return "mutect2"}
+      max_memory: learnorientation_memory
     out: [f1r2_bias]
 
   gatk_get_tumor_pileup_summaries:
@@ -66,6 +69,7 @@ steps:
       reference: indexed_reference_fasta
       interval_list: wgs_calling_interval_list
       exac_common_vcf: exac_common_vcf
+      max_memory: getpileup_memory
     scatter: [interval_list]
     out: [pileup_table]
 
@@ -78,6 +82,7 @@ steps:
       reference: indexed_reference_fasta
       interval_list: wgs_calling_interval_list
       exac_common_vcf: exac_common_vcf
+      max_memory: getpileup_memory
     scatter: [interval_list]
     out: [pileup_table]
 

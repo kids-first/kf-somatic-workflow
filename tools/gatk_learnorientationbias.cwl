@@ -8,14 +8,14 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: $(inputs.max_memory)
     coresMin: 2
 baseCommand: [/gatk, LearnReadOrientationModel]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx4000m"
+      --java-options "-Xmx${return Math.floor(inputs.max_memory/1.074-1)}m"
       -O $(inputs.output_basename).$(inputs.tool_name).f1r2_bias.tar.gz 
 
 inputs:
@@ -29,6 +29,7 @@ inputs:
       position: 1
   tool_name: string
   output_basename: string
+  max_memory: {type: int?, default: 4000, doc: "Maximum memory for GATK LearnReadOrientationModel"}
 outputs:
   f1r2_bias:
     type: File
