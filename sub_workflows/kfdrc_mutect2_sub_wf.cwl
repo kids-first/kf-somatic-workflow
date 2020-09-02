@@ -46,6 +46,8 @@ inputs:
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   output_basename: string
+  getpileup_memory: {type: int?}
+  learnorientation_memory: {type: int?}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
@@ -81,6 +83,8 @@ steps:
       exac_common_vcf: exac_common_vcf
       output_basename: output_basename
       f1r2_counts: mutect2/f1r2_counts
+      getpileup_memory: getpileup_memory
+      learnorientation_memory: learnorientation_memory
     out: [contamination_table, segmentation_table, f1r2_bias]
 
   merge_mutect2_vcf:

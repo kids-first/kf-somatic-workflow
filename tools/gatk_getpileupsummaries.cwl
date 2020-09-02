@@ -8,14 +8,14 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 2000
+    ramMin: $(inputs.max_memory)
     coresMin: 2
 baseCommand: [/gatk, GetPileupSummaries]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx2000m"
+      --java-options "-Xmx${return Math.floor(inputs.max_memory/1.074-1)}m"
       -I $(inputs.aligned_reads.path)
       -V $(inputs.exac_common_vcf.path)
       -L $(inputs.interval_list.path)
@@ -27,6 +27,7 @@ inputs:
   reference: File
   interval_list: File
   exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
+  max_memory: {type: int?, default: 2000, doc: "Maximum memory in MB for GATK GetPileupSummaries to use"}
 
 outputs:
   pileup_table:
