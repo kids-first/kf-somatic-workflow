@@ -7,7 +7,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 10000
+    ramMin: $(inputs.ram)
     coresMin: $(inputs.cores)
   - class: DockerRequirement
     dockerPull: 'kfdrc/manta:1.4.0'
@@ -40,6 +40,7 @@ inputs:
     input_tumor_cram: {type: ["null", File], secondaryFiles: [.crai]}
     input_normal_cram: {type: ["null", File], secondaryFiles: [.crai]}
     cores: {type: ['null', int], default: 18}
+    ram: {type: int?, default: 10000, doc: "MB of RAM an instance must have to run the task"}
     output_basename: string
 outputs:
   output_sv:
