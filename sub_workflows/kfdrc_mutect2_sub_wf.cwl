@@ -56,10 +56,13 @@ outputs:
   mutect2_vep_vcf: {type: File, outputSource: vep_annot_mutect2/output_vcf}
   mutect2_vep_tbi: {type: File, outputSource: vep_annot_mutect2/output_tbi}
   mutect2_vep_maf: {type: File, outputSource: vep_annot_mutect2/output_maf}
-  
+
 steps:
   mutect2:
     run: ../tools/gatk_Mutect2.cwl
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     in:
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
@@ -105,7 +108,7 @@ steps:
       input_stats: mutect2/mutect_stats
       output_basename: output_basename
     out: [merged_stats]
-  
+
   filter_mutect2_vcf:
     run: ../tools/gatk_filtermutectcalls.cwl
     in:

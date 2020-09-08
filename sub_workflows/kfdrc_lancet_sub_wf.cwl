@@ -31,6 +31,9 @@ outputs:
 steps:
   lancet:
     run: ../tools/lancet.cwl
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge
     in:
       input_tumor_bam: input_tumor_aligned
       input_normal_bam: input_normal_aligned

@@ -244,6 +244,7 @@ inputs:
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program use the small indels output from Manta in Strelka2 calling?"}
   learnorientation_memory: {type: 'int?', doc: "MB of memory to allocate to GATK learn orientation; defaults to 4000"}
   getpileup_memory: {type: 'int?', doc: "MB of memory to allocate to GATK get pileup; defaults to 2000"}
+  manta_memory: {type: 'int?', doc: "MB of memory to allocate to Manta; defaults to 10000. Manta jobs take up all available memory on the instance. If jobs are running out of memory on a particular instance, make sure to add enough memory to take it to the next instance."}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
@@ -609,6 +610,7 @@ steps:
       input_normal_name: input_normal_name
       vep_cache: vep_cache
       output_basename: output_basename
+      manta_memory: manta_memory
       select_vars_mode: select_vars_mode
     out:
       [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
@@ -618,5 +620,3 @@ $namespaces:
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
     value: 6
-  - class: 'sbg:AWSInstanceType'
-    value: c5.9xlarge
