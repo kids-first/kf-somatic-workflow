@@ -161,6 +161,18 @@ doc: |-
       - `Variant Effect Predictor`: kfdrc/vep:r93_v2
       - `Manta`: kfdrc/manta:latest
       - `bcftools` and `vcftools`: kfdrc/bvcftools:latest
+  1. For highly complex samples, some tools have shown themselves to require memory allocation adjustments:
+     Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, and Vardict. Optional inputs exist to expand the
+     memory allocation for these jobs: manta_memory, learnorientation_memory, getpileup_memory, and vardict_ram,
+     respectively. For the java tools (Vardict and GATK), these values represent limits on the memory that can
+     be used for the respective jobs. Tasks will go to these values and not exceed it. They may succeed or fail,
+     but they will not exceed the limit established. The memory allocations for these is hardcapped. The memory
+     allocation option for Manta, conversely, is a soft cap. The memory requested will be allocated for the job
+     on a particular machine but once the task is running on the machine it may exceed that requested value. For example,
+     if Manta's memory allocation is set to 10 GB it will have 10 GB allocated to it at task creation, but, if the
+     task ends up running on a machine with more memory available, the task may use it. The largest tasks run at KFDRC
+     have had this value set to 10 GB, but, when run on large machines, the tasks have been observed taking 60-70 GB of memory.
+     As such the option for Manta memory allocation is described as soft cap.
 
 requirements:
   - class: ScatterFeatureRequirement
@@ -221,7 +233,7 @@ inputs:
   min_theta2_frac: {type: 'float?', default: 0.01, doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01"}
   vardict_cpus: {type: 'int?', default: 9, doc: "Number of CPUs for Vardict to use"}
   vardict_min_vaf: {type: 'float?', default: 0.05, doc: "Min variant allele frequency for vardict to consider. Recommend 0.05"}
-  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict"}
+  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict (hard-capped)"}
   vep_ref_build: {type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache"}
 
   # Optional with Multiple Defaults (handled in choose_defaults)
@@ -242,9 +254,9 @@ inputs:
   combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed, i.e. for VarDict: FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\")"}
   combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed"}
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program use the small indels output from Manta in Strelka2 calling?"}
-  learnorientation_memory: {type: 'int?', doc: "MB of memory to allocate to GATK learn orientation; defaults to 4000"}
-  getpileup_memory: {type: 'int?', doc: "MB of memory to allocate to GATK get pileup; defaults to 2000"}
-  manta_memory: {type: 'int?', doc: "MB of memory to allocate to Manta; defaults to 10000. Manta jobs take up all available memory on the instance. If jobs are running out of memory on a particular instance, make sure to add enough memory to take it to the next instance."}
+  learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel; defaults to 40 (hard-capped)"}
+  getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries; defaults to 20 (hard-capped)"}
+  manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to 10 (soft-capped)"}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
