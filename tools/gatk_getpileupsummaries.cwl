@@ -27,7 +27,7 @@ inputs:
   reference: File
   interval_list: File
   exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
-  max_memory: {type: int?, default: 20, doc: "Maximum memory in GB for GATK GetPileupSummaries to use"}
+  max_memory: {type: int?, default: 2, doc: "Maximum memory in GB for GATK GetPileupSummaries to use"}
 
 outputs:
   pileup_table:
