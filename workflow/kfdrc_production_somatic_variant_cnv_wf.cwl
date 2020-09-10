@@ -171,7 +171,7 @@ doc: |-
      on a particular machine but once the task is running on the machine it may exceed that requested value. For example,
      if Manta's memory allocation is set to 10 GB it will have 10 GB allocated to it at task creation, but, if the
      task ends up running on a machine with more memory available, the task may use it. Setting a value here for Manta
-     will not prevent Manta from taking more than that value. The memory usage is Manta is limited by the machine hardware.
+     will not prevent Manta from taking more than that value. The memory usage in Manta is limited by the machine hardware.
      As such the option for Manta memory allocation is described as soft cap. For more information on Manta resource
      usage see their [documentation](https://github.com/Illumina/manta/blob/master/docs/userGuide/README.md#runtime-hardware-requirements).
 
