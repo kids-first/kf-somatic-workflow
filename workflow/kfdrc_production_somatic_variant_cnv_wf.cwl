@@ -47,7 +47,7 @@ doc: |-
   input enum. Depending on what is provided for this input, the tool will set the appropriate default values and check that the user
   has provided the correct inputs. For example, if the user sets the input to WGS the lancet_padding value will be defaulted to 300;
   alternatively, if the user sets the input to WXS the lancet_padding value will be defaulted to 0. In either case, the user can
-  override the defaults simply by providing their own value for lanet_padding in the inputs.
+  override the defaults simply by providing their own value for lancet_padding in the inputs.
 
   The `wgs_or_wxs` flag also controls which inputs are used for certain steps. For example, the bed_interval input for Lancet comes
   from different sources in the WGS and WXS pipelines. In the WGS pipeline separate processing is done ahead of time to generate
