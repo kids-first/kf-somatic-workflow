@@ -45,6 +45,8 @@ inputs:
 
   # Optional with One Default
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
+  manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to 10 (soft-capped)"}
+  manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults to 18"}
 
 outputs:
   manta_pass_vcf: { type: File, outputSource: run_manta/manta_pass_vcf }
@@ -79,6 +81,8 @@ steps:
       input_normal_name: input_normal_name
       vep_cache: vep_cache
       output_basename: output_basename
+      manta_memory: manta_memory
+      manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out:
       [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]

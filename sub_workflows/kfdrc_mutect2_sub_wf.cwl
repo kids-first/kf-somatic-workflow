@@ -48,6 +48,7 @@ inputs:
   output_basename: string
   getpileup_memory: {type: int?}
   learnorientation_memory: {type: int?}
+  filtermutectcalls_memory: {type: int?}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
@@ -119,6 +120,7 @@ steps:
       contamination_table: mutect2_filter_support/contamination_table
       segmentation_table: mutect2_filter_support/segmentation_table
       ob_priors: mutect2_filter_support/f1r2_bias
+      max_memory: filtermutectcalls_memory
     out: [stats_table, filtered_vcf]
 
   gatk_selectvariants:

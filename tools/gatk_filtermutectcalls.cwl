@@ -8,14 +8,14 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: 4000
+    ramMin: ${ return inputs.max_meory * 1000 }
     coresMin: 2
 baseCommand: [/gatk, FilterMutectCalls]
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      --java-options "-Xmx4000m"
+      --java-options "-Xmx${return Math.floor(inputs.max_memory*1000/1.074-1)}m"
       -V $(inputs.mutect_vcf.path)
       -O $(inputs.output_basename).mutect2_filtered.vcf.gz
       -R $(inputs.reference.path)
@@ -33,13 +33,14 @@ inputs:
   contamination_table: File
   segmentation_table: File
   ob_priors: File
-  
+  max_memory: {type: int?, default: 4, doc: "GB of memory to allocate to the task"}
+
 outputs:
   stats_table:
     type: File
     outputBinding:
       glob: '*.mutect2_filtered.txt'
-  
+
   filtered_vcf:
     type: File
     outputBinding:
