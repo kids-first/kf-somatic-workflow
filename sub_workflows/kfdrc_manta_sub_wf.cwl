@@ -41,6 +41,7 @@ inputs:
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
   manta_memory: {type: int?}
+  manta_cores: {type: int?}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
@@ -56,6 +57,7 @@ steps:
       input_normal_cram: input_normal_aligned
       output_basename: output_basename
       ram: manta_memory
+      cores: manta_cores
       reference: indexed_reference_fasta
       hg38_strelka_bed: hg38_strelka_bed
     out: [output_sv, small_indels]

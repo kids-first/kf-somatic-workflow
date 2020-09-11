@@ -257,7 +257,9 @@ inputs:
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program use the small indels output from Manta in Strelka2 calling?"}
   learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel; defaults to 4 (hard-capped)"}
   getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries; defaults to 2 (hard-capped)"}
+  filtermutectcalls_memory: {type: 'int?', doc: "GB of memory to allocate to GATK FilterMutectCalls; defaults to 4 (hard-capped)"}
   manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to 10 (soft-capped)"}
+  manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults to 18"}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed"}
@@ -480,6 +482,7 @@ steps:
       output_basename: output_basename
       learnorientation_memory: learnorientation_memory
       getpileup_memory: getpileup_memory
+      filtermutectcalls_memory: filtermutectcalls_memory
       select_vars_mode: select_vars_mode
     out:
       [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi, mutect2_vep_maf]
@@ -624,6 +627,7 @@ steps:
       vep_cache: vep_cache
       output_basename: output_basename
       manta_memory: manta_memory
+      manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out:
       [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]

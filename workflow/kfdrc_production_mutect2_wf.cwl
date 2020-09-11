@@ -49,6 +49,9 @@ inputs:
   # Optional with One Default
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
   vep_ref_build: { type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache" }
+  learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel; defaults to 4 (hard-capped)"}
+  getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries; defaults to 2 (hard-capped)"}
+  filtermutectcalls_memory: {type: 'int?', doc: "GB of memory to allocate to GATK FilterMutectCalls; defaults to 4 (hard-capped)"}
 
   # Optional with Multiple Defaults (handled in choose_defaults)
   exome_flag: { type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS" }
@@ -141,6 +144,9 @@ steps:
       exome_flag: choose_defaults/out_exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
+      learnorientation_memory: learnorientation_memory
+      getpileup_memory: getpileup_memory
+      filtermutectcalls_memory: filtermutectcalls_memory
       output_basename: output_basename
       select_vars_mode: select_vars_mode
     out:
