@@ -732,3 +732,6 @@ sbg:categories:
 - VARDICT
 - VCF
 - VEP
+sbg:links:
+  - id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.2.0'
+    label: github-release
