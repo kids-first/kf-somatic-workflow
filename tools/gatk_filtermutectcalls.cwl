@@ -8,7 +8,7 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'kfdrc/gatk:4.1.1.0'
   - class: ResourceRequirement
-    ramMin: ${ return inputs.max_meory * 1000 }
+    ramMin: ${ return inputs.max_memory * 1000 }
     coresMin: 2
 baseCommand: [/gatk, FilterMutectCalls]
 arguments:
