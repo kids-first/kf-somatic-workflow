@@ -13,15 +13,16 @@ doc: |
   Alternatively, if you'd like to run it locally using `cwltool`, a basic primer on that can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-CWLtool-b8dbbde2dc7742e4aff290b0a878344d) and combined with app-specific info from the readme below.
   This workflow is the current production workflow, equivalent to this [Cavatica public app](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-somatic-variant-workflow)
 
-  ![data service logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9BnbvIsTkK3QlSGMDvlgu0tZQJ1q4crMvA-S3fcWfIq6y2d2Y)
+  ![data service logo](https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png)
 
   ## Running WGS or WXS
 
-  This workflow is designed to be able to process either WGS or WXS inputs. This functionality comes from usage of the `wgs_or_wxs`
-  input enum. Depending on what is provided for this input, the tool will set the appropriate default values and check that the user
-  has provided the correct inputs. For example, if the user sets the input to WGS the lancet_padding value will be defaulted to 300;
-  alternatively, if the user sets the input to WXS the lancet_padding value will be defaulted to 0. In either case, the user can
-  override the defaults simply by providing their own value for lancet_padding in the inputs.
+  The [combinded workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
+  This functionality comes from usage of the `wgs_or_wxs` input enum. Depending on what is provided for this input, the tool will
+  set the appropriate default values and check that the user has provided the correct inputs. For example, if the user sets the
+  input to WGS the lancet_padding value will be defaulted to 300; alternatively, if the user sets the input to WXS the lancet_padding
+  value will be defaulted to 0. In either case, the user can override the defaults simply by providing their own value for lancet_padding
+  in the inputs.
 
   The `wgs_or_wxs` flag also controls which inputs are used for certain steps. For example, the bed_interval input for Lancet comes
   from different sources in the WGS and WXS pipelines. In the WGS pipeline separate processing is done ahead of time to generate
@@ -39,32 +40,52 @@ doc: |
   There are two WXS only fields `padded_capture_regions` and `unpadded_capture_regions`. If these are not provided in a WXS run,
   the pipeline will fail.
 
-  ### Somatic Variant Calling:
+  ### Standalone Somatic Workflows
+  Each tool used in the [combined workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) can be run on its own. While the combined workflow calls all types of variant, each standalone caller only specializes in one class of variant.
 
-  [Strelka2](https://github.com/Illumina/strelka) v2.9.3 calls single nucleotide variants (SNV) and insertions/deletions (INDEL).
-  [Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) v4.1.10 from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
-  [Lancet](https://github.com/nygenome/lancet) v1.0.7 from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
-  [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) v1.7.0 from AstraZeneca calls SNV, MNV, INDEL and more.
+  | Workflow                                                                                                                                            | CNV | SNV | SV |
+  |-----------------------------------------------------------------------------------------------------------------------------------------------------|-----|-----|----|
+  | [kfdrc-somatic-variant-workflow.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl)     |  x  |  x  |  x |
+  | [kfdrc_production_cnvkit_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_wf.cwl)             |  x  |     |    |
+  | [kfdrc_production_controlfreec_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_controlfreec_wf.cwl) |  x  |     |    |
+  | [kfdrc_production_lancet_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_lancet_wf.cwl)             |     |  x  |    |
+  | [kfdrc_production_manta_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_manta_wf.cwl)               |     |     |  x |
+  | [kfdrc_production_mutect2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_mutect2_wf.cwl)           |     |  x  |    |
+  | [kfdrc_production_strekla2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_strekla2_wf.cwl)         |     |  x  |    |
+  | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |
+  | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |
+
+  #### SNV Callers
+
+  - [Strelka2](https://github.com/Illumina/strelka) `v2.9.3` calls single nucleotide variants (SNV) and insertions/deletions (INDEL).
+  - [Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) `v4.1.10` from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
+  - [Lancet](https://github.com/nygenome/lancet) `v1.0.7` from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
+  - [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more.
+
   Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run in what I'd call an "Exome+" mode, based on the NYGC methods described [here](https://www.biorxiv.org/content/biorxiv/early/2019/04/30/623702.full.pdf). In short, regions from GENCODE gtf with feature annotations `exon`, `UTR`, and start/stop `codon` are used as intervals, as well as regions flanking hits from `strelka2` and `mutect2`. Lastly, VarDict Java run params follow the protocol that the [Blue Collar Bioinformatics](https://bcbio-nextgen.readthedocs.io/en/latest/index.html) uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
   Furthermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
   The pre-`PASS` filtered results can still be obtained from the workflow in the event the user wishes to keep some calls that failed `PASS` criteria.
 
-  ### CNV Estimation:
+  #### CNV Estimators
 
-  [ControlFreeC](https://github.com/BoevaLab/FREEC) v11.6 is used for CNV estimation.
+  - [ControlFreeC](https://github.com/BoevaLab/FREEC) `v11.6` is used for CNV estimation.
   The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
   Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
   Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
-  [CNVkit](https://cnvkit.readthedocs.io/en/stable/) v2.9.3 is a CNV second tool we currently use. [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls with purity estimations. For both tools, we take advantage of b allele frequency integration for copy number genotype estimation and increased CNV accuracy.
+  - [CNVkit](https://cnvkit.readthedocs.io/en/stable/) `v2.9.3` is a CNV second tool we currently use.
+  - [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls from CNVkit with purity estimations.
 
-  ### SV Calls:
+  For ControlFreeC and CNVkit, we take advantage of b allele frequency integration for copy number genotype estimation and increased CNV accuracy.
 
-  [Manta](https://github.com/Illumina/manta) v1.4.0 is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
+  #### SV Callers
+
+  - [Manta](https://github.com/Illumina/manta) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
   Default settings are used at run time.
 
-  ### Variant Annotation
+  #### Variant Annotation
 
-  [Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) release 93, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) v1.6.17 is used to annotate somatic variant and SV calls.
+  - [Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) `release 93`, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) `v1.6.17` is used to annotate somatic variant and SV calls.
+
   Both the annotated vcf and maf file are made available.
 
   ### Tips to Run:
@@ -166,6 +187,21 @@ doc: |
       - `Manta`: kfdrc/manta:latest
       - `bcftools` and `vcftools`: kfdrc/bvcftools:latest
 
+  1. For highly complex samples, some tools have shown themselves to require memory allocation adjustments:
+     Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, GATK FilterMutectCalls and Vardict.
+     Optional inputs exist to expand the memory allocation for these jobs: manta_memory, learnorientation_memory,
+     getpileup_memory, filtermutectcalls_memory, and vardict_ram, respectively.
+     For the java tools (Vardict and GATK), these values represent limits on the memory that can
+     be used for the respective jobs. Tasks will go to these values and not exceed it. They may succeed or fail,
+     but they will not exceed the limit established. The memory allocations for these is hardcapped. The memory
+     allocation option for Manta, conversely, is a soft cap. The memory requested will be allocated for the job
+     on a particular machine but once the task is running on the machine it may exceed that requested value. For example,
+     if Manta's memory allocation is set to 10 GB it will have 10 GB allocated to it at task creation, but, if the
+     task ends up running on a machine with more memory available, the task may use it. Setting a value here for Manta
+     will not prevent Manta from taking more than that value. The memory usage in Manta is limited by the machine hardware.
+     As such the option for Manta memory allocation is described as soft cap. For more information on Manta resource
+     usage see their [documentation](https://github.com/Illumina/manta/blob/master/docs/userGuide/README.md#runtime-hardware-requirements).
+
   ## Other Resources
   - tool images: https://hub.docker.com/r/kfdrc/
   - dockerfiles: https://github.com/d3b-center/bixtools
@@ -256,7 +292,8 @@ inputs:
   vardict_cpus: {type: 'int?', default: 9, doc: "Number of CPUs for Vardict to use"}
   vardict_min_vaf: {type: 'float?', default: 0.05, doc: "Min variant allele frequency\
       \ for vardict to consider. Recommend 0.05"}
-  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict"}
+  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict\
+      \ (hard-capped)"}
   vep_ref_build: {type: 'string?', default: "GRCh38", doc: "Genome ref build used,\
       \ should line up with cache"}
 
@@ -293,6 +330,16 @@ inputs:
       \ expression if vcf has non-PASS combined calls, use as-needed"}
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program\
       \ use the small indels output from Manta in Strelka2 calling?"}
+  learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel;\
+      \ defaults to 4 (hard-capped)"}
+  getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries;\
+      \ defaults to 2 (hard-capped)"}
+  filtermutectcalls_memory: {type: 'int?', doc: "GB of memory to allocate to GATK\
+      \ FilterMutectCalls; defaults to 4 (hard-capped)"}
+  manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to\
+      \ 10 (soft-capped)"}
+  manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults\
+      \ to 18"}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed\
@@ -519,6 +566,9 @@ steps:
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
+      learnorientation_memory: learnorientation_memory
+      getpileup_memory: getpileup_memory
+      filtermutectcalls_memory: filtermutectcalls_memory
       select_vars_mode: select_vars_mode
     out: [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi,
       mutect2_vep_maf]
@@ -660,6 +710,8 @@ steps:
       input_normal_name: input_normal_name
       vep_cache: vep_cache
       output_basename: output_basename
+      manta_memory: manta_memory
+      manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
 
@@ -668,11 +720,10 @@ $namespaces:
 hints:
 - class: 'sbg:maxNumberOfParallelInstances'
   value: 6
-- class: 'sbg:AWSInstanceType'
-  value: c5.9xlarge
 sbg:license: Apache License 2.0
 sbg:publisher: KFDRC
 sbg:categories:
+- BAM
 - CNV
 - CNVKIT
 - CONTROLFREEC
