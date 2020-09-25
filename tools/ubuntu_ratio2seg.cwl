@@ -35,7 +35,7 @@ arguments:
         for line in ratio_file:
             data = line.rstrip("\n").split("\t")
             (chrom, pos, ratio, meanRatio) = (data[0], data[1], data[2], data[3])
-            if meanRatio == "-1":
+            if float(meanRatio) == -1:
                 continue
             count += 1
             if count == 1:
@@ -45,7 +45,7 @@ arguments:
             else:
                 if chrom != on_chr:
                     out.write("\t".join((smp, "chr" + on_chr, start, h[on_chr], str(count))) + "\t")
-                    if seg_ratio != "0":
+                    if float(seg_ratio) != 0:
                         out.write(str(math.log(float(seg_ratio), 2)) + "\n")
                     else:
                         out.write(str(math.log(float(seg_ratio) + 1, 2)) + "\n")
@@ -55,7 +55,7 @@ arguments:
                     count = 1
                 elif meanRatio != seg_ratio:
                     out.write("\t".join((smp, "chr" + chrom, start, str(int(pos)-1), str(count))) + "\t")
-                    if seg_ratio != "0":
+                    if float(seg_ratio) != 0:
                         out.write(str(math.log(float(seg_ratio), 2)) + "\n")
                     else:
                         out.write(str(math.log(float(seg_ratio) + 1, 2)) + "\n")
