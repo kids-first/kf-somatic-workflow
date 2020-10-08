@@ -53,7 +53,7 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 #### SNV Callers
 
 - [Strelka2](https://github.com/Illumina/strelka) `v2.9.3` calls single nucleotide variants (SNV) and insertions/deletions (INDEL).
-- [Mutect2](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.1.0/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php) `v4.1.10` from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
+- [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0` from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
 - [Lancet](https://github.com/nygenome/lancet) `v1.0.7` from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
 - [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more.
 
@@ -70,7 +70,7 @@ Outputs include raw ratio calls, copy number calls with p values assigned, b all
 - [CNVkit](https://cnvkit.readthedocs.io/en/stable/) `v2.9.3` is a CNV second tool we currently use.
 - [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls from CNVkit with purity estimations.
 
-For ControlFreeC and CNVkit, we take advantage of b allele frequency integration for copy number genotype estimation and increased CNV accuracy.
+For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy.
 
 #### SV Callers
 
