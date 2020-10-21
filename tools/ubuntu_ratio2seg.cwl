@@ -11,6 +11,7 @@ requirements:
 baseCommand: [python, -c]
 arguments:
   - position: 0
+    shellQuote: true
     valueFrom: |
 
         import math
