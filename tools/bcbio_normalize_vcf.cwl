@@ -8,7 +8,7 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: DockerRequirement
-    dockerPull: 'migbro/vcfutils:latest'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest'
 
 baseCommand: [bcftools, norm, -m]
 arguments:

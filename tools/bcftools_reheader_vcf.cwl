@@ -4,7 +4,7 @@ id: bcftools_reheader_vcf
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/bvcftools:latest'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest'
   - class: ResourceRequirement
     ramMin: 1000
     coresMin: 1

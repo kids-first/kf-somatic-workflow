@@ -8,7 +8,7 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: DockerRequirement
-    dockerPull: 'kfdrc/bcbio_vr:0.2.4'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/bcbio_vr:0.2.4'
 
 baseCommand: [/bcbio-variation-recall]
 arguments:

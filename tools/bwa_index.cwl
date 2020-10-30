@@ -12,7 +12,7 @@ requirements:
   - class: InitialWorkDirRequirement
     listing: [$(inputs.input_fasta),$(inputs.input_alt),$(inputs.input_amb),$(inputs.input_ann),$(inputs.input_bwt),$(inputs.input_pac),$(inputs.input_sa)]
   - class: DockerRequirement
-    dockerPull: 'kfdrc/bwa:0.7.17-dev'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/bwa:0.7.17-dev'
   - class: InlineJavascriptRequirement
 baseCommand: []
 arguments:

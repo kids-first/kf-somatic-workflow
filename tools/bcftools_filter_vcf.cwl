@@ -5,7 +5,7 @@ doc: "More generic tool to take in an include expression and optionally an exclu
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/bvcftools:latest'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest'
   - class: ResourceRequirement
     ramMin: 1000
     coresMin: 1

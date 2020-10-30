@@ -7,7 +7,7 @@ doc: |-
   The tool returnts the dict as its only output.
 requirements:
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.1.7.0R'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.7.0R'
   - class: InitialWorkDirRequirement
     listing: [$(inputs.input_fasta),$(inputs.input_dict)]
   - class: InlineJavascriptRequirement

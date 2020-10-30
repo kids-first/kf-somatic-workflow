@@ -3,7 +3,7 @@ class: CommandLineTool
 id: ubuntu_ratio2seg
 requirements:
   - class: DockerRequirement
-    dockerPull: 'kfdrc/python:2.7.13'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/python:2.7.13'
   - class: ResourceRequirement
     ramMin: 1000
     coresMin: 1

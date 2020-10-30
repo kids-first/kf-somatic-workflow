@@ -6,7 +6,7 @@ doc: >-
   The tool will output the input_file with the index, provided or created within, as a secondary file.
 requirements:
   - class: DockerRequirement
-    dockerPull: 'kfdrc/samtools:1.9'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9'
   - class: InitialWorkDirRequirement
     listing: [$(inputs.input_file),$(inputs.input_index)]
   - class: InlineJavascriptRequirement

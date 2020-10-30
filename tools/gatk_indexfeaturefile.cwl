@@ -4,7 +4,7 @@ id: gatk_indexfeaturefile
 doc: "Creates an index for a feature file, e.g. VCF or BED file."
 requirements:
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.1.7.0R'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.7.0R'
   - class: InitialWorkDirRequirement
     listing: [$(inputs.input_file),$(inputs.input_index)]
   - class: InlineJavascriptRequirement

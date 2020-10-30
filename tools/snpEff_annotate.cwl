@@ -7,7 +7,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: 8000
   - class: DockerRequirement
-    dockerPull: 'kfdrc/snpeff:4_3t'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/snpeff:4_3t'
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1

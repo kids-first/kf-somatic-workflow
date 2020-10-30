@@ -8,7 +8,7 @@ requirements:
     ramMin: 24000
     coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vep:r93'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/vep:r93'
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1

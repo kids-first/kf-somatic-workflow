@@ -8,7 +8,7 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: DockerRequirement
-    dockerPull: 'kfdrc/bcbio_vardict_filter'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/bcbio_vardict_filter'
 
 baseCommand: [python]
 arguments:

@@ -9,7 +9,7 @@ requirements:
     coresMin: 2
     coresMax: 4
   - class: DockerRequirement
-    dockerPull: 'kfdrc/gatk:4.1.1.0'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0'
 baseCommand: []
 arguments:
   - position: 1
