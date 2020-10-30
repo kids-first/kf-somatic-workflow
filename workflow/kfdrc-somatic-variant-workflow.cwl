@@ -175,17 +175,17 @@ doc: |
               - `theta2_subclone_seg`: Theta subclone seg file
 
   1. Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
-      - `Strelka2`: obenauflab/strelka
-      - `Mutect2` and all `GATK` tools: kfdrc/gatk:4.1.1.0
-      - `Lancet`: kfdrc/lancet:1.0.7
-      - `VarDict Java`: kfdrc/vardict:1.7.0
+      - `Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/strelka
+      - `Mutect2` and all `GATK` tools: pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
+      - `Lancet`: pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7
+      - `VarDict Java`: pgc-images.sbgenomics.com/d3b-bixu/vardict:1.7.0
       - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
       - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
-      - `THetA2`: kfdrc/theta2:0.7
-      - `samtools`: kfdrc/samtools:1.9
-      - `Variant Effect Predictor`: kfdrc/vep:r93_v2
-      - `Manta`: kfdrc/manta:latest
-      - `bcftools` and `vcftools`: kfdrc/bvcftools:latest
+      - `THetA2`: pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7
+      - `samtools`: pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
+      - `Variant Effect Predictor`: pgc-images.sbgenomics.com/d3b-bixu/vep:r93_v2
+      - `Manta`: pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
+      - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
 
   1. For highly complex samples, some tools have shown themselves to require memory allocation adjustments:
      Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, GATK FilterMutectCalls and Vardict.
