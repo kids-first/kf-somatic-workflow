@@ -10,7 +10,7 @@ intvl_target_size=20000 will yield about 55 bed files, each with about 60M bp wo
 split into 20kb chunks."
 requirements:
   - class: DockerRequirement
-    dockerPull: 'kfdrc/python:2.7.13'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/python:2.7.13'
   - class: InlineJavascriptRequirement
 baseCommand: [python, -c]
 arguments:

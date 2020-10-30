@@ -4,7 +4,7 @@ id: preprocess_lancet_intervals
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/bedops:2.4.36'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/bedops:2.4.36'
   - class: ResourceRequirement
     ramMin: 8000
     coresMin: 4

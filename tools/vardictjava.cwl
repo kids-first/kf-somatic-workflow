@@ -8,7 +8,7 @@ requirements:
     ramMin: ${return inputs.ram * 1000}
     coresMin: $(inputs.cpus)
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vardict:1.7.0'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/vardict:1.7.0'
 
 baseCommand: [/bin/bash, -c]
 arguments:

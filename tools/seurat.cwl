@@ -5,7 +5,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/seurat:latest'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/seurat:latest'
   - class: ResourceRequirement
     ramMin: 3000
     coresMin: 4

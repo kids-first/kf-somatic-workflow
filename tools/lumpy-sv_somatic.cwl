@@ -7,7 +7,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: 24000
   - class: DockerRequirement
-    dockerPull: 'kfdrc/lumpy:0.2.13'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/lumpy:0.2.13'
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1

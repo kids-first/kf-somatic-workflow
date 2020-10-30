@@ -8,7 +8,7 @@ requirements:
     ramMin: ${return inputs.cores * 2000}
     coresMin: $(inputs.cpus)
   - class: DockerRequirement
-    dockerPull: 'kfdrc/smoove:0.2.5'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/smoove:0.2.5'
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1

@@ -10,7 +10,7 @@ requirements:
     ramMin: ${ return inputs.ram * 1000 }
     coresMin: $(inputs.cores)
   - class: DockerRequirement
-    dockerPull: 'kfdrc/manta:1.4.0'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0'
 
 baseCommand: [/manta-1.4.0.centos6_x86_64/bin/configManta.py]
 arguments:

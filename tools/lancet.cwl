@@ -8,7 +8,7 @@ requirements:
     ramMin: ${return inputs.ram * 1000}
     coresMin: 6
   - class: DockerRequirement
-    dockerPull: 'kfdrc/lancet:1.0.7'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7'
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:

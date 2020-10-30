@@ -8,7 +8,7 @@ requirements:
     ramMin: 10000
     coresMin: $(inputs.cores)
   - class: DockerRequirement
-    dockerPull: 'obenauflab/strelka'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/strelka'
 
 baseCommand: [/strelka-2.9.3.centos6_x86_64/bin/configureStrelkaSomaticWorkflow.py]
 arguments:

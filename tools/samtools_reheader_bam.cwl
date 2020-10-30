@@ -4,7 +4,7 @@ id: samtools_reheader_bam
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/samtools:1.9'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9'
   - class: ResourceRequirement
     ramMin: 8000
     coresMin: 4

@@ -7,7 +7,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: 8000
   - class: DockerRequirement
-    dockerPull: 'danria/cnvnator:latest'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/cnvnator:latest'
 baseCommand: []
 arguments:
   - position: 1
