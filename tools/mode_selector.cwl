@@ -4,7 +4,7 @@ id: mode_selector
 doc: "Selects the appropriate input to serve as the output given the mode" 
 requirements:
   - class: DockerRequirement
-    dockerPull: 'ubuntu:18.04'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/ubuntu:18.04'
   - class: InlineJavascriptRequirement
 baseCommand: ["/bin/bash", "-c"]
 arguments:
