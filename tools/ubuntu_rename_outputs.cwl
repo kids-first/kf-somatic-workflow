@@ -5,7 +5,7 @@ doc: "Rename contrfreeec outputs"
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'ubuntu:18.04'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/ubuntu:18.04'
   - class: ResourceRequirement
     ramMin: 1000
     coresMin: 2
