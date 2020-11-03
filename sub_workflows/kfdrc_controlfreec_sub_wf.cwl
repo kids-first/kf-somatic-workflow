@@ -27,6 +27,7 @@ inputs:
 
 outputs:
   ctrlfreec_pval: {type: File, outputSource: rename_outputs/ctrlfreec_pval}
+  ctrlfreec_cnvs: {type: File, outputSource: rename_outputs/ctrlfreec_cnvs}
   ctrlfreec_config: {type: File, outputSource: rename_outputs/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: rename_outputs/ctrlfreec_pngs}
   ctrlfreec_bam_ratio: {type: File, outputSource: rename_outputs/ctrlfreec_bam_ratio}
@@ -75,15 +76,15 @@ steps:
       coeff_var: coeff_var
       sex: cfree_sex
       contamination_adjustment: contamination_adjustment
-    out: [cnvs_pvalue, config_script, pngs, ratio, sample_BAF, info_txt]
+    out: [cnvs, cnvs_pvalue, config_script, pngs, ratio, sample_BAF, info_txt]
 
   rename_outputs:
     run: ../tools/ubuntu_rename_outputs.cwl
     in:
-      input_files: [control_free_c/cnvs_pvalue, control_free_c/config_script, control_free_c/ratio, control_free_c/sample_BAF, control_free_c/info_txt]
+      input_files: [control_free_c/cnvs, control_free_c/cnvs_pvalue, control_free_c/config_script, control_free_c/ratio, control_free_c/sample_BAF, control_free_c/info_txt]
       input_pngs: control_free_c/pngs
       output_basename: output_basename
-    out: [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_baf, ctrlfreec_info]
+    out: [ctrlfreec_cnvs, ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_baf, ctrlfreec_info]
   
   convert_ratio_to_seg:
     run: ../tools/ubuntu_ratio2seg.cwl

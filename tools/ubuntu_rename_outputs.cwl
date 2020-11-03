@@ -56,7 +56,7 @@ outputs:
     type: File?
     outputBinding:
       glob: '*.BAF.txt'
-  ctrlfreec_cnv:
+  ctrlfreec_cnvs:
     type: File
     outputBinding:
       glob: '*.CNVs'
