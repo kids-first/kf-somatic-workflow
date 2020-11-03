@@ -26,8 +26,8 @@ inputs:
   cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
 
 outputs:
-  ctrlfreec_pval: {type: File, outputSource: rename_outputs/ctrlfreec_pval}
   ctrlfreec_cnvs: {type: File, outputSource: rename_outputs/ctrlfreec_cnvs}
+  ctrlfreec_pval: {type: File, outputSource: rename_outputs/ctrlfreec_pval}
   ctrlfreec_config: {type: File, outputSource: rename_outputs/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: rename_outputs/ctrlfreec_pngs}
   ctrlfreec_bam_ratio: {type: File, outputSource: rename_outputs/ctrlfreec_bam_ratio}

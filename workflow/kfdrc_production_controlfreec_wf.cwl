@@ -61,6 +61,7 @@ inputs:
   unpadded_capture_regions: { type: 'File?', doc: "Capture regions with NO padding for cnv calling" }
 
 outputs:
+  ctrlfreec_cnvs: {type: File, outputSource: run_controlfreec/ctrlfreec_cnvs}
   ctrlfreec_pval: { type: File, outputSource: run_controlfreec/ctrlfreec_pval }
   ctrlfreec_config: { type: File, outputSource: run_controlfreec/ctrlfreec_config }
   ctrlfreec_pngs: { type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs }
@@ -149,7 +150,7 @@ steps:
       contamination_adjustment: cfree_contamination_adjustment
       cfree_sex: cfree_sex
     out:
-      [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg, ctrlfreec_baf, ctrlfreec_info]
+      [ctrlfreec_cnvs, ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg, ctrlfreec_baf, ctrlfreec_info]
 
 $namespaces:
   sbg: https://sevenbridges.com
