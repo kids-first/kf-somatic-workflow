@@ -182,6 +182,4 @@ $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 6
-  - class: 'sbg:AWSInstanceType'
-    value: c5.9xlarge
+    value: 4
