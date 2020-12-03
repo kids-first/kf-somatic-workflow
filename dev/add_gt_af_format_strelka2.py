@@ -65,22 +65,33 @@ def _calc_AF(record):
       indels:  GT:DP:DP2:TAR:TIR:TOR:DP50:FDP50:SUBDP50:BCN50  dp=DP                TIR = alt_counts(tier1,tier2)
     """
     # only indels should have TIR field
-    af = 0.0
+    tum_af = 0.0
+    norm_af = 0.0
     if 'TIR' in record.samples[samp_list[tum_idx]]:
         try:
-            af = sum(list(record.samples[samp_list[tum_idx]]['TIR']))/record.samples[samp_list[tum_idx]]['DP']
+            tum_af = sum(list(record.samples[samp_list[tum_idx]]['TIR']))/record.samples[samp_list[tum_idx]]['DP']
         except Exception as e:
-            sys.stderr.write(str(e) + "\nError while calculating af for indel at " + record.contig + " " 
+            sys.stderr.write(str(e) + "\nError while calculating af for tumor indel at " + record.contig + " " 
             + str(record.pos))
-        return af
+        try:
+            norm_af = sum(list(record.samples[samp_list[norm_idx]]['TIR']))/record.samples[samp_list[norm_idx]]['DP']
+        except Exception as e:
+            sys.stderr.write(str(e) + "\nError while calculating af for normal indel at " + record.contig + " " 
+            + str(record.pos))
+
     else:
         snp_key = record.alts[0] + "U"
         try:
-            af = sum(list(record.samples[samp_list[tum_idx]][snp_key]))/record.samples[samp_list[tum_idx]]['DP']
+            tum_af = sum(list(record.samples[samp_list[tum_idx]][snp_key]))/record.samples[samp_list[tum_idx]]['DP']
         except Exception as e:
-            sys.stderr.write(str(e) + "\nError while calculating af for snp at " + record.contig + " " 
+            sys.stderr.write(str(e) + "\nError while calculating af for tumor snp at " + record.contig + " " 
             + str(record.pos))
-        return af
+        try:
+            norm_af = sum(list(record.samples[samp_list[norm_idx]][snp_key]))/record.samples[samp_list[norm_idx]]['DP']
+        except Exception as e:
+            sys.stderr.write(str(e) + "\nError while calculating af for normal snp at " + record.contig + " " 
+            + str(record.pos))
+    return tum_af, norm_af
 
 
 
@@ -102,11 +113,11 @@ samp_list = list(strelka2_in.header.samples)
 for rec in strelka2_in.fetch():
     tumor_gt, normal_gt = _tumor_normal_genotypes(rec)
     # some commented values as I decide whether it makes sense to include AF for normal sample
-    # tum_af_val, norm_af_val = _calc_AF(rec)
-    tum_af_val = _calc_AF(rec)
+    tum_af_val, norm_af_val = _calc_AF(rec)
+    # tum_af_val = _calc_AF(rec)
     rec.samples[samp_list[norm_idx]]['GT'] = normal_gt
     rec.samples[samp_list[tum_idx]]['GT'] = tumor_gt
-    # rec.samples[samp_list[norm_idx]]['AF'] = norm_af_val
+    rec.samples[samp_list[norm_idx]]['AF'] = norm_af_val
     rec.samples[samp_list[tum_idx]]['AF'] = tum_af_val
     updated_vcf.write(rec)
 updated_vcf.close()
