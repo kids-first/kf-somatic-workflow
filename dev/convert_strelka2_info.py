@@ -50,23 +50,28 @@ def _tumor_normal_genotypes(record):
     if not sgt_val:
         tumor_gt = "0/0"
     else:
-        sgt_val = sgt_val[0].split("->")[-1]
         tumor_gt = alleles_to_gt(sgt_val)
+    # convert to tuple for use in pysam
+    # pdb.set_trace()
+    tumor_gt = tuple(map(int, tumor_gt.split("/")))
+    normal_gt = tuple(map(int,normal_gt.split ("/")))
     return tumor_gt, normal_gt
+
+
 if len(sys.argv) == 1:
     sys.stderr.write('Need input vcf\n')
     exit()
 strelka2_in = VariantFile(sys.argv[1])
 # create new header adding: ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-strelka2_in.header.add_meta('FORMAT', items=[('ID','GT'), ('Number',1), ('Type','String'), ('Description', 'Genotype')])
-updated_vcf = VariantFile('-', 'w', header=strelka2_in.header)
+strelka2_in.header.add_meta('FORMAT', items=[('ID','GT'), ('Number',1), ('Type','String'), ('Description', 'Genotype converted for cross-compatibility')])
+updated_vcf = VariantFile('converted.vcf.gz', 'w', header=strelka2_in.header)
 norm_idx = 0
 tum_idx = 1
 samp_list = list(strelka2_in.header.samples)
 
 for rec in strelka2_in.fetch():
     tumor_gt, normal_gt = _tumor_normal_genotypes(rec)
-    pdb.set_trace()
+    # pdb.set_trace()
     rec.samples[samp_list[norm_idx]]['GT'] = normal_gt
     rec.samples[samp_list[tum_idx]]['GT'] = tumor_gt
     updated_vcf.write(rec)
