@@ -122,10 +122,10 @@ if len(sys.argv) == 1:
 strelka2_in = pysam.VariantFile(sys.argv[1])
 out_fn = sys.argv[2] + ".vcf.gz"
 # create new header adding: ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-# and: ##FORMAT=<ID=AF,Number=.,Type=Float,Description="Allele frequency, as recommended by strleka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), 'TIR/TIR+TAR (somatic indels)"
+# and: ##FORMAT=<ID=AF,Number=.,Type=Float,Description="Allele frequency, as recommended by strelka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), 'TIR/TIR+TAR (somatic indels)"
 # and: ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed. Added in post for compatibility"
 strelka2_in.header.add_meta('FORMAT', items=[('ID','GT'), ('Number',1), ('Type','String'), ('Description', 'Genotype converted for cross-compatibility using bcbio method')])
-strelka2_in.header.add_meta('FORMAT', items=[('ID','AF'), ('Number', '.'), ('Type', 'Float'), ('Description', 'Allele frequency, as recommended by strleka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), TIR/TIR+TAR (somatic indels)')])
+strelka2_in.header.add_meta('FORMAT', items=[('ID','AF'), ('Number', '.'), ('Type', 'Float'), ('Description', 'Allele frequency, as recommended by strelka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), TIR/TIR+TAR (somatic indels)')])
 strelka2_in.header.add_meta('FORMAT', items=[('ID','AD'), ('Number', 'R'), ('Type', 'Integer'), ('Description', 'Allelic depths for the ref and alt alleles in the order listed. Added in post for compatibility')])
 updated_vcf = pysam.VariantFile(out_fn, 'w', header=strelka2_in.header, threads=8)
 norm_idx = 0
