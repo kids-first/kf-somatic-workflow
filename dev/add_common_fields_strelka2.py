@@ -27,7 +27,6 @@ def _tumor_normal_genotypes(record):
             return "0/0"
         else:
             # Non-standard representations, het is our best imperfect representation
-            print(record.pos, record.ref, record.alts, val)
             sys.stderr.write("WARN: Non standard representation found, set as 0/1\t" + "\t".join([record.contig, str(record.pos), record.info['NT'], record.info['SGT']]) + "\n")
             return "0/1"
     def alleles_to_gt(val):
@@ -51,49 +50,70 @@ def _tumor_normal_genotypes(record):
     else:
         tumor_gt = alleles_to_gt(sgt_val)
     # convert to tuple for use in pysam
-    # pdb.set_trace()
     tumor_gt = tuple(map(int, tumor_gt.split("/")))
     normal_gt = tuple(map(int,normal_gt.split ("/")))
     return tumor_gt, normal_gt
 
-
-def _calc_AF(record):
-    """From bcio:
-    Strelka2 doesn't report exact AF for a variant, however it can be calculated as alt_counts/dp from existing fields:
-    somatic
-      snps:    GT:DP:FDP:SDP:SUBDP:AU:CU:GU:TU                 dp=DP                {ALT}U[0] = alt_counts(tier1,tier2)
-      indels:  GT:DP:DP2:TAR:TIR:TOR:DP50:FDP50:SUBDP50:BCN50  dp=DP                TIR = alt_counts(tier1,tier2)
+def _calc_AD(record):
+    """From strelka2 docs:
+    SNPs:
+    refCounts = Value of FORMAT column $REF + “U” (e.g. if REF="A" then use the value in FOMRAT/AU)
+    altCounts = Value of FORMAT column $ALT + “U” (e.g. if ALT="T" then use the value in FOMRAT/TU)
+    tier1RefCounts = First comma-delimited value from $refCounts
+    tier1AltCounts = First comma-delimited value from $altCounts
+    Indels:
+    tier1RefCounts = First comma-delimited value from FORMAT/TAR
+    tier1AltCounts = First comma-delimited value from FORMAT/TIR
     """
+    tum_alt_ct = 0
+    tum_ref_ct = 0
+    norm_alt_ct = 0
+    norm_ref_ct = 0
     # only indels should have TIR field
-    tum_af = 0.0
-    norm_af = 0.0
     if 'TIR' in record.samples[samp_list[tum_idx]]:
-        try:
-            tum_af = sum(list(record.samples[samp_list[tum_idx]]['TIR']))/record.samples[samp_list[tum_idx]]['DP']
-        except Exception as e:
-            sys.stderr.write(str(e) + "\nError while calculating af for tumor indel at " + record.contig + " " 
-            + str(record.pos))
-        try:
-            norm_af = sum(list(record.samples[samp_list[norm_idx]]['TIR']))/record.samples[samp_list[norm_idx]]['DP']
-        except Exception as e:
-            sys.stderr.write(str(e) + "\nError while calculating af for normal indel at " + record.contig + " " 
-            + str(record.pos))
+        tum_ref_ct = record.samples[samp_list[tum_idx]]['TAR'][0]
+        tum_alt_ct = record.samples[samp_list[tum_idx]]['TIR'][0]
+        norm_ref_ct = record.samples[samp_list[norm_idx]]['TAR'][0]
+        norm_alt_ct = record.samples[samp_list[norm_idx]]['TIR'][0]
 
     else:
-        snp_key = record.alts[0] + "U"
-        try:
-            tum_af = sum(list(record.samples[samp_list[tum_idx]][snp_key]))/record.samples[samp_list[tum_idx]]['DP']
-        except Exception as e:
-            sys.stderr.write(str(e) + "\nError while calculating af for tumor snp at " + record.contig + " " 
-            + str(record.pos))
-        try:
-            norm_af = sum(list(record.samples[samp_list[norm_idx]][snp_key]))/record.samples[samp_list[norm_idx]]['DP']
-        except Exception as e:
-            sys.stderr.write(str(e) + "\nError while calculating af for normal snp at " + record.contig + " " 
-            + str(record.pos))
-    return tum_af, norm_af
+        snp_ref_key = record.ref + "U"
+        snp_alt_key = record.alts[0] + "U"
+        tum_ref_ct = record.samples[samp_list[tum_idx]][snp_ref_key][0]
+        tum_alt_ct = record.samples[samp_list[tum_idx]][snp_alt_key][0]
+        norm_ref_ct = record.samples[samp_list[norm_idx]][snp_ref_key][0]
+        norm_alt_ct = record.samples[samp_list[norm_idx]][snp_alt_key][0]
+    tum_ad = (tum_ref_ct, tum_alt_ct)
+    norm_ad = (norm_ref_ct, norm_alt_ct)
+    # return as tuple for pysam compatibility
+    return tum_ad, norm_ad
 
 
+
+def _calc_AF_AD(record):
+    """From strelka2 docs:
+    SNPs:
+    Somatic allele freqeuncy is $tier1AltCounts / ($tier1AltCounts + $tier1RefCounts)
+    Indels:
+    Somatic allele freqeuncy is $tier1AltCounts / ($tier1AltCounts + $tier1RefCounts)
+    """
+    tum_af = 0.0
+    norm_af = 0.0
+    tum_ad, norm_ad = _calc_AD(record)
+    try:
+        tum_af = tum_ad[1]/sum(list(tum_ad))
+    except Exception as e:
+        sys.stderr.write(str(e) + "\nError while calculating af for tumor at " + record.contig + " " 
+        + str(record.pos) + "\n")
+        pdb.set_trace()
+    try:
+        norm_af = norm_ad[1]/sum(list(norm_ad))
+    except Exception as e:
+        sys.stderr.write(str(e) + "\nError while calculating af for normal at " + record.contig + " " 
+        + str(record.pos) + "\n")
+        pdb.set_trace()
+
+    return tum_af, norm_af, tum_ad, norm_ad
 
 
 if len(sys.argv) == 1:
@@ -102,25 +122,28 @@ if len(sys.argv) == 1:
 strelka2_in = pysam.VariantFile(sys.argv[1])
 out_fn = sys.argv[2] + ".vcf.gz"
 # create new header adding: ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-# and: ##FORMAT=<ID=AF,Number=.,Type=Float,Description="Allele frequency, as calculated in bcbio: <ALT>U/DP (somatic snps), 'TIR (somatic indels)"
+# and: ##FORMAT=<ID=AF,Number=.,Type=Float,Description="Allele frequency, as recommended by strleka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), 'TIR/TIR+TAR (somatic indels)"
+# and: ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed. Added in post for compatibility"
 strelka2_in.header.add_meta('FORMAT', items=[('ID','GT'), ('Number',1), ('Type','String'), ('Description', 'Genotype converted for cross-compatibility using bcbio method')])
-strelka2_in.header.add_meta('FORMAT', items=[('ID','AF'), ('Number', '.'), ('Type', 'Float'), ('Description', 'Allele frequency, as calculated in bcbio: <ALT>U/DP (somatic snps), TIR (somatic indels)')])
+strelka2_in.header.add_meta('FORMAT', items=[('ID','AF'), ('Number', '.'), ('Type', 'Float'), ('Description', 'Allele frequency, as recommended by strleka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), TIR/TIR+TAR (somatic indels)')])
+strelka2_in.header.add_meta('FORMAT', items=[('ID','AD'), ('Number', 'R'), ('Type', 'Integer'), ('Description', 'Allelic depths for the ref and alt alleles in the order listed. Added in post for compatibility')])
 updated_vcf = pysam.VariantFile(out_fn, 'w', header=strelka2_in.header, threads=8)
 norm_idx = 0
 tum_idx = 1
 samp_list = list(strelka2_in.header.samples)
 
 for rec in strelka2_in.fetch():
+    # get new GT, AF, AD values
     tumor_gt, normal_gt = _tumor_normal_genotypes(rec)
-    # some commented values as I decide whether it makes sense to include AF for normal sample
-    tum_af_val, norm_af_val = _calc_AF(rec)
-    # tum_af_val = _calc_AF(rec)
+    tum_af_val, norm_af_val ,tum_ad_val, norm_ad_val = _calc_AF_AD(rec)
+    # Set values in record and print
     rec.samples[samp_list[norm_idx]]['GT'] = normal_gt
     rec.samples[samp_list[tum_idx]]['GT'] = tumor_gt
     rec.samples[samp_list[norm_idx]]['AF'] = norm_af_val
     rec.samples[samp_list[tum_idx]]['AF'] = tum_af_val
+    rec.samples[samp_list[norm_idx]]['AD'] = norm_ad_val
+    rec.samples[samp_list[tum_idx]]['AD'] = tum_ad_val
+
     updated_vcf.write(rec)
 updated_vcf.close()
 pysam.tabix_index(out_fn, preset="vcf")
-
-
