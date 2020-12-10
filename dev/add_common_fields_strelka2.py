@@ -57,8 +57,8 @@ def _tumor_normal_genotypes(record):
 def _calc_AD(record):
     """From strelka2 docs:
     SNPs:
-    refCounts = Value of FORMAT column $REF + “U” (e.g. if REF="A" then use the value in FOMRAT/AU)
-    altCounts = Value of FORMAT column $ALT + “U” (e.g. if ALT="T" then use the value in FOMRAT/TU)
+    refCounts = Value of FORMAT column $REF + “U” (e.g. if REF="A" then use the value in FORMAT/AU)
+    altCounts = Value of FORMAT column $ALT + “U” (e.g. if ALT="T" then use the value in FORMAT/TU)
     tier1RefCounts = First comma-delimited value from $refCounts
     tier1AltCounts = First comma-delimited value from $altCounts
     Indels:
@@ -102,16 +102,20 @@ def _calc_AF_AD(record):
     tum_ad, norm_ad = _calc_AD(record)
     try:
         tum_af = tum_ad[1]/sum(list(tum_ad))
+    except ZeroDivisionError:
+        sys.stderr.write(str(e) + "0 div error while calculating af for tumor at " + record.contig + " " 
+        + str(record.pos) + ", setting to 0.0\n")
     except Exception as e:
         sys.stderr.write(str(e) + "\nError while calculating af for tumor at " + record.contig + " " 
         + str(record.pos) + "\n")
-        pdb.set_trace()
     try:
         norm_af = norm_ad[1]/sum(list(norm_ad))
+    except ZeroDivisionError:
+        sys.stderr.write(str(e) + "0 div error while calculating af for normal at " + record.contig + " " 
+        + str(record.pos) + ", setting to 0.0\n")
     except Exception as e:
         sys.stderr.write(str(e) + "\nError while calculating af for normal at " + record.contig + " " 
         + str(record.pos) + "\n")
-        pdb.set_trace()
 
     return tum_af, norm_af, tum_ad, norm_ad
 
