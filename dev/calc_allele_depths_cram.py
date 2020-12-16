@@ -16,6 +16,7 @@ def process_snp(snp_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
 
 # this one catches mnps and insertions
 def process_mnp(mnp_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
+    # pdb.set_trace()
     if alt_idx is None:
         return ct_list
     start = alt_idx
@@ -27,12 +28,31 @@ def process_mnp(mnp_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
         if mnp_read.query_alignment_sequence[start:end] == ref_in:
             ct_list[0] += 1
     return ct_list
+def process_ins(ins_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
+    if alt_idx is None:
+        return ct_list
+    start = alt_idx
+    end = alt_idx + alen
+
+    if ins_cigar in ins_read.cigarstring:
+        blocks = ins_read.get_blocks()
+        for i in range(0, len(blocks)-1, 1):
+            # looking for a break that appears in read, end of one seg will have same position of start on the other
+            if blocks[i][1] == record.pos:
+                if blocks[(i+1)][0] == blocks[i][1] and ins_read.query_alignment_sequence[start:end] == alt_in:
+                    ct_list[1] +=1
+                    return ct_list
+            break
+    else:
+        end = alt_idx + rlen
+        if ins_read.query_alignment_sequence[start:end] == ref_in:
+            ct_list[0] += 1
+    return ct_list
 
 
 def process_del(del_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
     if del_cigar in del_read.cigarstring:
         # block array of tuples as start and ends of read coverage, if del, diff will equal del _len
-        del_len = rlen - 1
         blocks = del_read.get_blocks()
         for i in range(0, len(blocks)-1, 1):
             if blocks[i][1] == record.pos:
@@ -49,26 +69,13 @@ def process_del(del_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
     return ct_list
 
 
-def get_counts(region, vcf_start, vcf_stop, ref_in, alt_in):
+def get_counts(region, vcf_start, vcf_stop, ref_in, alt_in, call_type, rlen, alen):
     # require read is paired, map qual > 0
     #MQ formula is sqrt(sum(x_n^2)/n)
-    
+
     mq_vals = []
     dp = 0
     ref_alt_ct = [0, 0]
-    alt_ct = 0
-    call_type = "snp"
-    alen = len(alt_in)
-    rlen = len(ref_in)
-    if alen > 1 or rlen > 1:
-        call_type = "mnp"
-        if rlen > 1 and alen == 1:
-            call_type = "del"
-            # make global so only created once per variant
-            global del_cigar
-            del_cigar = str(rlen-1) + "D"
-            global del_end
-            del_end = record.pos + rlen - 1
 
     for read in region:
         if read.mapq > min_mq \
@@ -91,11 +98,28 @@ def get_counts(region, vcf_start, vcf_stop, ref_in, alt_in):
 
 def get_read_info(vcf_record):
     contig, start, stop, ref, alt = vcf_record.contig, vcf_record.start, vcf_record.stop, vcf_record.ref, vcf_record.alts[0]
+    call_type = "snp"
+    alen = len(alt)
+    rlen = len(ref)
+    if alen > 1 or rlen > 1:
+        call_type = "mnp"
+        if rlen > 1 and alen == 1:
+            call_type = "del"
+            # make global so only created once per variant
+            global del_cigar
+            del_cigar = str(rlen-1) + "D"
+            global del_end
+            del_end = record.pos + rlen - 1
+        elif alen > 1 and rlen == 1:
+            call_type = "ins"
+            global ins_cigar
+            ins_cigar = str(alen-1) + "I"
+
     tum_region = tum_cram_in.fetch(contig, start, stop)
-    tum_ad, tum_dp, tum_mq = get_counts(tum_region, start, stop, ref, alt)
+    tum_ad, tum_dp, tum_mq = get_counts(tum_region, start, stop, ref, alt, call_type, rlen, alen)
     norm_region = norm_cram_in.fetch(contig, start, stop)
-    norm_ad, norm_dp, norm_mq = get_counts(norm_region, start, stop, ref, alt)
-    return tum_ad, tum_dp, tum_mq, norm_ad, norm_dp, norm_mq
+    norm_ad, norm_dp, norm_mq = get_counts(norm_region, start, stop, ref, alt, call_type, rlen, alen)
+    return tum_ad, tum_dp, tum_mq, norm_ad, norm_dp, norm_mq, call_type
 
 
 if(len(sys.argv) == 1):
@@ -115,15 +139,15 @@ vcf_in = pysam.VariantFile(vcf_fn, threads=8)
 
 processed = 0
 m = 100
-print("\t".join(["chrom", "position", "ref", "alt", "tum ref ct", "tum alt ct", "tum depth", "tum mq", "norm ref ct", "norm alt ct", "norm depth", "norm mq"]))
+print("\t".join(["chrom", "position", "ref", "alt", "call type", "tum ref ct", "tum alt ct", "tum depth", "tum mq", "norm ref ct", "norm alt ct", "norm depth", "norm mq"]))
 for record in vcf_in:
     if processed % m == 0:
         sys.stderr.write("Processed " + str(processed) + " records\n")
         sys.stderr.flush()
-    (tum_ad, tum_dp, tum_mq, norm_ad, norm_dp, norm_mq) = get_read_info(record)
+    (tum_ad, tum_dp, tum_mq, norm_ad, norm_dp, norm_mq, call_type) = get_read_info(record)
     print_list = [tum_ad[0], tum_ad[1], tum_dp, tum_mq, norm_ad[0], norm_ad[1], norm_dp, norm_mq]
     print_list = list(map(str, print_list))
-    print(record.contig + "\t" + str(record.pos) + "\t" + record.ref + "\t" + record.alts[0] + "\t" + "\t".join(print_list))
+    print(record.contig + "\t" + str(record.pos) + "\t" + record.ref + "\t" + record.alts[0] + "\t" + call_type + "\t" + "\t".join(print_list))
     processed += 1
 vcf_in.close()
 tum_cram_in.close()
