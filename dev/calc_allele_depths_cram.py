@@ -14,7 +14,6 @@ def process_snp(snp_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
     return ct_list
 
 
-# this one catches mnps and insertions
 def process_mnp(mnp_read, ct_list, alt_idx, rlen, alen, ref_in, alt_in):
     # pdb.set_trace()
     if alt_idx is None:

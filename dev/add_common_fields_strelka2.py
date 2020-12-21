@@ -70,19 +70,20 @@ def _calc_AD(record):
     norm_alt_ct = 0
     norm_ref_ct = 0
     # only indels should have TIR field
-    if 'TIR' in record.samples[samp_list[tum_idx]]:
-        tum_ref_ct = record.samples[samp_list[tum_idx]]['TAR'][0]
-        tum_alt_ct = record.samples[samp_list[tum_idx]]['TIR'][0]
-        norm_ref_ct = record.samples[samp_list[norm_idx]]['TAR'][0]
-        norm_alt_ct = record.samples[samp_list[norm_idx]]['TIR'][0]
+    if 'TIR' in record.samples[tum_id]:
+        tum_ref_ct = record.samples[tum_id]['TAR'][0]
+        tum_alt_ct = record.samples[tum_id]['TIR'][0]
+        norm_ref_ct = record.samples[norm_id]['TAR'][0]
+        norm_alt_ct = record.samples[norm_id]['TIR'][0]
 
     else:
-        snp_ref_key = record.ref + "U"
-        snp_alt_key = record.alts[0] + "U"
-        tum_ref_ct = record.samples[samp_list[tum_idx]][snp_ref_key][0]
-        tum_alt_ct = record.samples[samp_list[tum_idx]][snp_alt_key][0]
-        norm_ref_ct = record.samples[samp_list[norm_idx]][snp_ref_key][0]
-        norm_alt_ct = record.samples[samp_list[norm_idx]][snp_alt_key][0]
+        # in case mnp, will just use first bp for counts
+        snp_ref_key = record.ref[0] + "U"
+        snp_alt_key = record.alts[0][0] + "U"
+        tum_ref_ct = record.samples[tum_id][snp_ref_key][0]
+        tum_alt_ct = record.samples[tum_id][snp_alt_key][0]
+        norm_ref_ct = record.samples[norm_id][snp_ref_key][0]
+        norm_alt_ct = record.samples[norm_id][snp_alt_key][0]
     tum_ad = (tum_ref_ct, tum_alt_ct)
     norm_ad = (norm_ref_ct, norm_alt_ct)
     # return as tuple for pysam compatibility
@@ -103,7 +104,7 @@ def _calc_AF_AD(record):
     try:
         tum_af = tum_ad[1]/sum(list(tum_ad))
     except ZeroDivisionError:
-        sys.stderr.write(str(e) + "0 div error while calculating af for tumor at " + record.contig + " " 
+        sys.stderr.write("0 div error while calculating af for tumor at " + record.contig + " " 
         + str(record.pos) + ", setting to 0.0\n")
     except Exception as e:
         sys.stderr.write(str(e) + "\nError while calculating af for tumor at " + record.contig + " " 
@@ -111,7 +112,7 @@ def _calc_AF_AD(record):
     try:
         norm_af = norm_ad[1]/sum(list(norm_ad))
     except ZeroDivisionError:
-        sys.stderr.write(str(e) + "0 div error while calculating af for normal at " + record.contig + " " 
+        sys.stderr.write("0 div error while calculating af for normal at " + record.contig + " " 
         + str(record.pos) + ", setting to 0.0\n")
     except Exception as e:
         sys.stderr.write(str(e) + "\nError while calculating af for normal at " + record.contig + " " 
@@ -121,10 +122,12 @@ def _calc_AF_AD(record):
 
 
 if len(sys.argv) == 1:
-    sys.stderr.write('Need input vcf and output file prefix\n')
+    sys.stderr.write('Need input vcf output file prefix, tumor samp id, norm samp id\n')
     exit()
 strelka2_in = pysam.VariantFile(sys.argv[1])
 out_fn = sys.argv[2] + ".vcf.gz"
+tum_id = sys.argv[3]
+norm_id = sys.argv[4]
 # create new header adding: ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 # and: ##FORMAT=<ID=AF,Number=.,Type=Float,Description="Allele frequency, as recommended by strelka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), 'TIR/TIR+TAR (somatic indels)"
 # and: ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed. Added in post for compatibility"
@@ -132,8 +135,6 @@ strelka2_in.header.add_meta('FORMAT', items=[('ID','GT'), ('Number',1), ('Type',
 strelka2_in.header.add_meta('FORMAT', items=[('ID','AF'), ('Number', '.'), ('Type', 'Float'), ('Description', 'Allele frequency, as recommended by strelka2 docs: <ALT>U/<REF>U+<ALT>U (somatic snps), TIR/TIR+TAR (somatic indels)')])
 strelka2_in.header.add_meta('FORMAT', items=[('ID','AD'), ('Number', 'R'), ('Type', 'Integer'), ('Description', 'Allelic depths for the ref and alt alleles in the order listed. Added in post for compatibility')])
 updated_vcf = pysam.VariantFile(out_fn, 'w', header=strelka2_in.header, threads=8)
-norm_idx = 0
-tum_idx = 1
 samp_list = list(strelka2_in.header.samples)
 
 for rec in strelka2_in.fetch():
@@ -141,12 +142,12 @@ for rec in strelka2_in.fetch():
     tumor_gt, normal_gt = _tumor_normal_genotypes(rec)
     tum_af_val, norm_af_val ,tum_ad_val, norm_ad_val = _calc_AF_AD(rec)
     # Set values in record and print
-    rec.samples[samp_list[norm_idx]]['GT'] = normal_gt
-    rec.samples[samp_list[tum_idx]]['GT'] = tumor_gt
-    rec.samples[samp_list[norm_idx]]['AF'] = norm_af_val
-    rec.samples[samp_list[tum_idx]]['AF'] = tum_af_val
-    rec.samples[samp_list[norm_idx]]['AD'] = norm_ad_val
-    rec.samples[samp_list[tum_idx]]['AD'] = tum_ad_val
+    rec.samples[norm_id]['GT'] = normal_gt
+    rec.samples[tum_id]['GT'] = tumor_gt
+    rec.samples[norm_id]['AF'] = norm_af_val
+    rec.samples[tum_id]['AF'] = tum_af_val
+    rec.samples[norm_id]['AD'] = norm_ad_val
+    rec.samples[tum_id]['AD'] = tum_ad_val
 
     updated_vcf.write(rec)
 updated_vcf.close()
