@@ -35,17 +35,20 @@ def get_consensus_gt(sname):
 if len(sys.argv) == 1:
     sys.stderr.write("Need consensus vcf, vcf csv, sample1, sample2\n")
     exit(1)
-
 consensus_vcf = pysam.VariantFile(sys.argv[1])
-
 vcf_list = []
 
 for vcf in sys.argv[2].split(','):
-    vcf_list.append(pysam.VariantFile(vcf))
+    vcf_list.append(pysam.VariantFile(vcf, threads=2))
 s1 = sys.argv[3]
 s2 = sys.argv[4]
 print("chrom\tstart\tstop\tref\talt\tsample1 GT\tstatus1\tsample2 GT status2\tsample2 original genotypes")
+m = 1000
+rec_ct = 1
 for record in consensus_vcf.fetch():
+    if rec_ct % m == 0:
+        sys.stderr.write("Processed " + str(rec_ct) + " records\n")
+        sys.stderr.flush()
     gt_cur = {}
     gt_cur[s1] = {}
     gt_cur[s2] = {}
@@ -77,8 +80,8 @@ for record in consensus_vcf.fetch():
                         gt2_str = '0/1'
                     # For standardizing, will consider 0/1 == 0|1; likely mutect2
                     if phased:
+                        gt1_str = gt1_str.replace("|", "/")
                         gt2_str = gt2_str.replace("|", "/")
-                    
                     if gt1_str not in gt_cur[s1]:
                         gt_cur[s1][gt1_str] = 0
                     if gt2_str not in gt_cur[s2]:
@@ -101,3 +104,4 @@ for record in consensus_vcf.fetch():
         # pdb.set_trace()
         # hold = 1
     print(rec_str + "\t" + "\t".join([gt1_val, status1, gt2_val, status2, ",".join(orig_gt_list)]))
+    rec_ct += 1
