@@ -73,10 +73,12 @@ def get_counts(region, vcf_start, vcf_stop, ref_in, alt_in, call_type, rlen, ale
     #MQ formula is sqrt(sum(x_n^2)/n)
 
     mq_vals = []
+    mq0 = 0
     dp = 0
     ref_alt_ct = [0, 0]
 
     for read in region:
+        mq_vals.append((read.mapq * read.mapq))
         if read.mapq > min_mq \
         and read.is_proper_pair and not read.is_secondary:
             dp += 1
@@ -86,13 +88,15 @@ def get_counts(region, vcf_start, vcf_stop, ref_in, alt_in, call_type, rlen, ale
                 # sys.stderr.write('Position not covered by read ' + read.query_name + ' at vcf position ' + read.reference_name + ' ' + str(vcf_start+1) + " " + ref_in + alt_in + '\n')
                 alt_idx = None
             ref_alt_ct = globals()["process_" + call_type](read, ref_alt_ct, alt_idx, rlen, alen, ref_in, alt_in)
-            mq_vals.append((read.mapq * read.mapq))
+
+        if read.mapq == 0:
+            mq0 += 1
     try:
         mq = sqrt(sum(mq_vals)/len(mq_vals))
     except ZeroDivisionError:
         pdb.set_trace()
         hold = 1
-    return ref_alt_ct, dp, mq
+    return ref_alt_ct, dp, mq, mq0
 
 
 def get_read_info(vcf_record):
@@ -115,10 +119,10 @@ def get_read_info(vcf_record):
             ins_cigar = str(alen-1) + "I"
 
     tum_region = tum_cram_in.fetch(contig, start, stop)
-    tum_ad, tum_dp, tum_mq = get_counts(tum_region, start, stop, ref, alt, call_type, rlen, alen)
+    tum_ad, tum_dp, tum_mq, tum_mq0 = get_counts(tum_region, start, stop, ref, alt, call_type, rlen, alen)
     norm_region = norm_cram_in.fetch(contig, start, stop)
-    norm_ad, norm_dp, norm_mq = get_counts(norm_region, start, stop, ref, alt, call_type, rlen, alen)
-    return tum_ad, tum_dp, tum_mq, norm_ad, norm_dp, norm_mq, call_type
+    norm_ad, norm_dp, norm_mq, norm_mq0 = get_counts(norm_region, start, stop, ref, alt, call_type, rlen, alen)
+    return tum_ad, tum_dp, tum_mq, tum_mq0, norm_ad, norm_dp, norm_mq, norm_mq0, call_type
 
 
 if(len(sys.argv) == 1):
@@ -143,8 +147,8 @@ for record in vcf_in:
     if processed % m == 0:
         sys.stderr.write("Processed " + str(processed) + " records\n")
         sys.stderr.flush()
-    (tum_ad, tum_dp, tum_mq, norm_ad, norm_dp, norm_mq, call_type) = get_read_info(record)
-    print_list = [tum_ad[0], tum_ad[1], tum_dp, tum_mq, norm_ad[0], norm_ad[1], norm_dp, norm_mq]
+    (tum_ad, tum_dp, tum_mq, tum_mq0, norm_ad, norm_dp, norm_mq, norm_mq0, call_type) = get_read_info(record)
+    print_list = [tum_ad[0], tum_ad[1], tum_dp, tum_mq, tum_mq0, norm_ad[0], norm_ad[1], norm_dp, norm_mq, norm_mq0]
     print_list = list(map(str, print_list))
     print(record.contig + "\t" + str(record.pos) + "\t" + record.ref + "\t" + record.alts[0] + "\t" + call_type + "\t" + "\t".join(print_list))
     processed += 1

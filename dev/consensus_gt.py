@@ -33,7 +33,7 @@ def get_consensus_gt(sname):
 
 
 if len(sys.argv) == 1:
-    sys.stderr.write("Need consensus vcf, vcf csv, sample1, sample2\n")
+    sys.stderr.write("Need consensus vcf, vcf csv, normal ID, tumor ID\n")
     exit(1)
 consensus_vcf = pysam.VariantFile(sys.argv[1])
 vcf_list = []
@@ -42,7 +42,7 @@ for vcf in sys.argv[2].split(','):
     vcf_list.append(pysam.VariantFile(vcf, threads=2))
 s1 = sys.argv[3]
 s2 = sys.argv[4]
-print("chrom\tstart\tstop\tref\talt\tsample1 GT\tstatus1\tsample2 GT status2\tsample2 original genotypes")
+print("chrom\tstart\tstop\tref\talt\tnorm GT\tnorm status\ttum original genotypes\ttum GT\ttum status\ttum original genotypes")
 m = 1000
 rec_ct = 1
 for record in consensus_vcf.fetch():
@@ -54,7 +54,8 @@ for record in consensus_vcf.fetch():
     gt_cur[s2] = {}
     rec_str = "\t".join([record.contig, str(record.start), str(record.stop), record.ref, record.alts[0]])
     debug_list = []
-    orig_gt_list = []
+    tum_gt_list = []
+    norm_gt_list = []
     for i in range(len(vcf_list)):
         check = vcf_list[i].fetch(record.contig, record.start, record.stop)
         if check:
@@ -68,8 +69,9 @@ for record in consensus_vcf.fetch():
                     gt1 = result.samples[s1]['GT']
                     gt2 = result.samples[s2]['GT']
                     gt1_str = pysam_gt_to_str(gt1, phased)
+                    norm_gt_list.append(gt1_str)
                     gt2_str = pysam_gt_to_str(gt2, phased)
-                    orig_gt_list.append(gt2_str)
+                    tum_gt_list.append(gt2_str)
 
                     # GT > 2 is a former multi-allelic, shift to capure desired genotype; likely mutect2
                     if len(gt2) > 2:
@@ -103,5 +105,5 @@ for record in consensus_vcf.fetch():
 
         # pdb.set_trace()
         # hold = 1
-    print(rec_str + "\t" + "\t".join([gt1_val, status1, gt2_val, status2, ",".join(orig_gt_list)]))
+    print(rec_str + "\t" + "\t".join([gt1_val, status1, ",".join(norm_gt_list), gt2_val, status2, ",".join(tum_gt_list)]))
     rec_ct += 1
