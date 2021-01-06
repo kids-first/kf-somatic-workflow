@@ -42,7 +42,7 @@ for vcf in sys.argv[2].split(','):
     vcf_list.append(pysam.VariantFile(vcf, threads=2))
 s1 = sys.argv[3]
 s2 = sys.argv[4]
-print("chrom\tstart\tstop\tref\talt\tnorm GT\tnorm status\ttum original genotypes\ttum GT\ttum status\ttum original genotypes")
+print("chrom\tstart\tstop\tref\talt\tcallers\tnorm GT\tnorm status\ttum original genotypes\ttum GT\ttum status\ttum original genotypes")
 m = 1000
 rec_ct = 1
 for record in consensus_vcf.fetch():
@@ -56,6 +56,7 @@ for record in consensus_vcf.fetch():
     debug_list = []
     tum_gt_list = []
     norm_gt_list = []
+    callers = ",".join(record.info['CALLERS'])
     for i in range(len(vcf_list)):
         check = vcf_list[i].fetch(record.contig, record.start, record.stop)
         if check:
@@ -105,5 +106,6 @@ for record in consensus_vcf.fetch():
 
         # pdb.set_trace()
         # hold = 1
-    print(rec_str + "\t" + "\t".join([gt1_val, status1, ",".join(norm_gt_list), gt2_val, status2, ",".join(tum_gt_list)]))
+    print(rec_str + "\t" + callers + "\t"
+    + "\t".join([gt1_val, status1, ",".join(norm_gt_list), gt2_val, status2, ",".join(tum_gt_list)]))
     rec_ct += 1

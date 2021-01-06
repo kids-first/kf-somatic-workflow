@@ -136,13 +136,14 @@ vcf_fn = sys.argv[4]
 min_bq = 30
 min_mq = 0
 
-tum_cram_in = pysam.AlignmentFile(tum_cram_fn, "rc", threads=8, reference_filename=ref_fasta_fn)
-norm_cram_in = pysam.AlignmentFile(norm_cram_fn, "rc", threads=8, reference_filename=ref_fasta_fn)
-vcf_in = pysam.VariantFile(vcf_fn, threads=8)
+tum_cram_in = pysam.AlignmentFile(tum_cram_fn, "rc", threads=4, reference_filename=ref_fasta_fn)
+norm_cram_in = pysam.AlignmentFile(norm_cram_fn, "rc", threads=4, reference_filename=ref_fasta_fn)
+vcf_in = pysam.VariantFile(vcf_fn)
 
 processed = 0
 m = 100
-print("\t".join(["chrom", "position", "ref", "alt", "call type", "tum ref ct", "tum alt ct", "tum depth", "tum mq", "norm ref ct", "norm alt ct", "norm depth", "norm mq"]))
+print("\t".join(["chrom", "position", "ref", "alt", "call type", "tum ref ct", "tum alt ct", "tum depth", "tum mq", "tum mq0",
+"norm ref ct", "norm alt ct", "norm depth", "norm mq", "norm mq0"]))
 for record in vcf_in:
     if processed % m == 0:
         sys.stderr.write("Processed " + str(processed) + " records\n")
