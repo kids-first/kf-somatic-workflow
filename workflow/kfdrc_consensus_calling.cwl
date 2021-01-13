@@ -4,6 +4,8 @@ id: kfdrc_consensus_calling
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
+  - class: StepInputExpressionRequirement
+  - class: InlineJavascriptRequirement
 
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
