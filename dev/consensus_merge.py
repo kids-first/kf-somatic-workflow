@@ -20,6 +20,18 @@ import os
 import pysam
 import sys
 
+# Ordered list of names of callers being used for consensus
+CALLER_NAMES = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
+# Only canonical chromosomes desired in consensus output
+# Note that these names with 'chr' prepended are also allowed
+ALLOWED_CHROMS = [str(i) for i in range(0, 23)] + ['X', 'Y', 'M']
+
+def strip_chr(chrom_name):
+    """ Remove leading 'chr', if any, from chrom_name and return """
+    if chrom_name.startswith('chr'):
+        return chrom_name[3:]
+    return chrom_name
+
 class Variant(object):
     """ Capture relevant information and enable desired operations
             for VCF records
@@ -63,23 +75,48 @@ class Variant(object):
             Then based on chromosomal coordinate, as 'int'
             Then alphabetically by first alternate allele
         """
-        def strip_chr(chrom_name):
-            """ Remove leading 'chr', if any, from chrom_name and return """
-            if chrom_name.startswith('chr'):
-                return chrom_name[3:]
-            return chrom_name
+        def order_chroms(chrom1, chrom2):
+            """ Establish correct sort order for canonical human chromosomes
+                Returns True if chrom1 < chrom2, else False
+            """
+            chr1 = strip_chr(chrom1)
+            chr2 = strip_chr(chrom2)
+            
+            for name in chr1, chr2:
+                if name not in ALLOWED_CHROMS:
+                    raise ValueError('Uncanonical chromosome %s uncomparable' % name)
+
+            letter_mappings = {'X': 23, 'Y': 24, 'M': 25}
+            try:
+                chr1_num = letter_mappings[chr1]
+            except KeyError:
+                chr1_num = int(chr1)
+            try:
+                chr2_num = letter_mappings[chr2]
+            except KeyError:
+                chr2_num = int(chr2)
+
+            return (chr1_num < chr2_num)
+
 
         if not isinstance(other, Variant):
+            raise ValueError('Cannot compare Variant %s to non-Variant %s'
+                             % (self, other))
+
+        if order_chroms(self.record.chrom, other.record.chrom):
+            return True
+        elif self.record.chrom != other.record.chrom:
             return False
-
-        if strip_chr(self.record.chrom) < strip_chr(other.record.chrom):
-            return True
-
-        if self.record.pos < other.record.pos:
-            return True
-
-        if self.record.alts[0] < other.record.alts[0]:
-            return True
+        else:
+            if self.record.pos < other.record.pos:
+                return True
+            elif self.record.pos != other.record.pos:
+                return False
+            else:
+                if self.record.alts[0] < other.record.alts[0]:
+                    return True
+                else:
+                    return False
 
         return False
 
@@ -87,35 +124,32 @@ class Variant(object):
         """ Define hash for object to permit use of set() """
         return hash((self.record.chrom, self.record.pos, self.record.alts))
 
-def write_output_header(output_vcf, contig_list):
+    def __repr__(self):
+        """ How the object looks when printed """
+        return ' '.join([self.record.chrom, str(self.record.start), 
+                         str(self.record.alts), self.caller])
+
+def write_output_header(output_vcf, sample_list, contig_list):
     """ Write all header information to consensus vcf file 
         Args:
             output_vcf (pysam.VariantFile)
-            contig_list (list of pysam.libcbcf.VariantContig objects)
-                to be written into new header
+            sample_list (pysam.libcbcf.VariantHeaderSamples): samples to write into header
+            contig_list (list of pysam.libcbcf.VariantContig objects):
+                names of contigs to write into header
     """
-    def strip_chr(chr_name):
-        """ Remove 'chr', if any, from chromosome name and return """
-        if chr_name.startswith('chr'):
-            return chr_name[3:]
-        return chr_name
-
-    # Only canonical chromosomes desired in consensus output
-    allowed_chroms = [str(i) for i in range(1, 23)] + ['X', 'Y', 'M']
-    
-    callers = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
-
     # Version is set to VCF4.2 on creation
     # Add reference? date?
     output_vcf.header.filters.add('Consensus', None, None, 'Called by two or more callers')
     output_vcf.header.filters.add('Hotspot', None, None, 'In mutational hotspot, as defined by ????')
     output_vcf.header.info.add('MQ',1,'String', 'RMS mapping quality (normal sample)') 
-    output_vcf.header.formats.add('ADC', '.', 'String', 'Allele depths for %s' % ','.join(callers))
-    output_vcf.header.formats.add('DPC', '.', 'String', 'Read depths for %s' % ','.join(callers))
-    output_vcf.header.formats.add('AFC', '.', 'String', 'Allele frequencies for %s' % ','.join(callers))
+    output_vcf.header.formats.add('ADC', '.', 'String', 'Allele depths for %s' % ','.join(CALLER_NAMES))
+    output_vcf.header.formats.add('DPC', '.', 'String', 'Read depths for %s' % ','.join(CALLER_NAMES))
+    output_vcf.header.formats.add('AFC', '.', 'String', 'Allele frequencies for %s' % ','.join(CALLER_NAMES))
     for contig in sorted(contig_list, key=lambda x: x.id):
-        if strip_chr(contig.name) in allowed_chroms:
+        if strip_chr(contig.name) in ALLOWED_CHROMS:
             output_vcf.header.contigs.add(contig.name, contig.length)
+    for sample in sample_list:
+        output_vcf.header.add_sample(sample)
 
 def get_all_variants(caller_name, pysam_vcf):
     """ Ingest all records from a pysam VCF object
@@ -146,8 +180,54 @@ def find_variant_call(variant, all_variants_dict):
         for var in var_list:
             if variant == var:
                 called_in.append(var)
+                break
 
     return called_in
+
+def build_output_record(single_caller_variants, output_vcf, hotspot=False):
+    """ Create a single VCF record for the consensus output
+            by interrogating the single-caller records for that variant
+            and add that record the consensus VCF
+
+        Args: 
+            single_caller_variants (list of Variants): list of Variants
+                representing a single call in one or more callers
+            output_vcf (pysam.VariantFile): consensus file, open in 'w' mode
+            hotspot (bool): whether this variant is in a mutational hotspot
+                (default False)
+    """
+    output_record = output_vcf.new_record()
+    # Set consistent attributes
+    liftover_record = single_caller_variants[0].record
+    output_record.chrom = liftover_record.chrom
+    output_record.ref = liftover_record.ref
+    output_record.alts = liftover_record.alts
+    output_record.id = liftover_record.id
+    output_record.start = liftover_record.start
+    output_record.stop = liftover_record.stop
+
+    # For each caller, get information required for format fields for this variant
+    joint_tags = ('AD', 'AF', 'DP')
+    no_call_info = {tag: '.' for tag in joint_tags} 
+    allele_information = {}
+    for caller_name in CALLER_NAMES:
+        for variant in single_caller_variants:
+            if variant.caller == caller_name.lower():
+                # allele_information[variant.caller] = get_allele_info(variant)
+                allele_information[variant.caller] = no_call_info
+                break
+        else:
+            allele_information[caller_name.lower()] = no_call_info
+
+    output_record.info['MQ'] = '10'
+
+    """
+    for tag in joint_tags:
+        format_field = '/'.join([allele_information[caller.lower()][tag] 
+            for caller in CALLER_NAMES])
+        output_record.format[tag] = format_field
+    """
+    output_vcf.write(output_record)
 
 if __name__ == "__main__":
 
@@ -179,7 +259,8 @@ if __name__ == "__main__":
     output_vcf_name = args.output_basename + '.vcf.gz'
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
-    write_output_header(output_vcf, strelka2_vcf.header.contigs.values())
+    write_output_header(output_vcf, strelka2_vcf.header.samples, 
+                        strelka2_vcf.header.contigs.values())
 
     all_variants_dict = {}
 
@@ -197,17 +278,18 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for variant in all_variants_ordered:
+    for variant in all_variants_ordered[:100]:
         hotspot = False
         seen_in = find_variant_call(variant, all_variants_dict)
         for caller_var in seen_in:
-            if is_hotspot: # Need to understand from Dan's work how to check this
+            pass
+            """
+            if caller_var.record.info['HotSpotAllele']:
                 hotspot = True
-                output_record = build_output_record(seen_in, hotspot=True)
-                output_vcf.write(output_record)
+                build_output_record(seen_in, output_vcf, hotspot=True)
                 break
+            """
         if not hotspot and len(seen_in) >= 2:
-            output_record = build_output_record(seen_in)
-            output_vcf.write(output_record)
+            build_output_record(seen_in, output_vcf)
 
-
+    output_vcf.close()
