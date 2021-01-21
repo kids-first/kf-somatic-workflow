@@ -135,7 +135,7 @@ def build_output_name(inpath,outbase):
 
     Args:
         inpath (str): Path to the input VCF(.GZ) file
-        outbase (srt): Given output basename string
+        outbase (str): Given output basename string
 
     Return:
         str: Filename in the format <output_basename>.<input_nameroot>.hotspots.vcf.gz
