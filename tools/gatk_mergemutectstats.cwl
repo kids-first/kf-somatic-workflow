@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: gatk4_mergepileup
+id: gatk_mergemutectstats
 label: GATK Merge Stats
 requirements:
   - class: ShellCommandRequirement
