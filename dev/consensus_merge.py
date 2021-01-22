@@ -15,6 +15,7 @@ So inputs are the four vcfs and the CRAM
 All VCFs must have any 'hotspot', PON annotations added
 """
 import argparse
+import functools
 import itertools
 import os
 import pysam
@@ -25,12 +26,166 @@ CALLER_NAMES = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
 # Only canonical chromosomes desired in consensus output
 # Note that these names with 'chr' prepended are also allowed
 ALLOWED_CHROMS = [str(i) for i in range(0, 23)] + ['X', 'Y', 'M']
+# Character for separating caller information in FORMAT fields
+FORMAT_JOIN = '|'
 
 def strip_chr(chrom_name):
     """ Remove leading 'chr', if any, from chrom_name and return """
     if chrom_name.startswith('chr'):
         return chrom_name[3:]
     return chrom_name
+
+def stringify(iterable, sep_char=','):
+    """ Turn an iterable into a delimited string with no spaces 
+        delimiting character is ',' by default
+    """
+    return sep_char.join([str(i) for i in iterable])
+
+class Sample(object):
+    """ Object to calculate and store FORMAT information
+           for samples associated with a VCF record (Variant)
+    """
+    @staticmethod
+    def AF_from_AD(AD):
+        """ Calculate allele frequency from AD FORMAT field value
+            Note that this is done on the presumption of a 0/1 genotype
+            If this cannot be assumed (i.e. may be 1/0, 1/2) in normalized VCFs,
+                this method needs to be fixed
+        """
+        ref_counts, alt_counts = AD
+        total_counts = ref_counts + alt_counts
+        if not total_counts:
+            return 0.0
+        return alt_counts / total_counts
+
+    @staticmethod
+    def name_to_gt(name):
+        """ Convert names like 'het' to canonical genotypes """
+        if name == 'hom':
+            return '1/1'
+        elif name == 'het':
+            return '0/1'
+        elif name in ('ref', 'conflict'):
+            return '0/0'
+        else:
+            raise ValueError('No genotype associated with %s' % name)
+
+    def __init__(self, name, stype, record, caller):
+        """ Initialize this object and calculate 
+            Args:
+                name (str): the name of the sample from the VCF
+                stype (str): sample may be 'tumor' or 'normal'
+                record (pysam.VariantRecord): record with which this
+                sample is associated
+                caller (str): name of caller for this variant, 
+                    must be a member of CALLER_NAMES (case insensitive)
+
+            Raises:
+                ValueError if stype is not 'tumor' or 'normal'
+                IOError if name is not associated with exactly one
+                    sample in record
+                ValueError if caller is not in CALLER_NAMES
+        """
+        self.name = name
+        if stype not in ('tumor', 'normal'):
+            raise ValueError('Sample type must be tumor or normal, not %s' % stype)
+        self.type = stype
+        self.record = record
+
+        target_sample = [self.record.samples[index] for index in range(len(self.record.samples)) 
+                         if self.record.samples[index].name == self.name]
+        if len(target_sample) != 1:
+            raise IOError('Sample name %s not found or duplicated' % self.name)
+        self.vcf_sample = target_sample[0]
+
+        caller_test = [c.lower() for c in CALLER_NAMES]
+        if caller.lower() not in caller_test:
+            raise ValueError('Unknown caller %s' % caller)
+
+        self.caller = caller.lower()
+
+    @functools.cached_property
+    def GT(self):
+        """ Instructions for GT FORMAT attribute """
+        if self.caller == 'strelka2':
+            if self.type == 'normal':
+                strelka_nt = self.record.info['NT']
+                return Sample.name_to_gt(strelka_nt)
+            elif self.type == 'tumor':
+                # Strelka2 SGT field may be e.g. 'ref->het' or 'GG->GC'
+                strelka_sgt = self.record.info['SGT'].split("->")[-1]
+                try:
+                    tumor_gt = Sample.name_to_gt(strelka_sgt)
+                except ValueError:
+                    if len(set(strelka_sgt)) == 2:
+                        tumor_gt = '0/1'
+                    elif len(set(strelka_sgt)) == 1:
+                        if strelka_sgt[0] == self.record.ref:
+                            tumor_gt = '0/0'
+                        else:
+                            tumor_gt = '1/1'
+                    else:
+                        raise IOError('Unhandled Strelka2 SGT value %s' % record.info['SGT'])
+                return tumor_gt
+
+        elif self.caller in ('mutect2', 'vardict', 'lancet'):
+            return stringify(self.vcf_sample['GT'], '/')
+
+        else:
+            raise IOError('No rule to get GT for caller %s' % self.caller)
+
+    @functools.cached_property
+    def AD(self):
+        """ Instructions for AD FORMAT attribute """
+        if self.caller == 'strelka2':
+            """ From strelka2 docs:
+                SNPs:
+                    refCounts = Sum values FORMAT column $REF + “U” (e.g. if REF="A" then use the value in FORMAT/AU)
+                    altCounts = Sum values FORMAT column $ALT + “U” (e.g. if ALT="T" then use the value in FORMAT/TU)
+                Indels:
+                    tier1RefCounts = Sum values from FORMAT/TAR
+                    tier1AltCounts = Sume values from FORMAT/TIR
+            """
+            # only indels should have TIR field
+            if 'TIR' in self.vcf_sample:
+                ref_ct = sum(self.vcf_sample['TAR'])
+                alt_ct = sum(self.vcf_sample['TIR'])
+            else: # SNP case
+                snp_ref_key = self.record.ref + "U"
+                snp_alt_key = self.record.alts[0] + "U"
+                ref_ct = sum(self.vcf_sample[snp_ref_key])
+                alt_ct = sum(self.vcf_sample[snp_alt_key])
+            
+            return (ref_ct, alt_ct)
+
+        elif self.caller in ('mutect2', 'vardict', 'lancet'):
+            return self.vcf_sample['AD']
+
+        else:
+            raise IOError('No rule to get AD for caller %s' % self.caller)
+
+    @functools.cached_property
+    def AF(self):
+        """ Instructions for AF FORMAT attribute """
+
+        if self.caller == 'mutect2':
+            return self.vcf_sample['AF'][0]
+        elif self.caller == 'vardict':
+            return self.vcf_sample['AF']
+        elif self.caller == 'lancet':
+            return Sample.AF_from_AD(self.vcf_sample['AD'])
+        elif self.caller == 'strelka2':
+            return Sample.AF_from_AD(self.AD)
+        else:
+            raise IOError('No rule to get AF for caller %s' % self.caller)
+
+    @functools.cached_property
+    def DP(self):
+        """ Instructions for DP FORMAT attribute """
+        if self.caller in ('strelka2', 'mutect2', 'vardict', 'lancet'):
+            return self.vcf_sample['DP']
+        else:
+            raise IOError('No rule to get DP for caller %s' % self.caller)
 
 class Variant(object):
     """ Capture relevant information and enable desired operations
@@ -141,10 +296,11 @@ def write_output_header(output_vcf, sample_list, contig_list):
     # Add reference? date?
     output_vcf.header.filters.add('Consensus', None, None, 'Called by two or more callers')
     output_vcf.header.filters.add('Hotspot', None, None, 'In mutational hotspot, as defined by ????')
-    output_vcf.header.info.add('MQ',1,'String', 'RMS mapping quality (normal sample)') 
-    output_vcf.header.formats.add('ADC', '.', 'String', 'Allele depths for %s' % ','.join(CALLER_NAMES))
-    output_vcf.header.formats.add('DPC', '.', 'String', 'Read depths for %s' % ','.join(CALLER_NAMES))
-    output_vcf.header.formats.add('AFC', '.', 'String', 'Allele frequencies for %s' % ','.join(CALLER_NAMES))
+    output_vcf.header.info.add('MQ',1,'String', 'RMS mapping quality (normal sample)')
+    output_vcf.header.formats.add('GTC', '.', 'String', 'Genotypes for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('ADC', '.', 'String', 'Allele depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('DPC', '.', 'String', 'Read depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('AFC', '.', 'String', 'Allele frequencies for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     for contig in sorted(contig_list, key=lambda x: x.id):
         if strip_chr(contig.name) in ALLOWED_CHROMS:
             output_vcf.header.contigs.add(contig.name, contig.length)
@@ -184,113 +340,6 @@ def find_variant_call(variant, all_variants_dict):
 
     return called_in
 
-def get_sample_formats(variant, sample):
-    """ Extract desired FORMAT fields from a variant record
-        Target fields are GT, AD, AF, DP
-
-        Args:
-            variant (Variant): single-caller record being mined
-            sample (str): name of sample whose FORMAT values are
-            being sought
-
-        Return:
-            dict: Associating keys (e.g. 'AD') with values from record
-
-        Raises:
-            ValueError: if variant.caller is not associated with 
-            instructions for extracting the desired fields in this function
-    """
-    def get_strelka2_genotypes(record):
-        """ Obtain standard normal and tumor genotypes from a Strelka 2
-                VCF record
-            Returns a tuple of the two genotypes (strings)
-        """
-        def name_to_gt(name):
-            """ Convert names like 'het' to canonical genotypes """
-            if name == 'hom':
-                return '1/1'
-            elif name == 'het':
-                return '0/1'
-            elif name in ('ref', 'conflict'):
-                return '0/0'
-            else:
-                raise ValueError('No genotype associated with %s' % name)
-
-        # Normal genotype
-        strelka_nt = record.info['NT']
-        normal_gt = name_to_gt(strelka_nt)
-
-        # Tumor genotype
-        # Strelka2 SGT field may be e.g. 'ref->het' or 'GG->GC'
-        strelka_sgt = record.info['SGT'].split("->")[-1]
-        try:
-            tumor_gt = name_to_gt(strelka_gt)
-        except ValueError:
-            if len(set(strelka_sgt)) == 2:
-                tumor_gt = '0/1'
-            elif len(set(strelka_sgt)) == 1:
-                if strelka_sgt[0] == record.ref:
-                    tumor_gt '0/0'
-                else:
-                    tumor_gt '1/1'
-            else:
-                raise IOError('Unhandled Strelka2 SGT value %s' % record.info['SGT'])
-
-        return normal_gt, tumor_gt
-
-    def AF_from_AD(AD):
-        """ Calculate allele frequency from AD FORMAT field value
-            Note that this is done on the presumption of a 0/1 genotype
-            If this cannot be assumed (i.e. may be 1/0, 1/2) in normalized VCFs, 
-                this method needs to be fixed
-        """
-        ref_counts, alt_counts = [int(i) for i in AD.split(',')]
-        total_counts = ref_counts + alt_counts
-        if not total_counts:
-            return 0.0
-        return alt_counts / total_counts
-
-    try:
-        target_sample = [s for s in variant.record.samples if s.name == sample][0]
-    except IndexError:
-        raise IOError('Sample name %s not found in VCF for caller %s'
-                      % (sample, variant.caller))
-
-    if variant.caller == 'strelka2':
-         if target_sample == variant.record.samples[0]: # the normal sample
-             GT = get_strelka2_genotypes(variant.record)[0]
-         elif target_sample == variant.record.samples[1]: # the tumor sample
-             GT = get_strelka2_genotypes(variant.record)[1]
-         else:
-             raise IOError('Unexpected error in Strelka2 GT')
-         DP = target_sample['DP']
-         AF = ?
-         AD = ?
-
-    elif variant.caller == 'mutect2':
-         GT = target_sample['GT']
-         DP = target_sample['DP']
-         AF = target_sample['AF']
-         AD = target_sample['AD']
-
-    elif variant.caller == 'vardict':
-         GT = target_sample['GT']
-         DP = target_sample['DP']
-         AF = target_sample['AF']
-         AD = target_sample['AD']
-
-    elif variant.caller == 'lancet':
-         GT = target_sample['GT']
-         DP = target_sample['DP']
-         AD = target_sample['AD']
-         AF = AF_from_AD(AD)
-
-    else:
-        raise ValueError('No rules to extract FORMAT fields for caller %s' % variant.caller)
-
-    format_dict = {'GT': GT, 'DP': DP, 'AF': AF, 'AD', AD}
-    return format_dict
-
 def build_output_record(single_caller_variants, output_vcf, hotspot=False):
     """ Create a single VCF record for the consensus output
             by interrogating the single-caller records for that variant
@@ -303,6 +352,8 @@ def build_output_record(single_caller_variants, output_vcf, hotspot=False):
             hotspot (bool): whether this variant is in a mutational hotspot
                 (default False)
     """
+    variant_lookup = {v.caller: v for v in single_caller_variants}
+
     output_record = output_vcf.new_record()
     # Set consistent attributes
     liftover_record = single_caller_variants[0].record
@@ -317,26 +368,54 @@ def build_output_record(single_caller_variants, output_vcf, hotspot=False):
     joint_tags = ('GT', 'AD', 'AF', 'DP')
     no_call_info = {tag: '.' for tag in joint_tags} 
     allele_information = {caller.lower(): {} for caller in CALLER_NAMES}
-    for caller_name in allele_information:
-        for variant in single_caller_variants:
-            if variant.caller == caller_name:
-                for sample in variant.record.samples:
-                    allele_information[variant.caller][sample] = \
-                            get_sample_formats(variant, sample)
-                break
-        else:
-            for sample in variant.record.samples:
-                allele_information[caller_name][sample] = no_call_info
-    print (allele_information)
+
+    for variant in single_caller_variants:
+        normal_sample, tumor_sample = variant.record.samples
+        variant.normal = Sample(normal_sample, 'normal', variant.record, variant.caller)
+        variant.tumor = Sample(tumor_sample, 'tumor', variant.record, variant.caller)
+
+    for index in (0, 1):
+        normal = 0
+        tumor = 1
+        GT_list = []
+        AD_list = []
+        AF_list = []
+        DP_list = []
+        if index == normal:
+            for caller in CALLER_NAMES:
+                try:
+                    targ_var = variant_lookup[caller.lower()]
+                    GT_list.append(str(targ_var.normal.GT))
+                    AD_list.append(stringify(targ_var.normal.AD))
+                    AF_list.append('{:0.4f}'.format(targ_var.normal.AF))
+                    DP_list.append(str(targ_var.normal.DP))
+                except KeyError:
+                    for flist in (GT_list, AD_list, AF_list, DP_list):
+                        flist.append('.')
+        elif index == tumor:
+            for caller in CALLER_NAMES:
+                try:
+                    targ_var = variant_lookup[caller.lower()]
+                    GT_list.append(str(targ_var.tumor.GT))
+                    AD_list.append(stringify(targ_var.tumor.AD))
+                    AF_list.append('{:0.4f}'.format(targ_var.normal.AF))
+                    DP_list.append(str(targ_var.tumor.DP))
+                except KeyError:
+                    for flist in (GT_list, AD_list, AF_list, DP_list):
+                        flist.append('.')
+
+        GT = stringify(GT_list, FORMAT_JOIN)
+        AD = stringify(AD_list, FORMAT_JOIN)
+        AF = stringify(AF_list, FORMAT_JOIN)
+        DP = stringify(DP_list, FORMAT_JOIN)
+
+        output_record.samples[index]['GTC'] = GT
+        output_record.samples[index]['ADC'] = AD
+        output_record.samples[index]['AFC'] = AF
+        output_record.samples[index]['DPC'] = DP
 
     output_record.info['MQ'] = '10'
 
-    """
-    for tag in joint_tags:
-        format_field = '/'.join([allele_information[caller.lower()][tag] 
-            for caller in CALLER_NAMES])
-        output_record.format[tag] = format_field
-    """
     output_vcf.write(output_record)
 
 if __name__ == "__main__":
@@ -368,6 +447,7 @@ if __name__ == "__main__":
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
     output_vcf_name = args.output_basename + '.vcf.gz'
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
+    print(output_vcf_path)
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
     write_output_header(output_vcf, strelka2_vcf.header.samples, 
                         strelka2_vcf.header.contigs.values())
@@ -388,7 +468,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for variant in all_variants_ordered:
+    for variant in all_variants_ordered[:1000]:
         hotspot = False
         seen_in = find_variant_call(variant, all_variants_dict)
 
@@ -403,6 +483,5 @@ if __name__ == "__main__":
  
         if not hotspot and len(seen_in) >= 2:
             build_output_record(seen_in, output_vcf)
-            break
 
     output_vcf.close()
