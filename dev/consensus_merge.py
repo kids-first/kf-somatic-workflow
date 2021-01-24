@@ -14,12 +14,15 @@ and added as an INFO field
 So inputs are the four vcfs and the CRAM
 All VCFs must have any 'hotspot', PON annotations added
 """
+import os
+import sys
+
 import argparse
+from collections import Counter
 import functools
 import itertools
-import os
+import numpy as np
 import pysam
-import sys
 
 # Ordered list of names of callers being used for consensus
 CALLER_NAMES = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
@@ -140,8 +143,10 @@ class Sample(object):
         if self.caller == 'strelka2':
             """ From strelka2 docs:
                 SNPs:
-                    refCounts = Sum values FORMAT column $REF + “U” (e.g. if REF="A" then use the value in FORMAT/AU)
-                    altCounts = Sum values FORMAT column $ALT + “U” (e.g. if ALT="T" then use the value in FORMAT/TU)
+                    refCounts = Sum values FORMAT column $REF + “U” 
+                        (e.g. if REF="A" then use the value in FORMAT/AU)
+                    altCounts = Sum values FORMAT column $ALT + “U” 
+                        (e.g. if ALT="T" then use the value in FORMAT/TU)
                 Indels:
                     tier1RefCounts = Sum values from FORMAT/TAR
                     tier1AltCounts = Sume values from FORMAT/TIR
@@ -294,13 +299,26 @@ def write_output_header(output_vcf, sample_list, contig_list):
     """
     # Version is set to VCF4.2 on creation
     # Add reference? date?
-    output_vcf.header.filters.add('Consensus', None, None, 'Called by two or more callers')
-    output_vcf.header.filters.add('Hotspot', None, None, 'In mutational hotspot, as defined by ????')
-    output_vcf.header.info.add('MQ',1,'String', 'RMS mapping quality (normal sample)')
-    output_vcf.header.formats.add('GTC', '.', 'String', 'Genotypes for %s' % FORMAT_JOIN.join(CALLER_NAMES))
-    output_vcf.header.formats.add('ADC', '.', 'String', 'Allele depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
-    output_vcf.header.formats.add('DPC', '.', 'String', 'Read depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
-    output_vcf.header.formats.add('AFC', '.', 'String', 'Allele frequencies for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.filters.add('Consensus', None, None, 
+            'Called by two or more callers')
+    output_vcf.header.filters.add('Hotspot', None, None, 
+            'In mutational hotspot, as defined by ????')
+    output_vcf.header.info.add('MQ',1,'Integer', 
+            'RMS mapping quality (normal sample)')
+    output_vcf.header.info.add('MQ0',1,'Integer', 
+            'Number of MAPQ=0 reads (normal sample)')
+    output_vcf.header.formats.add('AGT', '.', 'String', 
+            'Consensus or majority genotype')
+    output_vcf.header.formats.add('GTC', '.', 'String', 
+            'Genotypes for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('GT_STATUS', '.', 'String', 
+            'Degree of unanimity of genotype')
+    output_vcf.header.formats.add('ADC', '.', 'String', 
+            'Allele depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('DPC', '.', 'String', 
+            'Read depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('AFC', '.', 'String', 
+            'Allele frequencies for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     for contig in sorted(contig_list, key=lambda x: x.id):
         if strip_chr(contig.name) in ALLOWED_CHROMS:
             output_vcf.header.contigs.add(contig.name, contig.length)
@@ -340,7 +358,60 @@ def find_variant_call(variant, all_variants_dict):
 
     return called_in
 
-def build_output_record(single_caller_variants, output_vcf, hotspot=False):
+def get_gt_consensus(gt_list):
+    """ Determine level of genotype consensus from single-caller genotypes 
+        Args:
+            gt_list (list): Strings in '0/0' format representing 
+                single-caller genotypes
+
+        Returns: tuple of (consensus genotype or 'conflict', consensus tag)
+            consensus tag may be 'unanimous', 'majority', 'deadlock'
+    """
+    conflict_gt_tag = 'conflict'
+    unan_tag, majo_tag, tie_tag = 'unanimous', 'majority', 'deadlock'
+
+    counts = Counter(gt_list)
+
+    if '.' in counts:
+        counts.pop('.')
+
+    if len(counts) == 1:
+        return list(counts)[0], unan_tag
+
+    largest_count = max(counts.values())
+    has_max_count = {k: v for k, v in counts.items() if v == largest_count}
+    if len(has_max_count) == 1:
+        return list(has_max_count)[0], majo_tag
+    else:
+        return conflict_gt_tag, tie_tag
+
+def get_mapq(cram, chrom, pos):
+    """ Get RMS mapping quality and number of MAPQ=0 reads at locus
+
+        Args:
+            cram (pysam.AlignmentFile): open in 'r' mode
+            chrom (str): locus chromosome name
+            pos (int): 1-based locus coordinate
+
+        Returns:
+            tuple of ints RMS mapq and # of mapq reads at locus
+    """
+    mapq = []
+    mq0 = 0
+    aligned_reads = cram.fetch(chrom, pos-1, pos)
+
+    for read in aligned_reads:
+        mapq.append(read.mapq)
+        if read.mapq == 0:
+            mq0 += 1
+
+    if not mapq:
+        return 0, 0
+
+    rms_mapq = np.sqrt(np.mean(np.array(mapq)**2))
+    return int(rms_mapq), mq0
+
+def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot=False):
     """ Create a single VCF record for the consensus output
             by interrogating the single-caller records for that variant
             and add that record the consensus VCF
@@ -349,6 +420,8 @@ def build_output_record(single_caller_variants, output_vcf, hotspot=False):
             single_caller_variants (list of Variants): list of Variants
                 representing a single call in one or more callers
             output_vcf (pysam.VariantFile): consensus file, open in 'w' mode
+            normal_cram (pysam.Alignmentfile): Normal CRAM for this sample,
+                open in 'r' mode
             hotspot (bool): whether this variant is in a mutational hotspot
                 (default False)
     """
@@ -381,28 +454,22 @@ def build_output_record(single_caller_variants, output_vcf, hotspot=False):
         AD_list = []
         AF_list = []
         DP_list = []
-        if index == normal:
-            for caller in CALLER_NAMES:
-                try:
-                    targ_var = variant_lookup[caller.lower()]
-                    GT_list.append(str(targ_var.normal.GT))
-                    AD_list.append(stringify(targ_var.normal.AD))
-                    AF_list.append('{:0.4f}'.format(targ_var.normal.AF))
-                    DP_list.append(str(targ_var.normal.DP))
-                except KeyError:
-                    for flist in (GT_list, AD_list, AF_list, DP_list):
-                        flist.append('.')
-        elif index == tumor:
-            for caller in CALLER_NAMES:
-                try:
-                    targ_var = variant_lookup[caller.lower()]
-                    GT_list.append(str(targ_var.tumor.GT))
-                    AD_list.append(stringify(targ_var.tumor.AD))
-                    AF_list.append('{:0.4f}'.format(targ_var.normal.AF))
-                    DP_list.append(str(targ_var.tumor.DP))
-                except KeyError:
-                    for flist in (GT_list, AD_list, AF_list, DP_list):
-                        flist.append('.')
+        for caller in CALLER_NAMES:
+            try:
+                targ_var = variant_lookup[caller.lower()]
+            except KeyError:
+                for flist in (GT_list, AD_list, AF_list, DP_list):
+                    flist.append('.')
+                continue
+            if index == normal:
+                targ_sample = targ_var.normal
+            elif index == tumor:
+                targ_sample = targ_var.tumor
+                
+            GT_list.append(str(targ_sample.GT))
+            AD_list.append(stringify(targ_sample.AD))
+            AF_list.append('{:0.4f}'.format(targ_sample.AF))
+            DP_list.append(str(targ_sample.DP))
 
         GT = stringify(GT_list, FORMAT_JOIN)
         AD = stringify(AD_list, FORMAT_JOIN)
@@ -414,7 +481,17 @@ def build_output_record(single_caller_variants, output_vcf, hotspot=False):
         output_record.samples[index]['AFC'] = AF
         output_record.samples[index]['DPC'] = DP
 
-    output_record.info['MQ'] = '10'
+        consensus_gt, gt_tag = get_gt_consensus(GT_list)
+
+        output_record.samples[index]['AGT'] = consensus_gt
+        output_record.samples[index]['GT_STATUS'] = gt_tag
+    
+    chrom = single_caller_variants[0].record.chrom
+    pos = single_caller_variants[0].record.pos
+    mapq, mq0 = get_mapq(normal_cram, chrom, pos)
+
+    output_record.info['MQ'] = mapq
+    output_record.info['MQ0'] = mq0
 
     output_vcf.write(output_record)
 
@@ -441,7 +518,7 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-#    cram = pysam.AlignmentFile(args.cram, 'rc')
+    normal_cram = pysam.AlignmentFile(args.cram, 'rc', reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
     
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
@@ -468,7 +545,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for variant in all_variants_ordered[:1000]:
+    for variant in all_variants_ordered[:100]:
         hotspot = False
         seen_in = find_variant_call(variant, all_variants_dict)
 
@@ -482,6 +559,7 @@ if __name__ == "__main__":
                 continue
  
         if not hotspot and len(seen_in) >= 2:
-            build_output_record(seen_in, output_vcf)
+            build_output_record(seen_in, output_vcf, normal_cram)
 
+    normal_cram.close()
     output_vcf.close()
