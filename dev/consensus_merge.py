@@ -307,6 +307,8 @@ def write_output_header(output_vcf, sample_list, contig_list):
             'RMS mapping quality (normal sample)')
     output_vcf.header.info.add('MQ0',1,'Integer', 
             'Number of MAPQ=0 reads (normal sample)')
+    output_vcf.header.info.add('CAL','.','String',
+            'List of callers making this call')
     output_vcf.header.formats.add('AGT', '.', 'String', 
             'Consensus or majority genotype')
     output_vcf.header.formats.add('GTC', '.', 'String', 
@@ -492,6 +494,12 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
 
     output_record.info['MQ'] = mapq
     output_record.info['MQ0'] = mq0
+    output_record.info['CAL'] = ','.join([c for c in CALLER_NAMES if c.lower() in variant_lookup])
+
+    if hotspot:
+        output_record.filter.add('Hotspot')
+    else:
+        output_record.filter.add('Consensus')
 
     output_vcf.write(output_record)
 
@@ -545,7 +553,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for variant in all_variants_ordered[:100]:
+    for variant in all_variants_ordered:
         hotspot = False
         seen_in = find_variant_call(variant, all_variants_dict)
 
