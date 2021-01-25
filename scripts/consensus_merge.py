@@ -51,9 +51,6 @@ class Sample(object):
     @staticmethod
     def AF_from_AD(AD):
         """ Calculate allele frequency from AD FORMAT field value
-            Note that this is done on the presumption of a 0/1 genotype
-            If this cannot be assumed (i.e. may be 1/0, 1/2) in normalized VCFs,
-                this method needs to be fixed
         """
         ref_counts, alt_counts = AD
         total_counts = ref_counts + alt_counts
@@ -132,7 +129,7 @@ class Sample(object):
                 return tumor_gt
 
         elif self.caller in ('mutect2', 'vardict', 'lancet'):
-            return stringify(self.vcf_sample['GT'], '/')
+            return stringify(sorted(self.vcf_sample['GT']), '/')
 
         else:
             raise IOError('No rule to get GT for caller %s' % self.caller)
@@ -589,7 +586,7 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-    normal_cram = pysam.AlignmentFile(args.cram, 'rc') #reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
+    normal_cram = pysam.AlignmentFile(args.cram, 'rc', reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
     
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
