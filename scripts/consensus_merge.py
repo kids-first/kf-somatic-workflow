@@ -313,8 +313,14 @@ def write_output_header(output_vcf, sample_list, contig_list):
             'List of callers making this call')
     output_vcf.header.info.add('Hotspot', 0, 'Flag',
             'In mutational hotspot, as defined by ????')
-    output_vcf.header.formats.add('AGT', '.', 'String', 
-            'Consensus or majority genotype')
+    output_vcf.header.formats.add('GT', '1', 'String', 
+            'Consensus genotype')
+    output_vcf.header.formats.add('AD', 'R', 'Integer',
+            'Consensus depths for the ref and alt alleles in the order listed')
+    output_vcf.header.formats.add('AF', 'A', 'Float',
+            'Consensus allele frequency')
+    output_vcf.header.formats.add('DP', '1', 'Integer',
+            'Consensus depth')
     output_vcf.header.formats.add('GTC', '.', 'String', 
             'Genotypes for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     output_vcf.header.formats.add('GT_STATUS', '.', 'String', 
@@ -376,10 +382,11 @@ def get_gt_consensus(gt_list):
             gt_list (list): Strings in '0/0' format representing 
                 single-caller genotypes
 
-        Returns: tuple of (consensus genotype or 'conflict', consensus tag)
+        Returns: tuple of (consensus genotype, consensus tag)
+            consensus genotype will be '0/1' in event of tie
             consensus tag may be 'unanimous', 'majority', 'deadlock'
     """
-    conflict_gt_tag = 'conflict'
+    conflict_gt_tag = '0/1'
     unan_tag, majo_tag, tie_tag = 'unanimous', 'majority', 'deadlock'
 
     counts = Counter(gt_list)
@@ -396,6 +403,35 @@ def get_gt_consensus(gt_list):
         return list(has_max_count)[0], majo_tag
     else:
         return conflict_gt_tag, tie_tag
+
+def get_ad_consensus(ad_list):
+    """ Get mean value of AD across callers 
+        Args:
+           ad_list (list): list of AD (comma-separated strings)
+        Return:
+           (tuple): mean depths
+    """
+    ref_depth = int(np.mean([int(f.split(',')[0]) for f in ad_list if f != '.']))
+    alt_depth = int(np.mean([int(f.split(',')[1]) for f in ad_list if f != '.']))
+    return (ref_depth, alt_depth)
+
+def get_af_consensus(af_list):
+    """ Get mean value of AF across callers
+        Args:
+            af_list (list): list of AF (strings)
+        Return:
+            (float): mean AF
+    """
+    return np.mean([float(f) for f in af_list if f != '.'])
+
+def get_dp_consensus(dp_list):
+    """ Get mean value of DP across callers
+        Args:
+            dp_list (list): list of DP (strings)
+        Return:
+            (int): mean DP
+    """
+    return int(np.mean([int(f) for f in dp_list if f != '.']))
 
 def get_mapq(cram, chrom, pos):
     """ Get RMS mapping quality and number of MAPQ=0 reads at locus
@@ -497,9 +533,13 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
 
         consensus_gt, gt_tag = get_gt_consensus(GT_list)
 
-        output_record.samples[index]['AGT'] = consensus_gt
+#        print(consensus_gt, tuple(consensus_gt.split('/')))
+        output_record.samples[index]['GT'] = tuple([int(i) for i in consensus_gt.split('/')])
         output_record.samples[index]['GT_STATUS'] = gt_tag
-    
+        output_record.samples[index]['AD'] = get_ad_consensus(AD_list)
+        output_record.samples[index]['AF'] = get_af_consensus(AF_list)
+        output_record.samples[index]['DP'] = get_dp_consensus(DP_list)
+
     chrom = single_caller_variants[0].record.chrom
     pos = single_caller_variants[0].record.pos
     mapq, mq0 = get_mapq(normal_cram, chrom, pos)
@@ -577,7 +617,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for index, varlist in enumerate(single_caller_variants[:1000]):
+    for index, varlist in enumerate(single_caller_variants):
         if not varlist:
             break
 
