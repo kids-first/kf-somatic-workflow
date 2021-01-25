@@ -224,6 +224,7 @@ class Variant(object):
 
         if (self.record.chrom == other.record.chrom
                 and self.record.pos == other.record.pos
+                and self.record.ref == other.record.ref
                 and self.record.alts == other.record.alts):
             return True
 
@@ -273,21 +274,26 @@ class Variant(object):
             elif self.record.pos != other.record.pos:
                 return False
             else:
-                if self.record.alts[0] < other.record.alts[0]:
+                if self.record.ref < other.record.ref:
                     return True
-                else:
+                elif self.record.ref != other.record.ref:
                     return False
+                else:
+                    if self.record.alts[0] < other.record.alts[0]:
+                        return True 
+                    else:
+                        return False
 
         return False
 
     def __hash__(self):
         """ Define hash for object to permit use of set() """
-        return hash((self.record.chrom, self.record.pos, self.record.alts))
+        return hash((self.record.chrom, self.record.pos, self.record.ref, self.record.alts))
 
     def __repr__(self):
         """ How the object looks when printed """
         return ' '.join([self.record.chrom, str(self.record.start), 
-                         str(self.record.alts), self.caller])
+                         self.record.ref, str(self.record.alts), self.caller])
 
 def write_output_header(output_vcf, sample_list, contig_list):
     """ Write all header information to consensus vcf file 
@@ -339,7 +345,7 @@ def get_all_variants(caller_name, pysam_vcf):
                 'caller' attribute of Variants will be caller_name.
     """
 
-    all_records = [Variant(rec, caller_name) for rec in pysam_vcf.fetch()]
+    all_records = sorted([Variant(rec, caller_name) for rec in pysam_vcf.fetch()])
     return {caller_name: all_records}
 
 def find_variant_callers(variant_list, all_variants_dict):
@@ -349,17 +355,21 @@ def find_variant_callers(variant_list, all_variants_dict):
             all_variants_dict (dict): associates caller names
                 with lists of Variants
         Return:
-            dict: associating each Variant with list of callers (strings)
-    """
-    called_in = {}
-    for caller_name, var_list in all_variants_dict.items():
-        for variant in var_list:
-            if variant not in called_in:
-                called_in[variant] = [caller_name]
-            else:
-                called_in[variant].append(caller_name)
+            list of lists of single-caller Variants
 
-    return called_in
+        NOTE: This requires all lists to be sorted but does not check!
+    """
+    single_caller_variants = []
+    for var in variant_list:
+        sublist = []
+        for caller, varlist in all_variants_dict.items():
+           if not varlist:
+               continue
+           if varlist[0] == var:
+               sublist.append(varlist.pop(0))
+        single_caller_variants.append(sublist)
+
+    return single_caller_variants
 
 def get_gt_consensus(gt_list):
     """ Determine level of genotype consensus from single-caller genotypes 
@@ -550,26 +560,28 @@ if __name__ == "__main__":
     # Get single ordered list of all variants
     all_variants_list = list(itertools.chain.from_iterable(all_variants_dict.values()))
     all_variants_ordered = sorted(list(set(all_variants_list)))
-    all_variant_callers = find_variant_callers(all_variants_ordered, all_variants_dict)
-
+    single_caller_variants = find_variant_callers(all_variants_ordered, all_variants_dict)
+ 
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for index, variant in enumerate(all_variants_ordered[:1000]):
-        hotspot = False
-        seen_in = all_variant_callers[variant]
+    for index, varlist in enumerate(single_caller_variants):
+        if not varlist:
+            break
 
-        for caller_var in seen_in:
+        hotspot = False
+
+        for caller_var in varlist:
             try:
                 if caller_var.record.info['HotSpotAllele']:
                     hotspot = True
-                    build_output_record(seen_in, output_vcf, hotspot=True)
+                    build_output_record(varlist, output_vcf, hotspot=True)
                     break
             except KeyError:
                 continue
  
-        if not hotspot and len(seen_in) >= 2:
-            build_output_record(seen_in, output_vcf, normal_cram)
+        if not hotspot and len(varlist) >= 2:
+            build_output_record(varlist, output_vcf, normal_cram)
 
     normal_cram.close()
     output_vcf.close()
