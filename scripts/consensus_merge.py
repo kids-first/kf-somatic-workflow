@@ -586,7 +586,7 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-    normal_cram = pysam.AlignmentFile(args.cram, 'rc', reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
+    normal_cram = pysam.AlignmentFile(args.cram, 'rc') #, reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
     
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
