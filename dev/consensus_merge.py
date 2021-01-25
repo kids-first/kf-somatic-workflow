@@ -156,8 +156,8 @@ class Sample(object):
                 ref_ct = sum(self.vcf_sample['TAR'])
                 alt_ct = sum(self.vcf_sample['TIR'])
             else: # SNP case
-                snp_ref_key = self.record.ref + "U"
-                snp_alt_key = self.record.alts[0] + "U"
+                snp_ref_key = self.record.ref[0] + "U"
+                snp_alt_key = self.record.alts[0][0] + "U"
                 ref_ct = sum(self.vcf_sample[snp_ref_key])
                 alt_ct = sum(self.vcf_sample[snp_alt_key])
             
@@ -342,21 +342,22 @@ def get_all_variants(caller_name, pysam_vcf):
     all_records = [Variant(rec, caller_name) for rec in pysam_vcf.fetch()]
     return {caller_name: all_records}
 
-def find_variant_call(variant, all_variants_dict):
-    """ Find callers that have called a particular variant
+def find_variant_callers(variant_list, all_variants_dict):
+    """ Find callers that have called each of a list of Variants
         Args:
-            variant (Variant): variant being searched for
+            variant_list (list of Variants): variants being searched for
             all_variants_dict (dict): associates caller names
                 with lists of Variants
         Return:
-            list: All Variant objects matching the searched-for variant
+            dict: associating each Variant with list of callers (strings)
     """
-    called_in = []
+    called_in = {}
     for caller_name, var_list in all_variants_dict.items():
-        for var in var_list:
-            if variant == var:
-                called_in.append(var)
-                break
+        for variant in var_list:
+            if variant not in called_in:
+                called_in[variant] = [caller_name]
+            else:
+                called_in[variant].append(caller_name)
 
     return called_in
 
@@ -549,13 +550,14 @@ if __name__ == "__main__":
     # Get single ordered list of all variants
     all_variants_list = list(itertools.chain.from_iterable(all_variants_dict.values()))
     all_variants_ordered = sorted(list(set(all_variants_list)))
+    all_variant_callers = find_variant_callers(all_variants_ordered, all_variants_dict)
 
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for variant in all_variants_ordered:
+    for index, variant in enumerate(all_variants_ordered[:1000]):
         hotspot = False
-        seen_in = find_variant_call(variant, all_variants_dict)
+        seen_in = all_variant_callers[variant]
 
         for caller_var in seen_in:
             try:
