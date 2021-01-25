@@ -305,22 +305,21 @@ def write_output_header(output_vcf, sample_list, contig_list):
     """
     # Version is set to VCF4.2 on creation
     # Add reference? date?
-    output_vcf.header.filters.add('Consensus', None, None, 
-            'Called by two or more callers')
-    output_vcf.header.filters.add('Hotspot', None, None, 
-            'In mutational hotspot, as defined by ????')
     output_vcf.header.info.add('MQ',1,'Integer', 
             'RMS mapping quality (normal sample)')
     output_vcf.header.info.add('MQ0',1,'Integer', 
             'Number of MAPQ=0 reads (normal sample)')
     output_vcf.header.info.add('CAL','.','String',
             'List of callers making this call')
+    output_vcf.header.info.add('Hotspot', 0, 'Flag',
+            'In mutational hotspot, as defined by ????')
     output_vcf.header.formats.add('AGT', '.', 'String', 
             'Consensus or majority genotype')
     output_vcf.header.formats.add('GTC', '.', 'String', 
             'Genotypes for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     output_vcf.header.formats.add('GT_STATUS', '.', 'String', 
-            'Degree of unanimity of genotype')
+            ("Degree of unanimity of genotype: 'unanimous', 'majority', or 'deadlock' if" 
+            " equally supported by individual callers"))
     output_vcf.header.formats.add('ADC', '.', 'String', 
             'Allele depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     output_vcf.header.formats.add('DPC', '.', 'String', 
@@ -411,6 +410,8 @@ def get_mapq(cram, chrom, pos):
     """
     mapq = []
     mq0 = 0
+#    print(chrom, pos-1, pos)
+
     aligned_reads = cram.fetch(chrom, pos-1, pos)
 
     for read in aligned_reads:
@@ -508,11 +509,22 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
     output_record.info['CAL'] = ','.join([c for c in CALLER_NAMES if c.lower() in variant_lookup])
 
     if hotspot:
-        output_record.filter.add('Hotspot')
-    else:
-        output_record.filter.add('Consensus')
+        output_record.info['Hotspot'] = True
+
+    output_record.filter.add('PASS')
 
     output_vcf.write(output_record)
+
+def build_output_name(inpath, outbase):
+    """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name and given output basename
+       Args:
+           inpath (str): Path to the input VCF(.GZ) file
+           outbase (str): Given output basename string
+       Return:
+           str: Filename in the format <output_basename>.<input_nameroot>.consensus.vcf.gz
+    """
+    basename_split = os.path.split(inpath)[-1].split('.')
+    return '.'.join([outbase, basename_split[0] + '.consensus.vcf.gz'])
 
 if __name__ == "__main__":
 
@@ -537,13 +549,13 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-    normal_cram = pysam.AlignmentFile(args.cram, 'rc', reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
+    normal_cram = pysam.AlignmentFile(args.cram, 'rc') #reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
     
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
-    output_vcf_name = args.output_basename + '.vcf.gz'
+    output_vcf_name = build_output_name(args.vardict_vcf, args.output_basename)
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
-    print(output_vcf_path)
+    # print(output_vcf_path)
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
     write_output_header(output_vcf, strelka2_vcf.header.samples, 
                         strelka2_vcf.header.contigs.values())
@@ -565,7 +577,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for index, varlist in enumerate(single_caller_variants):
+    for index, varlist in enumerate(single_caller_variants[:1000]):
         if not varlist:
             break
 
