@@ -14,13 +14,13 @@ and added as an INFO field
 So inputs are the four vcfs and the CRAM
 All VCFs must have any 'hotspot', PON annotations added
 """
-import os
-import sys
-
 import argparse
 from collections import Counter
 import functools
 import itertools
+import os
+import sys
+
 import numpy as np
 import pysam
 
