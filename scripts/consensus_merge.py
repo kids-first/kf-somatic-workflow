@@ -28,7 +28,7 @@ import pysam
 CALLER_NAMES = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
 # Only canonical chromosomes desired in consensus output
 # Note that these names with 'chr' prepended are also allowed
-ALLOWED_CHROMS = [str(i) for i in range(0, 23)] + ['X', 'Y', 'M']
+ALLOWED_CHROMS = [str(i) for i in range(1, 23)] + ['X', 'Y', 'M']
 # Character for separating caller information in FORMAT fields
 FORMAT_JOIN = '|'
 
