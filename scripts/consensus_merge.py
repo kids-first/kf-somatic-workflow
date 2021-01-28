@@ -32,6 +32,22 @@ ALLOWED_CHROMS = [str(i) for i in range(0, 23)] + ['X', 'Y', 'M']
 # Character for separating caller information in FORMAT fields
 FORMAT_JOIN = '|'
 
+def get_range(iterable):
+    """ Get the difference between the minimum and maximum values of
+           the float-castable items in iterable
+        Returns 0 if the number of such values is less than 2
+    """
+    floats = []
+    for item in iterable:
+        try:
+            floats.append(float(item))
+        except ValueError:
+            continue
+    if len(floats) < 2:
+        return 0.0
+    sorted_floats = sorted(floats)
+    return sorted_floats[-1] - sorted_floats[0]
+
 def strip_chr(chrom_name):
     """ Remove leading 'chr', if any, from chrom_name and return """
     if chrom_name.startswith('chr'):
@@ -95,11 +111,10 @@ class Sample(object):
         target_sample = [self.record.samples[index] for index in range(len(self.record.samples)) 
                          if self.record.samples[index].name == self.name]
         if len(target_sample) != 1:
-            raise IOError('Sample name %s not found or duplicated' % self.name)
+            raise IOError('Sample name %s not found or duplicated in %s' % (self.name, caller))
         self.vcf_sample = target_sample[0]
 
-        caller_test = [c.lower() for c in CALLER_NAMES]
-        if caller.lower() not in caller_test:
+        if caller.lower() not in [c.lower() for c in CALLER_NAMES]:
             raise ValueError('Unknown caller %s' % caller)
 
         self.caller = caller.lower()
@@ -309,7 +324,8 @@ def write_output_header(output_vcf, sample_list, contig_list):
     output_vcf.header.info.add('CAL','.','String',
             'List of callers making this call')
     output_vcf.header.info.add('Hotspot', 0, 'Flag',
-            'In mutational hotspot, as defined by ????')
+            ('In mutational hotspot, as defined by Memorial Sloan Kettering Cancer Center'
+             ' based on Chang et al. 2017; see https://www.cancerhotspots.org'))
     output_vcf.header.formats.add('GT', '1', 'String', 
             'Consensus genotype')
     output_vcf.header.formats.add('AD', 'R', 'Integer',
@@ -329,6 +345,12 @@ def write_output_header(output_vcf, sample_list, contig_list):
             'Read depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     output_vcf.header.formats.add('AFC', '.', 'String', 
             'Allele frequencies for %s' % FORMAT_JOIN.join(CALLER_NAMES))
+    output_vcf.header.formats.add('ADR', 'R', 'Integer',
+            'Difference between highest and lowest AD')
+    output_vcf.header.formats.add('AFR', 'A', 'Float',
+            'Difference between highest and lowest AF')
+    output_vcf.header.formats.add('DPR', '1', 'Integer',
+            'Difference between highest and lowest DP')
     for contig in sorted(contig_list, key=lambda x: x.id):
         if strip_chr(contig.name) in ALLOWED_CHROMS:
             output_vcf.header.contigs.add(contig.name, contig.length)
@@ -472,8 +494,6 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
             hotspot (bool): whether this variant is in a mutational hotspot
                 (default False)
     """
-    variant_lookup = {v.caller: v for v in single_caller_variants}
-
     output_record = output_vcf.new_record()
     # Set consistent attributes
     liftover_record = single_caller_variants[0].record
@@ -485,14 +505,12 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
     output_record.stop = liftover_record.stop
 
     # For each caller, get information required for format fields for this variant
-    joint_tags = ('GT', 'AD', 'AF', 'DP')
-    no_call_info = {tag: '.' for tag in joint_tags} 
-    allele_information = {caller.lower(): {} for caller in CALLER_NAMES}
-
     for variant in single_caller_variants:
         normal_sample, tumor_sample = variant.record.samples
         variant.normal = Sample(normal_sample, 'normal', variant.record, variant.caller)
         variant.tumor = Sample(tumor_sample, 'tumor', variant.record, variant.caller)
+
+    variant_lookup = {v.caller: v for v in single_caller_variants}
 
     for index in (0, 1):
         normal = 0
@@ -516,7 +534,7 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
             GT_list.append(str(targ_sample.GT))
             AD_list.append(stringify(targ_sample.AD))
             AF_list.append('{:0.4f}'.format(targ_sample.AF))
-            DP_list.append(str(targ_sample.DP))
+            DP_list.append(targ_sample.DP)
 
         GT = stringify(GT_list, FORMAT_JOIN)
         AD = stringify(AD_list, FORMAT_JOIN)
@@ -529,13 +547,19 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
         output_record.samples[index]['DPC'] = DP
 
         consensus_gt, gt_tag = get_gt_consensus(GT_list)
+        dp_range = get_range(DP_list)
+        af_range = get_range(AF_list)
+        ad_range_1 = get_range([item.split(',')[0] for item in AD_list])
+        ad_range_2 = get_range([item.split(',')[-1] for item in AD_list])
 
-#        print(consensus_gt, tuple(consensus_gt.split('/')))
         output_record.samples[index]['GT'] = tuple([int(i) for i in consensus_gt.split('/')])
         output_record.samples[index]['GT_STATUS'] = gt_tag
         output_record.samples[index]['AD'] = get_ad_consensus(AD_list)
         output_record.samples[index]['AF'] = get_af_consensus(AF_list)
         output_record.samples[index]['DP'] = get_dp_consensus(DP_list)
+        output_record.samples[index]['ADR'] = (ad_range_1, ad_range_1)
+        output_record.samples[index]['AFR'] = af_range
+        output_record.samples[index]['DPR'] = dp_range
 
     chrom = single_caller_variants[0].record.chrom
     pos = single_caller_variants[0].record.pos
@@ -586,7 +610,7 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-    normal_cram = pysam.AlignmentFile(args.cram, 'rc') #, reference_filename="/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai")
+    normal_cram = pysam.AlignmentFile(args.cram, 'rc')
     
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
@@ -614,7 +638,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for index, varlist in enumerate(single_caller_variants):
+    for index, varlist in enumerate(single_caller_variants[:1000]):
         if not varlist:
             break
 
