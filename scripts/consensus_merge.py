@@ -391,6 +391,10 @@ def find_variant_callers(variant_list, all_variants_dict):
                continue
            if varlist[0] == var:
                sublist.append(varlist.pop(0))
+           # remove other copies of the same variant
+           if varlist:
+               while varlist[0] == var:
+                   varlist.pop(0)
         single_caller_variants.append(sublist)
 
     return single_caller_variants
@@ -465,7 +469,6 @@ def get_mapq(cram, chrom, pos):
     """
     mapq = []
     mq0 = 0
-#    print(chrom, pos-1, pos)
 
     aligned_reads = cram.fetch(chrom, pos-1, pos)
 
@@ -598,7 +601,7 @@ if __name__ == "__main__":
                         help='Lancet VCF')
     parser.add_argument('--vardict_vcf',
                         help='VarDict VCF')
-    parser.add_argument('--cram', help='CRAM file')
+    parser.add_argument('--cram', help='CRAM or BAM file')
     parser.add_argument('--output_basename',
                         help='String to use as basename for output file')
 
@@ -610,8 +613,13 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-    normal_cram = pysam.AlignmentFile(args.cram, 'rc')
-    
+    if args.cram.endswith('cram'):
+        normal_cram = pysam.AlignmentFile(args.cram, 'rc') # reference_filename='/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai')
+    elif args.cram.endswith('bam'):
+        normal_cram = pysam.AlignmentFile(args.cram, 'rb')
+    else:
+        raise IOError('File provided to "cram" argument must have .cram or .bam extension') 
+
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
     output_vcf_name = build_output_name(args.vardict_vcf, args.output_basename)
@@ -634,13 +642,15 @@ if __name__ == "__main__":
     all_variants_list = list(itertools.chain.from_iterable(all_variants_dict.values()))
     all_variants_ordered = sorted(list(set(all_variants_list)))
     single_caller_variants = find_variant_callers(all_variants_ordered, all_variants_dict)
- 
+
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
-    for index, varlist in enumerate(single_caller_variants[:1000]):
+    for index, varlist in enumerate(single_caller_variants):
         if not varlist:
-            break
+            if not index:
+                raise IOError('First variant record empty')
+            raise IOError('Empty record following %s' % varlist[index-1][0])
 
         hotspot = False
 
@@ -648,7 +658,7 @@ if __name__ == "__main__":
             try:
                 if caller_var.record.info['HotSpotAllele']:
                     hotspot = True
-                    build_output_record(varlist, output_vcf, hotspot=True)
+                    build_output_record(varlist, output_vcf, normal_cram, hotspot=True)
                     break
             except KeyError:
                 continue
