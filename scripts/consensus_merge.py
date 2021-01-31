@@ -612,6 +612,8 @@ if __name__ == "__main__":
     parser.add_argument('--vardict_vcf',
                         help='VarDict VCF')
     parser.add_argument('--cram', help='CRAM or BAM file')
+    parser.add_argument('--reference', 
+                        help='Path to FASTA to which CRAM is aligned')
     parser.add_argument('--output_basename',
                         help='String to use as basename for output file')
     parser.add_argument('--hotspot_source',
@@ -626,7 +628,8 @@ if __name__ == "__main__":
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
     if args.cram.endswith('cram'):
-        normal_cram = pysam.AlignmentFile(args.cram, 'rc') # reference_filename='/home/ubuntu/volume/ref/Homo_sapiens_assembly38.fasta.fai')
+        normal_cram = pysam.AlignmentFile(args.cram, 'rc', 
+                reference_filename=os.path.abspath(args.reference))
     elif args.cram.endswith('bam'):
         normal_cram = pysam.AlignmentFile(args.cram, 'rb')
     else:
