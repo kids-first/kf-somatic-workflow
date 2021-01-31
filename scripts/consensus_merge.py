@@ -307,16 +307,27 @@ class Variant(object):
         return ' '.join([self.record.chrom, str(self.record.start), 
                          self.record.ref, str(self.record.alts), self.caller])
 
-def write_output_header(output_vcf, sample_list, contig_list):
+def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=None):
     """ Write all header information to consensus vcf file 
         Args:
             output_vcf (pysam.VariantFile)
             sample_list (pysam.libcbcf.VariantHeaderSamples): samples to write into header
             contig_list (list of pysam.libcbcf.VariantContig objects):
                 names of contigs to write into header
+            hotspot_source (str): information about source of 'Hotspot' designated regions
+                for inclusion in header; default None
     """
     # Version is set to VCF4.2 on creation
     # Add reference? date?
+
+    # Hotspot source as of 01/2021 was 
+    # Memorial Sloan Kettering Cancer Center
+    # based on Chang et al. 2017; see https://www.cancerhotspots.org
+    if hotspot_source:
+        hotspot_string = ' as defined by %s' % hotspot_source 
+    else:
+        hotspot_string = ''
+
     output_vcf.header.info.add('MQ',1,'Integer', 
             'RMS mapping quality (normal sample)')
     output_vcf.header.info.add('MQ0',1,'Integer', 
@@ -324,8 +335,7 @@ def write_output_header(output_vcf, sample_list, contig_list):
     output_vcf.header.info.add('CAL','.','String',
             'List of callers making this call')
     output_vcf.header.info.add('Hotspot', 0, 'Flag',
-            ('In mutational hotspot, as defined by Memorial Sloan Kettering Cancer Center'
-             ' based on Chang et al. 2017; see https://www.cancerhotspots.org'))
+            'Included by exception to consensus rule due to "hotspot" status%s' % hotspot_string)
     output_vcf.header.formats.add('GT', '1', 'String', 
             'Consensus genotype')
     output_vcf.header.formats.add('AD', 'R', 'Integer',
@@ -604,6 +614,8 @@ if __name__ == "__main__":
     parser.add_argument('--cram', help='CRAM or BAM file')
     parser.add_argument('--output_basename',
                         help='String to use as basename for output file')
+    parser.add_argument('--hotspot_source',
+                        help='Optional source of "hotspot" designated regions')
 
     args = parser.parse_args()
 
@@ -627,7 +639,7 @@ if __name__ == "__main__":
     # print(output_vcf_path)
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
     write_output_header(output_vcf, strelka2_vcf.header.samples, 
-                        strelka2_vcf.header.contigs.values())
+                        strelka2_vcf.header.contigs.values(), args.hotspot_source)
 
     all_variants_dict = {}
 
@@ -668,3 +680,5 @@ if __name__ == "__main__":
 
     normal_cram.close()
     output_vcf.close()
+
+    pysam.tabix_index(output_vcf_path, preset="vcf", force=True)
