@@ -127,9 +127,9 @@ class Sample(object):
     def AF(self):
         """ Instructions for AF FORMAT attribute """
 
-        if self.caller == 'mutect2':
+        if self.caller in ('mutect2', 'strelka2'):
             return self.vcf_sample['AF'][0]
-        elif self.caller in ('vardict', 'strelka2'):
+        elif self.caller == 'vardict':
             return self.vcf_sample['AF']
         elif self.caller == 'lancet':
             return Sample.AF_from_AD(self.vcf_sample['AD'])
@@ -618,7 +618,7 @@ if __name__ == "__main__":
                 continue
  
         if not hotspot and len(varlist) >= 2:
-            build_output_record(varlist, output_vcf, normal_cram)
+            build_output_record(varlist, output_vcf, sample_names, normal_cram)
 
     normal_cram.close()
     output_vcf.close()
