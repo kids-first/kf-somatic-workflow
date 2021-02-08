@@ -129,7 +129,7 @@ class Sample(object):
 
         if self.caller in ('mutect2', 'strelka2'):
             return self.vcf_sample['AF'][0]
-        elif self.caller in ('vardict', 'strelka2'):
+        elif self.caller == 'vardict':
             return self.vcf_sample['AF']
         elif self.caller == 'lancet':
             return Sample.AF_from_AD(self.vcf_sample['AD'])
