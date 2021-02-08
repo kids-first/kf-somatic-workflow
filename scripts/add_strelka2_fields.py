@@ -177,6 +177,6 @@ if __name__ == '__main__':
     output_vcf_name = build_output_name(args.strelka2_vcf, args.output_basename)
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
 
-    # Create the modified VCF
+    # Create and index the modified VCF
     create_mod_vcf(output_vcf_path, args.strelka2_vcf, args.tumor_name, args.normal_name)
-    
+    pysam.tabix_index(output_vcf_path, preset="vcf", force=True) 
