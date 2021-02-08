@@ -11,29 +11,6 @@ import argparse
 import os
 import pysam
 
-def create_new_header(strelka2_vcf):
-    """ Create a modified version of the Strelka2 VCF header
-            containing references to the standard fields which are 
-            to be added. 
-
-        Args:
-            strelka2_vcf (str): path to Strelka2 VCF
-
-        Returns:
-            pysam.VariantFile.header: modified header object
-    """
-    orig_vcf = pysam.VariantFile(strelka2_vcf)
-    header = orig_vcf.header
-    orig_vcf.close()
-
-#    header.formats.add('GT', '1', 'String', 'Genotype')
-#    header.formats.add('AD', 'R', 'Integer',
-#            'Depths for the ref and alt alleles in the order listed')
-#    header.formats.add('AF', 'A', 'Float', 'Allele frequency')
-#    header.formats.add('DP', '1', 'Integer', 'Total depth')
-
-    return header
-
 def name_to_gt(name):
     """ Convert names like 'het' to canonical genotypes 
         'conflict' interpreted as homozygous reference
@@ -195,13 +172,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Create output vcf
+    # Get output VCF location
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
     output_vcf_name = build_output_name(args.strelka2_vcf, args.output_basename)
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
-
-    # Add information for new fields to VCF header
-    # header = create_new_header(args.strelka2_vcf)
 
     # Create the modified VCF
     create_mod_vcf(output_vcf_path, args.strelka2_vcf, args.tumor_name, args.normal_name)
