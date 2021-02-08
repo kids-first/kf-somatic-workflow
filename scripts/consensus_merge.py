@@ -74,23 +74,10 @@ class Sample(object):
             return 0.0
         return alt_counts / total_counts
 
-    @staticmethod
-    def name_to_gt(name):
-        """ Convert names like 'het' to canonical genotypes """
-        if name == 'hom':
-            return '1/1'
-        elif name == 'het':
-            return '0/1'
-        elif name in ('ref', 'conflict'):
-            return '0/0'
-        else:
-            raise ValueError('No genotype associated with %s' % name)
-
-    def __init__(self, name, stype, record, caller):
+    def __init__(self, name, record, caller):
         """ Initialize this object and calculate 
             Args:
                 name (str): the name of the sample from the VCF
-                stype (str): sample may be 'tumor' or 'normal'
                 record (pysam.VariantRecord): record with which this
                 sample is associated
                 caller (str): name of caller for this variant, 
@@ -103,9 +90,6 @@ class Sample(object):
                 ValueError if caller is not in CALLER_NAMES
         """
         self.name = name
-        if stype not in ('tumor', 'normal'):
-            raise ValueError('Sample type must be tumor or normal, not %s' % stype)
-        self.type = stype
         self.record = record
 
         target_sample = [self.record.samples[index] for index in range(len(self.record.samples)) 
@@ -122,28 +106,8 @@ class Sample(object):
     @functools.cached_property
     def GT(self):
         """ Instructions for GT FORMAT attribute """
-        if self.caller == 'strelka2':
-            if self.type == 'normal':
-                strelka_nt = self.record.info['NT']
-                return Sample.name_to_gt(strelka_nt)
-            elif self.type == 'tumor':
-                # Strelka2 SGT field may be e.g. 'ref->het' or 'GG->GC'
-                strelka_sgt = self.record.info['SGT'].split("->")[-1]
-                try:
-                    tumor_gt = Sample.name_to_gt(strelka_sgt)
-                except ValueError:
-                    if len(set(strelka_sgt)) == 2:
-                        tumor_gt = '0/1'
-                    elif len(set(strelka_sgt)) == 1:
-                        if strelka_sgt[0] == self.record.ref:
-                            tumor_gt = '0/0'
-                        else:
-                            tumor_gt = '1/1'
-                    else:
-                        raise IOError('Unhandled Strelka2 SGT value %s' % record.info['SGT'])
-                return tumor_gt
 
-        elif self.caller in ('mutect2', 'vardict', 'lancet'):
+        if self.caller in ('mutect2', 'vardict', 'lancet', 'strelka2'):
             return stringify(sorted(self.vcf_sample['GT']), '/')
 
         else:
@@ -152,30 +116,8 @@ class Sample(object):
     @functools.cached_property
     def AD(self):
         """ Instructions for AD FORMAT attribute """
-        if self.caller == 'strelka2':
-            """ From strelka2 docs:
-                SNPs:
-                    refCounts = Sum values FORMAT column $REF + “U” 
-                        (e.g. if REF="A" then use the value in FORMAT/AU)
-                    altCounts = Sum values FORMAT column $ALT + “U” 
-                        (e.g. if ALT="T" then use the value in FORMAT/TU)
-                Indels:
-                    tier1RefCounts = Sum values from FORMAT/TAR
-                    tier1AltCounts = Sume values from FORMAT/TIR
-            """
-            # only indels should have TIR field
-            if 'TIR' in self.vcf_sample:
-                ref_ct = sum(self.vcf_sample['TAR'])
-                alt_ct = sum(self.vcf_sample['TIR'])
-            else: # SNP case
-                snp_ref_key = self.record.ref[0] + "U"
-                snp_alt_key = self.record.alts[0][0] + "U"
-                ref_ct = sum(self.vcf_sample[snp_ref_key])
-                alt_ct = sum(self.vcf_sample[snp_alt_key])
-            
-            return (ref_ct, alt_ct)
 
-        elif self.caller in ('mutect2', 'vardict', 'lancet'):
+        if self.caller in ('mutect2', 'vardict', 'lancet', 'strelka2'):
             return self.vcf_sample['AD']
 
         else:
@@ -187,12 +129,10 @@ class Sample(object):
 
         if self.caller == 'mutect2':
             return self.vcf_sample['AF'][0]
-        elif self.caller == 'vardict':
+        elif self.caller in ('vardict', 'strelka2'):
             return self.vcf_sample['AF']
         elif self.caller == 'lancet':
             return Sample.AF_from_AD(self.vcf_sample['AD'])
-        elif self.caller == 'strelka2':
-            return Sample.AF_from_AD(self.AD)
         else:
             raise IOError('No rule to get AF for caller %s' % self.caller)
 
@@ -493,7 +433,8 @@ def get_mapq(cram, chrom, pos):
     rms_mapq = np.sqrt(np.mean(np.array(mapq)**2))
     return int(rms_mapq), mq0
 
-def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot=False):
+def build_output_record(single_caller_variants, output_vcf, sample_names, 
+        normal_cram, hotspot=False):
     """ Create a single VCF record for the consensus output
             by interrogating the single-caller records for that variant
             and add that record the consensus VCF
@@ -502,6 +443,7 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
             single_caller_variants (list of Variants): list of Variants
                 representing a single call in one or more callers
             output_vcf (pysam.VariantFile): consensus file, open in 'w' mode
+            sample_names (list of str): names of samples from a single input vcf
             normal_cram (pysam.Alignmentfile): Normal CRAM for this sample,
                 open in 'r' mode
             hotspot (bool): whether this variant is in a mutational hotspot
@@ -520,14 +462,12 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
     # For each caller, get information required for format fields for this variant
     for variant in single_caller_variants:
         normal_sample, tumor_sample = variant.record.samples
-        variant.normal = Sample(normal_sample, 'normal', variant.record, variant.caller)
-        variant.tumor = Sample(tumor_sample, 'tumor', variant.record, variant.caller)
+        variant.samples = [Sample(name, variant.record, variant.caller)
+                for name in sample_names]
 
     variant_lookup = {v.caller: v for v in single_caller_variants}
 
-    for index in (0, 1):
-        normal = 0
-        tumor = 1
+    for index in range(len(sample_names)):
         GT_list = []
         AD_list = []
         AF_list = []
@@ -539,10 +479,7 @@ def build_output_record(single_caller_variants, output_vcf, normal_cram, hotspot
                 for flist in (GT_list, AD_list, AF_list, DP_list):
                     flist.append('.')
                 continue
-            if index == normal:
-                targ_sample = targ_var.normal
-            elif index == tumor:
-                targ_sample = targ_var.tumor
+            targ_sample = targ_var.samples[index]
                 
             GT_list.append(str(targ_sample.GT))
             AD_list.append(stringify(targ_sample.AD))
@@ -661,6 +598,7 @@ if __name__ == "__main__":
     # Identify variants meeting consensus criteria
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
+    sample_names = list(strelka2_vcf.header.samples)
     for index, varlist in enumerate(single_caller_variants):
         if not varlist:
             if not index:
@@ -673,7 +611,8 @@ if __name__ == "__main__":
             try:
                 if caller_var.record.info['HotSpotAllele']:
                     hotspot = True
-                    build_output_record(varlist, output_vcf, normal_cram, hotspot=True)
+                    build_output_record(varlist, output_vcf, sample_names, 
+                            normal_cram, hotspot=True)
                     break
             except KeyError:
                 continue
