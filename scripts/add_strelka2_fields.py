@@ -125,6 +125,17 @@ def create_mod_vcf(output_path, input_path, tumor_name, normal_name):
     """
 
     input_vcf = pysam.VariantFile(input_path, 'r')
+
+    input_vcf.header.formats.add('GT', '1', 'String',
+            'Converted genotype added in post for compatibility')
+    input_vcf.header.formats.add('AD', 'R', 'Integer',
+            ('Allelic depths for the ref and alt alleles in the order listed. '
+            'Added in post for compatibility'))
+    input_vcf.header.formats.add('AF', 'A', 'Float',
+            ('Allele frequency, as recommended by strelka2 docs: '
+            '<ALT>U/<REF>U+<ALT>U (somatic snps), '
+            'TIR/TIR+TAR (somatic indels)'))
+
     output = pysam.VariantFile(output_path, 'w', header=input_vcf.header)
 
     for record in input_vcf.fetch():

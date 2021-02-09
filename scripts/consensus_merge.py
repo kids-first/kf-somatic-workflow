@@ -275,7 +275,7 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
     output_vcf.header.info.add('CAL','.','String',
             'List of callers making this call')
     output_vcf.header.info.add('Hotspot', 0, 'Flag',
-            'Included by exception to consensus rule due to "hotspot" status%s' % hotspot_string)
+            'Included by exception to consensus rule due to hotspot status%s' % hotspot_string)
     output_vcf.header.formats.add('GT', '1', 'String', 
             'Consensus genotype')
     output_vcf.header.formats.add('AD', 'R', 'Integer',
