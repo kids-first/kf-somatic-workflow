@@ -461,7 +461,6 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
 
     # For each caller, get information required for format fields for this variant
     for variant in single_caller_variants:
-        normal_sample, tumor_sample = variant.record.samples
         variant.samples = [Sample(name, variant.record, variant.caller)
                 for name in sample_names]
 
