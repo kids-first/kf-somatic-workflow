@@ -43,7 +43,14 @@ arguments:
       --no_escape
       --no_progress
       --no_stats
-      --merged
+      ${
+        if(inputs.merged){
+          return "--merged";
+        }
+        else{
+          return "";
+        }
+      }
       --numbers
       --offline
       --output_file $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf
@@ -69,6 +76,7 @@ inputs:
   reference: {type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index}
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   species: {type: string?, default: "homo_sapiens"}
+  merged: {type: boolean?, default: false}
   output_basename: string
   tool_name: string
   cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
