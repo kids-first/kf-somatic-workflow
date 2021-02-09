@@ -3,7 +3,7 @@
 ##INFO=<ID=MQ,Number=1,Type=Integer,Description="RMS mapping quality (normal sample)">
 ##INFO=<ID=MQ0,Number=1,Type=Integer,Description="Number of MAPQ=0 reads (normal sample)">
 ##INFO=<ID=CAL,Number=.,Type=String,Description="List of callers making this call">
-##INFO=<ID=Hotspot,Number=0,Type=Flag,Description="Included by exception to consensus rule due to "hotspot" status">
+##INFO=<ID=Hotspot,Number=0,Type=Flag,Description="Included by exception to consensus rule due to hotspot status">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Consensus genotype">
 ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Consensus depths for the ref and alt alleles in the order listed">
 ##FORMAT=<ID=AF,Number=A,Type=Float,Description="Consensus allele frequency">
@@ -42,6 +42,8 @@
 ##contig=<ID=chrY,length=57227415>
 ##contig=<ID=chrM,length=16569>
 ##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
+##bcftools_viewVersion=1.8+htslib-1.8
+##bcftools_viewCommand=view /home/ubuntu/volume/CONSENSUS_TEST.a7d3e131-fd8d-43e2-9138-56a8e5ecff44.consensus.vcf.gz; Date=Tue Feb  9 23:09:02 2021
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	BS_F0GNWEJJ	BS_F5EX3ZY5
 chr1	53129	.	A	G	.	PASS	MQ=21;MQ0=22;CAL=Strelka2,VarDict	GT:GTC:ADC:AFC:DPC:GT_STATUS:AD:AF:DP:ADR:AFR:DPR	0/1:0/1|.|0/1|.:91,49|.|36,20|.:0.3500|.|0.3571|.:56|.|56|.:unanimous:63,34:0.35355:56:55,55:0.0071:0	0/0:0/0|.|0/0|.:77,0|.|32,0|.:0.0000|.|0.0000|.:31|.|32|.:unanimous:54,0:0:31:45,45:0:1
 chr1	91200	.	CA	C	.	PASS	MQ=49;MQ0=0;CAL=Strelka2,Mutect2	GT:GTC:ADC:AFC:DPC:GT_STATUS:AD:AF:DP:ADR:AFR:DPR	0/1:0/1|0/1|.|.:22,92|6,41|.|.:0.8070|0.8770|.|.:60|47|.|.:unanimous:14,66:0.842:53:16,16:0.07:13	0/0:0/0|0/0|.|.:77,2|34,0|.|.:0.0253|0.0260|.|.:44|34|.|.:unanimous:55,1:0.02565:39:43,43:0.0007:10
