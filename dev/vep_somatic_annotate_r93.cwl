@@ -9,7 +9,7 @@ requirements:
     coresMin: 16
   - class: DockerRequirement
     dockerPull: 'migbro/vep:r93.7'
-baseCommand: [mkdir ]
+baseCommand: [mkdir]
 arguments:
   - position: 1
     shellQuote: false
