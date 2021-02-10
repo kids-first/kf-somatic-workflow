@@ -8,7 +8,7 @@ requirements:
     ramMin: 24000
     coresMin: 16
   - class: DockerRequirement
-    dockerPull: 'vep:r93.7'
+    dockerPull: 'migbro/vep:r93.7'
 baseCommand: [mkdir ]
 arguments:
   - position: 1
