@@ -73,13 +73,13 @@ arguments:
       && /ensembl-vep-release-93.7/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf.gz
 
 inputs:
-  reference: {type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index}
+  reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
   input_vcf: {type: File, secondaryFiles: [.tbi]}
   species: {type: string?, default: "homo_sapiens"}
   merged: {type: boolean?, default: false}
   output_basename: string
   tool_name: string
-  cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   cache_version: {type: int?, doc: "Version being used, should match build version", default: 93}
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
 
