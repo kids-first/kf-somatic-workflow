@@ -21,6 +21,7 @@ import itertools
 import os
 import sys
 
+import multiprocessing as mp
 import numpy as np
 import pysam
 
@@ -165,7 +166,15 @@ class Variant(object):
         if len(self.record.alts) > 1:
             raise ValueError('Call in %s at %s:%s has multiple alternates'
                     % (caller, self.record.chrom, self.record.pos))
-        
+
+    @property
+    def chrom(self):
+        return self.record.chrom
+
+    @property
+    def pos(self):
+        return self.record.start
+
     def __eq__(self, other):
         """ Two Variants are considered equal if they occur on
                the same chromosome and at the same position and
@@ -406,21 +415,36 @@ def get_dp_consensus(dp_list):
     """
     return int(np.mean([int(f) for f in dp_list if f != '.']))
 
-def get_mapq(cram, chrom, pos):
+def get_mapq(cram, chrom, pos, reference=None):
     """ Get RMS mapping quality and number of MAPQ=0 reads at locus
 
         Args:
-            cram (pysam.AlignmentFile): open in 'r' mode
+            cram (str): path to CRAM or BAM file
             chrom (str): locus chromosome name
             pos (int): 1-based locus coordinate
+            reference (str): path to reference, needed if using cram
+
+        Raises:
+            IOError if cram does not have cram or bam extension
+                    if CRAM is provided without reference path
 
         Returns:
             tuple of ints RMS mapq and # of mapq reads at locus
     """
+    if args.cram.endswith('cram'):
+        if not reference:
+            raise IOError('Must provide reference if using CRAM')
+        normal_cram = pysam.AlignmentFile(args.cram, 'rc',
+                reference_filename=reference)
+    elif args.cram.endswith('bam'):
+        normal_cram = pysam.AlignmentFile(args.cram, 'rb')
+    else:
+        raise IOError('File provided to "cram" argument must have .cram or .bam extension')
+
     mapq = []
     mq0 = 0
 
-    aligned_reads = cram.fetch(chrom, pos-1, pos)
+    aligned_reads = cram.fetch(chrom, pos-1, pos, multiple_iterators=True)
 
     for read in aligned_reads:
         mapq.append(read.mapq)
@@ -433,8 +457,8 @@ def get_mapq(cram, chrom, pos):
     rms_mapq = np.sqrt(np.mean(np.array(mapq)**2))
     return int(rms_mapq), mq0
 
-def build_output_record(single_caller_variants, output_vcf, sample_names, 
-        normal_cram, hotspot=False):
+def build_output_record(single_caller_variants, output_vcf_path, sample_names, 
+        normal_cram_path, hotspot, reference=None):
     """ Create a single VCF record for the consensus output
             by interrogating the single-caller records for that variant
             and add that record the consensus VCF
@@ -442,14 +466,20 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
         Args: 
             single_caller_variants (list of Variants): list of Variants
                 representing a single call in one or more callers
-            output_vcf (pysam.VariantFile): consensus file, open in 'w' mode
+            output_vcf_path (str)): path to consensus file, with header already written
             sample_names (list of str): names of samples from a single input vcf
-            normal_cram (pysam.Alignmentfile): Normal CRAM for this sample,
-                open in 'r' mode
+            normal_cram_path (str): path to normal CRAM (or BAM) for this sample
             hotspot (bool): whether this variant is in a mutational hotspot
-                (default False)
+            reference (str): path to reference FASTA, needed if using CRAM
+                (default None)
+
+        Returns:
+            pysam.VariantRecord: the constructed consensus record
     """
+    output_vcf = pysam.VariantFile(output_vcf_path, 'r')
     output_record = output_vcf.new_record()
+    output_vcf.close()
+
     # Set consistent attributes
     liftover_record = single_caller_variants[0].record
     output_record.chrom = liftover_record.chrom
@@ -510,9 +540,9 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
         output_record.samples[index]['AFR'] = af_range
         output_record.samples[index]['DPR'] = dp_range
 
-    chrom = single_caller_variants[0].record.chrom
-    pos = single_caller_variants[0].record.pos
-    mapq, mq0 = get_mapq(normal_cram, chrom, pos)
+    chrom = single_caller_variants[0].chrom
+    pos = single_caller_variants[0].pos
+    mapq, mq0 = get_mapq(normal_cram, chrom, pos, reference)
 
     output_record.info['MQ'] = mapq
     output_record.info['MQ0'] = mq0
@@ -523,7 +553,7 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
 
     output_record.filter.add('PASS')
 
-    output_vcf.write(output_record)
+    return output_record 
 
 def build_output_name(inpath, outbase):
     """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name and given output basename
@@ -563,14 +593,6 @@ if __name__ == "__main__":
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
-    if args.cram.endswith('cram'):
-        normal_cram = pysam.AlignmentFile(args.cram, 'rc', 
-                reference_filename=os.path.abspath(args.reference))
-    elif args.cram.endswith('bam'):
-        normal_cram = pysam.AlignmentFile(args.cram, 'rb')
-    else:
-        raise IOError('File provided to "cram" argument must have .cram or .bam extension') 
-
     # Create output vcf
     base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
     output_vcf_name = build_output_name(args.vardict_vcf, args.output_basename)
@@ -579,6 +601,7 @@ if __name__ == "__main__":
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
     write_output_header(output_vcf, strelka2_vcf.header.samples, 
                         strelka2_vcf.header.contigs.values(), args.hotspot_source)
+    output_vcf.close()
 
     all_variants_dict = {}
 
@@ -598,6 +621,9 @@ if __name__ == "__main__":
     # Current criteria are being in a mutational hotspot 
     #    or having been called by 2 or more callers
     sample_names = list(strelka2_vcf.header.samples)
+    consensus_variants = []
+    consensus_hotspots = []
+
     for index, varlist in enumerate(single_caller_variants):
         if not varlist:
             if not index:
@@ -610,16 +636,24 @@ if __name__ == "__main__":
             try:
                 if caller_var.record.info['HotSpotAllele']:
                     hotspot = True
-                    build_output_record(varlist, output_vcf, sample_names, 
-                            normal_cram, hotspot=True)
                     break
             except KeyError:
                 continue
  
-        if not hotspot and len(varlist) >= 2:
-            build_output_record(varlist, output_vcf, sample_names, normal_cram)
+        if not hotspot and len(varlist) < 2:
+            continue
 
-    normal_cram.close()
+        consensus_variants.append(varlist)
+        consensus_hotspots.append(hotspot)
+
+    pool = mp.Pool()
+    output_vcf_records = pool.starmap(build_output_record, ((varlist, output_vcf, 
+            sample_names, normal_cram, hotspot_status, args.reference)
+            for varlist, hotspot_status in zip(consensus_variants, consensus_hotspots)))
+    
+    output_vcf = pysam.VariantFile(output_vcf_path, 'w')
+    for record in output_vcf_records:
+        output_vcf.write(record)
     output_vcf.close()
 
     pysam.tabix_index(output_vcf_path, preset="vcf", force=True)
