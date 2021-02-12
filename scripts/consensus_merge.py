@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-""" 
+"""
 From individual caller (Strelka2, Mutect2, VarDict, Lancet)
-somatic vcfs, create single vcf of all variants that PASSed 
+somatic vcfs, create single vcf of all variants that PASSed
 in at least 2 of the above.
 
 Information about AD, DP, AF, GT from individual callers
-should appear in the final as FORMAT fields. 
+should appear in the final as FORMAT fields.
 
 Mapping quality information is also retrieved from the CRAM
 and added as an INFO field
@@ -19,7 +19,6 @@ from collections import Counter
 import functools
 import itertools
 import os
-import sys
 
 import multiprocessing as mp
 import numpy as np
@@ -56,7 +55,7 @@ def strip_chr(chrom_name):
     return chrom_name
 
 def stringify(iterable, sep_char=','):
-    """ Turn an iterable into a delimited string with no spaces 
+    """ Turn an iterable into a delimited string with no spaces
         delimiting character is ',' by default
     """
     return sep_char.join([str(i) for i in iterable])
@@ -76,12 +75,12 @@ class Sample(object):
         return alt_counts / total_counts
 
     def __init__(self, name, record, caller):
-        """ Initialize this object and calculate 
+        """ Initialize this object and calculate
             Args:
                 name (str): the name of the sample from the VCF
                 record (pysam.VariantRecord): record with which this
                 sample is associated
-                caller (str): name of caller for this variant, 
+                caller (str): name of caller for this variant,
                     must be a member of CALLER_NAMES (case insensitive)
 
             Raises:
@@ -93,7 +92,7 @@ class Sample(object):
         self.name = name
         self.record = record
 
-        target_sample = [self.record.samples[index] for index in range(len(self.record.samples)) 
+        target_sample = [self.record.samples[index] for index in range(len(self.record.samples))
                          if self.record.samples[index].name == self.name]
         if len(target_sample) != 1:
             raise IOError('Sample name %s not found or duplicated in %s' % (self.name, caller))
@@ -111,8 +110,7 @@ class Sample(object):
         if self.caller in ('mutect2', 'vardict', 'lancet', 'strelka2'):
             return stringify(sorted(self.vcf_sample['GT']), '/')
 
-        else:
-            raise IOError('No rule to get GT for caller %s' % self.caller)
+        raise IOError('No rule to get GT for caller %s' % self.caller)
 
     @functools.cached_property
     def AD(self):
@@ -121,8 +119,7 @@ class Sample(object):
         if self.caller in ('mutect2', 'vardict', 'lancet', 'strelka2'):
             return self.vcf_sample['AD']
 
-        else:
-            raise IOError('No rule to get AD for caller %s' % self.caller)
+        raise IOError('No rule to get AD for caller %s' % self.caller)
 
     @functools.cached_property
     def AF(self):
@@ -130,20 +127,20 @@ class Sample(object):
 
         if self.caller in ('mutect2', 'strelka2'):
             return self.vcf_sample['AF'][0]
-        elif self.caller == 'vardict':
+        if self.caller == 'vardict':
             return self.vcf_sample['AF']
-        elif self.caller == 'lancet':
+        if self.caller == 'lancet':
             return Sample.AF_from_AD(self.vcf_sample['AD'])
-        else:
-            raise IOError('No rule to get AF for caller %s' % self.caller)
+
+        raise IOError('No rule to get AF for caller %s' % self.caller)
 
     @functools.cached_property
     def DP(self):
         """ Instructions for DP FORMAT attribute """
         if self.caller in ('strelka2', 'mutect2', 'vardict', 'lancet'):
             return self.vcf_sample['DP']
-        else:
-            raise IOError('No rule to get DP for caller %s' % self.caller)
+
+        raise IOError('No rule to get DP for caller %s' % self.caller)
 
 class Variant(object):
     """ Capture relevant information and enable desired operations
@@ -166,7 +163,7 @@ class Variant(object):
         if len(self.record.alts) > 1:
             raise ValueError('Call in %s at %s:%s has multiple alternates'
                     % (caller, self.record.chrom, self.record.pos))
-        
+
     def __eq__(self, other):
         """ Two Variants are considered equal if they occur on
                the same chromosome and at the same position and
@@ -195,7 +192,7 @@ class Variant(object):
             """
             chr1 = strip_chr(chrom1)
             chr2 = strip_chr(chrom2)
-            
+
             for name in chr1, chr2:
                 if name not in ALLOWED_CHROMS:
                     raise ValueError('Uncanonical chromosome %s uncomparable' % name)
@@ -233,7 +230,7 @@ class Variant(object):
                     return False
                 else:
                     if self.record.alts[0] < other.record.alts[0]:
-                        return True 
+                        return True
                     else:
                         return False
 
@@ -245,11 +242,11 @@ class Variant(object):
 
     def __repr__(self):
         """ How the object looks when printed """
-        return ' '.join([self.record.chrom, str(self.record.start), 
+        return ' '.join([self.record.chrom, str(self.record.start),
                          self.record.ref, str(self.record.alts), self.caller])
 
 def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=None):
-    """ Write all header information to consensus vcf file 
+    """ Write all header information to consensus vcf file
         Args:
             output_vcf (pysam.VariantFile)
             sample_list (pysam.libcbcf.VariantHeaderSamples): samples to write into header
@@ -261,23 +258,23 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
     # Version is set to VCF4.2 on creation
     # Add reference? date?
 
-    # Hotspot source as of 01/2021 was 
+    # Hotspot source as of 01/2021 was
     # Memorial Sloan Kettering Cancer Center
     # based on Chang et al. 2017; see https://www.cancerhotspots.org
     if hotspot_source:
-        hotspot_string = ' as defined by %s' % hotspot_source 
+        hotspot_string = ' as defined by %s' % hotspot_source
     else:
         hotspot_string = ''
 
-    output_vcf.header.info.add('MQ',1,'Integer', 
+    output_vcf.header.info.add('MQ',1,'Integer',
             'RMS mapping quality (normal sample)')
-    output_vcf.header.info.add('MQ0',1,'Integer', 
+    output_vcf.header.info.add('MQ0',1,'Integer',
             'Number of MAPQ=0 reads (normal sample)')
     output_vcf.header.info.add('CAL','.','String',
             'List of callers making this call')
     output_vcf.header.info.add('Hotspot', 0, 'Flag',
             'Included by exception to consensus rule due to hotspot status%s' % hotspot_string)
-    output_vcf.header.formats.add('GT', '1', 'String', 
+    output_vcf.header.formats.add('GT', '1', 'String',
             'Consensus genotype')
     output_vcf.header.formats.add('AD', 'R', 'Integer',
             'Consensus depths for the ref and alt alleles in the order listed')
@@ -285,16 +282,16 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
             'Consensus allele frequency')
     output_vcf.header.formats.add('DP', '1', 'Integer',
             'Consensus depth')
-    output_vcf.header.formats.add('GTC', '.', 'String', 
+    output_vcf.header.formats.add('GTC', '.', 'String',
             'Genotypes for %s' % FORMAT_JOIN.join(CALLER_NAMES))
-    output_vcf.header.formats.add('GT_STATUS', '.', 'String', 
-            ("Degree of unanimity of genotype: 'unanimous', 'majority', or 'deadlock' if" 
+    output_vcf.header.formats.add('GT_STATUS', '.', 'String',
+            ("Degree of unanimity of genotype: 'unanimous', 'majority', or 'deadlock' if"
             " equally supported by individual callers"))
-    output_vcf.header.formats.add('ADC', '.', 'String', 
+    output_vcf.header.formats.add('ADC', '.', 'String',
             'Allele depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
-    output_vcf.header.formats.add('DPC', '.', 'String', 
+    output_vcf.header.formats.add('DPC', '.', 'String',
             'Read depths for %s' % FORMAT_JOIN.join(CALLER_NAMES))
-    output_vcf.header.formats.add('AFC', '.', 'String', 
+    output_vcf.header.formats.add('AFC', '.', 'String',
             'Allele frequencies for %s' % FORMAT_JOIN.join(CALLER_NAMES))
     output_vcf.header.formats.add('ADR', 'R', 'Integer',
             'Difference between highest and lowest AD')
@@ -351,9 +348,9 @@ def find_variant_callers(variant_list, all_variants_dict):
     return single_caller_variants
 
 def get_gt_consensus(gt_list):
-    """ Determine level of genotype consensus from single-caller genotypes 
+    """ Determine level of genotype consensus from single-caller genotypes
         Args:
-            gt_list (list): Strings in '0/0' format representing 
+            gt_list (list): Strings in '0/0' format representing
                 single-caller genotypes
 
         Returns: tuple of (consensus genotype, consensus tag)
@@ -379,7 +376,7 @@ def get_gt_consensus(gt_list):
         return conflict_gt_tag, tie_tag
 
 def get_ad_consensus(ad_list):
-    """ Get mean value of AD across callers 
+    """ Get mean value of AD across callers
         Args:
            ad_list (list): list of AD (comma-separated strings)
         Return:
@@ -449,19 +446,16 @@ def get_mapq(cram_path, chrom, pos, reference=None):
     rms_mapq = np.sqrt(np.mean(np.array(mapq)**2))
     return int(rms_mapq), mq0
 
-def build_output_record(single_caller_variants, output_vcf, sample_names, 
-        normal_cram, hotspot=False):
+def build_output_record(single_caller_variants, output_vcf, sample_names, hotspot=False):
     """ Create a single VCF record for the consensus output
             by interrogating the single-caller records for that variant
             and add that record the consensus VCF
 
-        Args: 
+        Args:
             single_caller_variants (list of Variants): list of Variants
                 representing a single call in one or more callers
             output_vcf (pysam.VariantFile): consensus file, open in 'w' mode
             sample_names (list of str): names of samples from a single input vcf
-            normal_cram (pysam.Alignmentfile): Normal CRAM for this sample,
-                open in 'r' mode
             hotspot (bool): whether this variant is in a mutational hotspot
                 (default False)
     """
@@ -495,7 +489,7 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
                     flist.append('.')
                 continue
             targ_sample = targ_var.samples[index]
-                
+
             GT_list.append(str(targ_sample.GT))
             AD_list.append(stringify(targ_sample.AD))
             AF_list.append('{:0.4f}'.format(targ_sample.AF))
@@ -522,7 +516,7 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
         output_record.samples[index]['AD'] = get_ad_consensus(AD_list)
         output_record.samples[index]['AF'] = get_af_consensus(AF_list)
         output_record.samples[index]['DP'] = get_dp_consensus(DP_list)
-        output_record.samples[index]['ADR'] = (ad_range_1, ad_range_1)
+        output_record.samples[index]['ADR'] = (ad_range_1, ad_range_2)
         output_record.samples[index]['AFR'] = af_range
         output_record.samples[index]['DPR'] = dp_range
 
@@ -536,7 +530,8 @@ def build_output_record(single_caller_variants, output_vcf, sample_names,
     return output_record
 
 def build_output_name(inpath, outbase):
-    """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name and given output basename
+    """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name
+           and given output basename
        Args:
            inpath (str): Path to the input VCF(.GZ) file
            outbase (str): Given output basename string
@@ -549,16 +544,16 @@ def build_output_name(inpath, outbase):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--strelka2_vcf', 
+    parser.add_argument('--strelka2_vcf',
                         help='Strelka2 VCF with MNPs fixed')
     parser.add_argument('--mutect2_vcf',
                         help='Mutect2 VCF')
-    parser.add_argument('--lancet_vcf', 
+    parser.add_argument('--lancet_vcf',
                         help='Lancet VCF')
     parser.add_argument('--vardict_vcf',
                         help='VarDict VCF')
     parser.add_argument('--cram', help='CRAM or BAM file')
-    parser.add_argument('--reference', 
+    parser.add_argument('--reference',
                         help='Path to FASTA to which CRAM is aligned')
     parser.add_argument('--output_basename',
                         help='String to use as basename for output file')
@@ -579,7 +574,7 @@ if __name__ == "__main__":
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
     # print(output_vcf_path)
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
-    write_output_header(output_vcf, strelka2_vcf.header.samples, 
+    write_output_header(output_vcf, strelka2_vcf.header.samples,
                         strelka2_vcf.header.contigs.values(), args.hotspot_source)
 
     all_variants_dict = {}
@@ -597,7 +592,7 @@ if __name__ == "__main__":
     single_caller_variants = find_variant_callers(all_variants_ordered, all_variants_dict)
 
     # Identify variants meeting consensus criteria
-    # Current criteria are being in a mutational hotspot 
+    # Current criteria are being in a mutational hotspot
     #    or having been called by 2 or more callers
     sample_names = list(strelka2_vcf.header.samples)
     all_output_records = []
@@ -614,20 +609,20 @@ if __name__ == "__main__":
             try:
                 if caller_var.record.info['HotSpotAllele']:
                     hotspot = True
-                    record = build_output_record(varlist, output_vcf, sample_names, 
-                            args.cram, hotspot=True)
+                    record = build_output_record(varlist, output_vcf, sample_names,
+                            hotspot=True)
                     break
             except KeyError:
                 continue
 
         if not hotspot and len(varlist) >= 2:
-            record = build_output_record(varlist, output_vcf, sample_names, args.cram)
+            record = build_output_record(varlist, output_vcf, sample_names)
 
         if record:
             all_output_records.append(record)
-   
+
     pool = mp.Pool()
-    mapq_info = pool.starmap(get_mapq, ((args.cram, rec.chrom, rec.pos, args.reference) 
+    mapq_info = pool.starmap(get_mapq, ((args.cram, rec.chrom, rec.pos, args.reference)
             for rec in all_output_records))
     pool.close()
     pool.join()
