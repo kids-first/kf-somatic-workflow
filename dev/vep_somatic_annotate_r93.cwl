@@ -15,7 +15,7 @@ arguments:
     shellQuote: false
     valueFrom: >-
       $(inputs.species)
-      && tar -I pigz -xf $(inputs.cache.path) -C $(inputs.species)
+      && tar --use-compress-program="pigz -p 8" -xf $(inputs.cache.path) -C $(inputs.species)
       && perl /ensembl-vep-release-93.7/vep
       --af
       --af_1kg
