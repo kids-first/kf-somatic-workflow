@@ -433,7 +433,7 @@ def get_mapq(cram_path, chrom, pos, reference=None):
     mapq = []
     mq0 = 0
 
-    aligned_reads = cram.fetch(chrom, pos-1, pos, multiple_iterators=True)
+    aligned_reads = cram.fetch(chrom, pos-1, pos)
 
     for read in aligned_reads:
         mapq.append(read.mapq)
