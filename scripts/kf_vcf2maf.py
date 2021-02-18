@@ -24,20 +24,30 @@ def get_vcf_field(dargs):
         vcf_field = getattr(record, field)
         # Most categorized info will come from PICKed consenquence
         if key == "CSQ":
+            p = 0
             for csq in vcf_field[key]:
                 annot_info = csq.split("|")
                 if annot_info[p_idx] == "1":
+                    p = 1
                     return annot_info[csq_fields.index(subkey)]
+            if p == 0:
+                print("WARNING: No PICK for " + str(record))
 
         elif key != "":
             vcf_field = vcf_field[key]
+            if key == "CAL":
+                return ",".join(vcf_field)
             if subkey != "":
                 return str(vcf_field[subkey])
+        # special case for FILTER field
+        if field == "filter":
+            return ",".join(list(vcf_field))
         return str(vcf_field)
     except Exception as e:
         print(e)
+        pdb.set_trace()
+        hold = 1
         return "NA"
-        # hold = 1
 
 
 def slap_on_meta(dargs):
