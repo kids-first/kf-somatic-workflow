@@ -58,7 +58,14 @@ arguments:
       --polyphen b
       --protein
       --pubmed
-      --regulatory
+      ${
+        if (!inputs.species || inputs.species != "canis_familiaris"){
+          return "--regulatory"
+        }
+        else{
+          return "";
+        }
+      }
       --shift_hgvs 1
       --sift b
       --species $(inputs.species)
