@@ -22,8 +22,15 @@ arguments:
       --tumor-id $(inputs.tumor_id)
       --normal-id $(inputs.normal_id)
       --custom-enst /opt/data/isoform_overrides_uniprot
+      ${
+        if(inputs.use_kf_fields){
+          return "--use-kf-fields";
+        }
+        else{
+          return "";
+        }
+      }
       --ncbi-build $(inputs.ref_build)
-      --inhibit-vep
       ${
         if(inputs.retain_info){
           return "--retain-info " + $(inputs.retain_info);
@@ -45,6 +52,7 @@ inputs:
   tool_name: string
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
+  use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
   output_maf:
