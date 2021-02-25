@@ -8,7 +8,7 @@ requirements:
     ramMin: 4000
     coresMin: 2
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/vep:r93_v2'
+    dockerPull: 'migbro/vcf2maf/v1.0.0'
 baseCommand: [tar, -xzf ]
 arguments:
   - position: 1
