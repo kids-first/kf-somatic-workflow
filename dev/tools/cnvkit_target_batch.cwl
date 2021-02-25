@@ -27,7 +27,7 @@ arguments:
       cnvkit.py batch
       -p $(inputs.threads)
       $(inputs.input_sample.path)
-      --targets $(inputs.capture_regions)
+      --targets $(inputs.capture_regions.path)
       ${
         if (inputs.avg_target_size){
           return "--target-avg-size " + inputs.avg_target_size;
@@ -39,6 +39,14 @@ arguments:
       ${
         if (inputs.drop_low_coverage){
           return "--drop-low-coverage"
+        }
+        else{
+          return "";
+        }
+      }
+      ${
+        if(inputs.antitargets){
+          return "--antitargets " +  inputs.antitargets.path
         }
         else{
           return "";
@@ -117,6 +125,7 @@ inputs:
     doc: "Set sample sex.  CNVkit isn't always great at guessing it"
   avg_target_size: {type: int?, doc: "CNVkit recommends 267, smaller can be used but urged to also have anti-target file"}
   drop_low_coverage: {type: boolean, doc: "Drop very-low-coverage bins before segmentation to avoid false-positive deletions in poor-quality tumor samples", default: false}
+  antitargets: {type: File?, doc: "A bed file with anti-targets"}
 
 
 outputs:
