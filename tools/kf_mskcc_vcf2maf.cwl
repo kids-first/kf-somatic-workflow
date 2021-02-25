@@ -8,14 +8,13 @@ requirements:
     ramMin: 4000
     coresMin: 2
   - class: DockerRequirement
-    dockerPull: 'migbro/vcf2maf/v1.0.0'
-baseCommand: [tar, -xzf ]
+    dockerPull: 'migbro/vcf2maf:v1.0.0'
+baseCommand: [gunzip, -c]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      $(inputs.cache.path)
-      && gunzip -c $(inputs.input_vcf.path) > input_file.vcf
+      $(inputs.input_vcf.path) > input_file.vcf
       && perl /opt/vcf2maf.pl
       --input-vcf input_file.vcf
       --output-maf $(inputs.output_basename).$(inputs.tool_name).vep.maf
@@ -33,7 +32,7 @@ arguments:
       --ncbi-build $(inputs.ref_build)
       ${
         if(inputs.retain_info){
-          return "--retain-info " + $(inputs.retain_info);
+          return "--retain-info " + inputs.retain_info;
         }
         else{
           return "";
@@ -42,10 +41,8 @@ arguments:
       --ref-fasta $(inputs.reference.path)
 
 inputs:
-  reference: {type: File,  secondaryFiles: [.fai], label: Fasta genome assembly with index}
-  input_vcf:
-    type: File
-    secondaryFiles: [.tbi]
+  reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
+  input_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
   output_basename: string
   tumor_id: string
   normal_id: string
