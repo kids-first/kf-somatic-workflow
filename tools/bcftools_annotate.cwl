@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: bcbio_annotate_vcf
+id: bcftools_annotate_vcf
 doc: "Simple tool to annotate a vcf using bcftools and an annotation vcf"
 requirements:
   - class: ShellCommandRequirement
