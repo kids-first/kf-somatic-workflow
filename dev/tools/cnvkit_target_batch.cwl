@@ -68,8 +68,21 @@ arguments:
         }
         return arg;
       }
-      --diagram 
-      --scatter
+
+      # rerun seg if not default
+      ${
+        if (inputs.seg_method != "cbs"){
+          var cmd = "cnvkit.py segment " + inputs.input_sample.nameroot + ".cnr -p " + inputs.threads + " -m " + inputs.seg_method;
+          if (inputs.drop_low_coverage){
+            cmd += " --drop-low-coverage";
+          }
+          cmd += " -o " + inputs.input_sample.nameroot + ".cns";
+          return cmd;
+        }
+       else{
+         return "";
+       }
+      }
 
       cnvkit.py call $(inputs.input_sample.nameroot).cns
       ${
@@ -88,7 +101,11 @@ arguments:
         return arg;
       }
       -o $(inputs.output_basename).call.cns
-            
+      
+      cnvkit.py scatter $(inputs.tumor_sample_name).cnr -s $(inputs.tumor_sample_name).cns -o $(inputs.tumor_sample_name)-scatter.pdf
+      
+      cnvkit.py diagram $(inputs.tumor_sample_name).cnr -s $(inputs.tumor_sample_name).cns -o $(inputs.tumor_sample_name)-diagram.pdf
+
       ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
 
       cnvkit.py export seg $(inputs.tumor_sample_name).cns -o $(inputs.output_basename).call.seg
@@ -126,6 +143,7 @@ inputs:
   avg_target_size: {type: int?, doc: "CNVkit recommends 267, smaller can be used but urged to also have anti-target file"}
   drop_low_coverage: {type: boolean, doc: "Drop very-low-coverage bins before segmentation to avoid false-positive deletions in poor-quality tumor samples", default: false}
   antitargets: {type: File?, doc: "A bed file with anti-targets"}
+  seg_method: {type: ['null', {type: enum, name: seg_method, symbols: ["cbs", "flasso", "haar", "hmm", "hmm-tumor", "hmm-germline", "none"]}], default: "cbs", doc: "Segmentation method. Please see https://cnvkit.readthedocs.io/en/v0.9.3/pipeline.html#segment for details"}
 
 
 outputs:
