@@ -22,13 +22,14 @@ arguments:
       ${
         var args = "";
         for (var i = 0; i < inputs.filter_name.length; i++){
-          args += "--filter-name " + inputs.filter_name[0] + " --filter-expression " + inputs.filter_expression[i] + " ";
+          args += "--filter-name \"" + inputs.filter_name[i] + "\" --filter-expression \"" + inputs.filter_expression[i] + "\" ";
         }
+        return args
       }
 
 inputs:
     input_vcf: {type: File, secondaryFiles: ['.tbi']}
-    reference: {type: File, secondaryFiles: [^.dict]}
+    reference: {type: File, secondaryFiles: [^.dict, .fai]}
     filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add"}
     filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for clues"}
     threads: {type: int, doc: "Number of compression/decompression threads", default: 4}
