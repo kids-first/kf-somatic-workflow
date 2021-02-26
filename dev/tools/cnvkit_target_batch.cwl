@@ -70,6 +70,7 @@ arguments:
       }
 
       # rerun seg if not default
+
       ${
         if (inputs.seg_method != "cbs"){
           var cmd = "cnvkit.py segment " + inputs.input_sample.nameroot + ".cnr -p " + inputs.threads + " -m " + inputs.seg_method;
@@ -102,9 +103,9 @@ arguments:
       }
       -o $(inputs.output_basename).call.cns
       
-      cnvkit.py scatter $(inputs.tumor_sample_name).cnr -s $(inputs.tumor_sample_name).cns -o $(inputs.tumor_sample_name)-scatter.pdf
+      cnvkit.py scatter $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns -o $(inputs.output_basename).scatter.pdf
       
-      cnvkit.py diagram $(inputs.tumor_sample_name).cnr -s $(inputs.tumor_sample_name).cns -o $(inputs.tumor_sample_name)-diagram.pdf
+      cnvkit.py diagram $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns -o $(inputs.output_basename).diagram.pdf
 
       ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
 
@@ -119,9 +120,6 @@ arguments:
 
       mv $(inputs.input_sample.nameroot).cnr $(inputs.output_basename).cnr
 
-      mv $(inputs.input_sample.nameroot)-diagram.pdf $(inputs.output_basename).diagram.pdf
-      
-      mv $(inputs.input_sample.nameroot)-scatter.pdf $(inputs.output_basename).scatter.pdf
 
 
 inputs:
