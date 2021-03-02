@@ -72,10 +72,16 @@ arguments:
       # rerun seg if not default
 
       ${
-        if (inputs.seg_method != "cbs"){
+        if (inputs.seg_method != "cbs" || (inputs.seg_method != "cbs" && inputs.smooth_cbs) || inputs.threshold){
           var cmd = "cnvkit.py segment " + inputs.input_sample.nameroot + ".cnr -p " + inputs.threads + " -m " + inputs.seg_method;
           if (inputs.drop_low_coverage){
             cmd += " --drop-low-coverage";
+          }
+          if (inputs.smooth_cbs){
+            cmd += " --smooth-cbs";
+          }
+          if (inputs.threshold){
+            cmd += " --threshold " + inputs.threshold
           }
           cmd += " -o " + inputs.input_sample.nameroot + ".cns";
           return cmd;
@@ -132,17 +138,16 @@ inputs:
   annotation_file: {type: ['null', File], doc: "refFlat.txt file,  needed if cnv kit cnn not already built"}
   output_basename: string
   tumor_sample_name: string
-  threads:
-    type: ['null', int]
-    default: 16
+  threads: {type: int?, default: 16}
   sex:
     type: string
     doc: "Set sample sex.  CNVkit isn't always great at guessing it"
   avg_target_size: {type: int?, doc: "CNVkit recommends 267, smaller can be used but urged to also have anti-target file"}
   drop_low_coverage: {type: boolean, doc: "Drop very-low-coverage bins before segmentation to avoid false-positive deletions in poor-quality tumor samples", default: false}
   antitargets: {type: File?, doc: "A bed file with anti-targets"}
-  seg_method: {type: ['null', {type: enum, name: seg_method, symbols: ["cbs", "flasso", "haar", "hmm", "hmm-tumor", "hmm-germline", "none"]}], default: "cbs", doc: "Segmentation method. Please see https://cnvkit.readthedocs.io/en/v0.9.3/pipeline.html#segment for details"}
-
+  seg_method: {type: ['null', {type: enum, name: seg_method, symbols: ["cbs", "flasso", "haar", "hmm", "hmm-tumor", "hmm-germline", "none"]}], default: "cbs", doc: "Segmentation method. Please see https://cnvkit.readthedocs.io/en/latest/pipeline.html#segment for details"}
+  smooth_cbs: {type: boolean, doc: "Perform an additional smoothing before CBS segmentation, which in some cases may increase the sensitivity. Used only for CBS method", default: false}
+  threshold: {type: float?, doc: "Significance threshold (p-value or FDR, depending on method) to accept breakpoints during segmentation. For HMM methods, this is the smoothing window size."}
 
 outputs:
   output_cnr: 
