@@ -8,19 +8,19 @@ requirements:
     ramMin: 4000
     coresMin: 2
   - class: DockerRequirement
-    dockerPull: 'migbro/vcf2maf:v1.0.0'
+    dockerPull: 'migbro/vcf2maf:v1.0.1'
 baseCommand: [gunzip, -c]
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
       $(inputs.input_vcf.path) > input_file.vcf
-      && perl /opt/vcf2maf.pl
+      && perl /vcf2maf/vcf2maf.pl
       --input-vcf input_file.vcf
       --output-maf $(inputs.output_basename).$(inputs.tool_name).vep.maf
       --tumor-id $(inputs.tumor_id)
       --normal-id $(inputs.normal_id)
-      --custom-enst /opt/data/isoform_overrides_uniprot
+      --custom-enst /vcf2maf/data/isoform_overrides_uniprot
       ${
         if(inputs.use_kf_fields){
           return "--use-kf-fields";
