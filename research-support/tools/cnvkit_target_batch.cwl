@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
   - class: DockerRequirement
-    dockerPull: 'images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3'
+    dockerPull: 'etal/cnvkit:0.9.8'
   - class: ResourceRequirement
     ramMin: 32000
     coresMin: $(inputs.threads)
@@ -109,9 +109,9 @@ arguments:
       }
       -o $(inputs.output_basename).call.cns
       
-      cnvkit.py scatter $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns -o $(inputs.output_basename).scatter.pdf
+      cnvkit.py scatter $(inputs.input_sample.nameroot).cnr -s $(inputs.output_basename).call.cns -o $(inputs.output_basename).scatter.pdf
       
-      cnvkit.py diagram $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns -o $(inputs.output_basename).diagram.pdf
+      cnvkit.py diagram $(inputs.input_sample.nameroot).cnr -s $(inputs.output_basename).call.cns -o $(inputs.output_basename).diagram.pdf
 
       ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
 
@@ -146,7 +146,7 @@ inputs:
   drop_low_coverage: {type: boolean, doc: "Drop very-low-coverage bins before segmentation to avoid false-positive deletions in poor-quality tumor samples", default: false}
   antitargets: {type: File?, doc: "A bed file with anti-targets"}
   seg_method: {type: ['null', {type: enum, name: seg_method, symbols: ["cbs", "flasso", "haar", "hmm", "hmm-tumor", "hmm-germline", "none"]}], default: "cbs", doc: "Segmentation method. Please see https://cnvkit.readthedocs.io/en/latest/pipeline.html#segment for details"}
-  smooth_cbs: {type: boolean, doc: "Perform an additional smoothing before CBS segmentation, which in some cases may increase the sensitivity. Used only for CBS method", default: false}
+  smooth_cbs: {type: boolean?, doc: "Perform an additional smoothing before CBS segmentation, which in some cases may increase the sensitivity. Used only for CBS method", default: false}
   threshold: {type: float?, doc: "Significance threshold (p-value or FDR, depending on method) to accept breakpoints during segmentation. For HMM methods, this is the smoothing window size."}
 
 outputs:
