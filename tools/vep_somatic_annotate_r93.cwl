@@ -59,7 +59,7 @@ arguments:
       --protein
       --pubmed
       ${
-        if (!inputs.species || inputs.species != "canis_familiaris"){
+        if (!inputs.use_reg){
           return "--regulatory"
         }
         else{
@@ -82,8 +82,9 @@ arguments:
 inputs:
   reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
   input_vcf: {type: File, secondaryFiles: [.tbi]}
-  species: {type: string?, default: "homo_sapiens"}
-  merged: {type: boolean?, default: false}
+  species: {type: string?, default: "homo_sapiens", doc: "Refer to the cache dir structure to set this"}
+  merged: {type: boolean?, default: false, doc: "Set to true if a merged VEP cache is being used"}
+  use_reg: {type: boolean?, default: true, doc: "Not all caches have the regulatory feature. Set to false for dog especially"}
   output_basename: string
   tool_name: string
   cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
