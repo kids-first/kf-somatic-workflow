@@ -6,8 +6,7 @@ doc: >-
       canonical fields like GT and AD
 requirements:
   - class: DockerRequirement
-    dockerPull: 'nhjohnson278/add_strelka2_fields:v1.0.0'
-    # dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/add_strelka2_fields:1.0.0'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/add-strelka2-fields:1.0.0'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 3000
