@@ -156,16 +156,20 @@ def create_mod_vcf(output_path, input_path, tumor_name, normal_name):
     output.close()
     input_vcf.close()
 
-def build_output_name(inpath, outbase):
-    """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name and given output basename
+def build_output_name(inpath, output_basename):
+    """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name
+       The filename will be the input filename with '.standard' inserted before '.vcf.gz'
+       
        Args:
            inpath (str): Path to the input VCF(.GZ) file
-           outbase (str): Given output basename string
+           output_basename (str): Used as first element of output filename in place of 
+               first element of name of inpath filename
        Return:
            str: Filename in the format <output_basename>.<input_nameroot>.consensus.vcf.gz
     """
     basename_split = os.path.split(inpath)[-1].split('.')
-    return '.'.join([outbase, basename_split[0] + '.standard.vcf.gz'])
+    output_fields = [output_basename] + basename_split[1:-2] + ['standard'] + basename_split[-2:]
+    return '.'.join(output_fields)
 
 if __name__ == '__main__':
     
@@ -179,12 +183,12 @@ if __name__ == '__main__':
     parser.add_argument('--normal_name',
             help='Name of normal sample in VCF')
     parser.add_argument('--output_basename',
-            help='String to use as basename for output file')
+            help='String to use as basename for output file [e.g.] task ID')
 
     args = parser.parse_args()
 
     # Get output VCF location
-    base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
+    base_dir = os.getcwd()
     output_vcf_name = build_output_name(args.strelka2_vcf, args.output_basename)
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
 
