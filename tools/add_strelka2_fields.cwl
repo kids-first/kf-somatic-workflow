@@ -21,6 +21,7 @@ inputs:
     inputBinding:
       position: 1
       prefix: '--strelka2_vcf'
+    secondaryFiles: .tbi
   tumor_name:
     type: string
     inputBinding:
