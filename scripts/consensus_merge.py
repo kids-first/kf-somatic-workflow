@@ -529,17 +529,21 @@ def build_output_record(single_caller_variants, output_vcf, sample_names, hotspo
 
     return output_record
 
-def build_output_name(inpath, outbase):
+def build_output_name(inpath, output_basename):
     """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name
-           and given output basename
+       The filename will be the input filename with '.consensus' inserted before '.vcf.gz'
+           and a change of basename to the provided value
+
        Args:
            inpath (str): Path to the input VCF(.GZ) file
-           outbase (str): Given output basename string
+           output_basename (str): Used as first element of output filename in place of 
+               first element of name of inpath filename
        Return:
            str: Filename in the format <output_basename>.<input_nameroot>.consensus.vcf.gz
     """
     basename_split = os.path.split(inpath)[-1].split('.')
-    return '.'.join([outbase, basename_split[0] + '.consensus.vcf.gz'])
+    output_fields = [output_basename] + basename_split[1:-2] + ['consensus'] + basename_split[-2:]
+    return '.'.join(output_fields)
 
 if __name__ == "__main__":
 
@@ -569,10 +573,9 @@ if __name__ == "__main__":
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
     # Create output vcf
-    base_dir = os.path.split(os.path.abspath(args.strelka2_vcf))[0]
+    base_dir = os.getcwd()
     output_vcf_name = build_output_name(args.vardict_vcf, args.output_basename)
     output_vcf_path = os.path.join(base_dir, output_vcf_name)
-    # print(output_vcf_path)
     output_vcf = pysam.VariantFile(output_vcf_path, 'w')
     write_output_header(output_vcf, strelka2_vcf.header.samples,
                         strelka2_vcf.header.contigs.values(), args.hotspot_source)
