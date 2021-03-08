@@ -1,6 +1,7 @@
 cwlVersion: v1.0
 class: Workflow
-id: kfdrc_cnvkit_batch_wf
+id: kfdrc_cnvkit_theta2_adjust_wf
+doc: "This workflow is normally run as a subworkflow and takes existing cnvkit results and adjusts them based on calculated tumor purity."
 
 requirements:
   - class: ScatterFeatureRequirement
