@@ -40,15 +40,9 @@ inputs:
   cores:
     type: int?
     default: 4
-    inputBinding:
-      position: 5
-      prefix: '--cores'
   ram:
     type: int?
     default: 3 
-    inputBinding:
-      position: 6
-      prefix: '--ram'
     doc: 'RAM requirement in GB'
 
 outputs:
