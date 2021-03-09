@@ -9,8 +9,8 @@ requirements:
     dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/add-strelka2-fields:1.0.0'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 3000
-    coresMin: 4
+    ramMin: ${ return inputs.ram * 1000 }
+    coresMin: $(inputs.cores)
   - class: ShellCommandRequirement
 
 baseCommand: [/usr/bin/add_strelka2_fields.py]
@@ -37,10 +37,23 @@ inputs:
     inputBinding:
       position: 4
       prefix: '--output_basename'
+  cores:
+    type: int?
+    default: 4
+    inputBinding:
+      position: 5
+      prefix: '--cores'
+  ram:
+    type: int?
+    default: 3 
+    inputBinding:
+      position: 6
+      prefix: '--ram'
+    doc: 'RAM requirement in GB'
 
 outputs:
   output:
     type: File
     outputBinding:
       glob: '*.vcf.gz'
-    secondaryFiles: [.tbi]
+    secondaryFiles: .tbi
