@@ -559,12 +559,20 @@ if __name__ == "__main__":
     parser.add_argument('--cram', help='CRAM or BAM file')
     parser.add_argument('--reference',
                         help='Path to FASTA to which CRAM is aligned')
+    parser.add_argument('--ncallers', type=int, default=2,
+                        help='Number of callers required for consensus [2]')
     parser.add_argument('--output_basename',
                         help='String to use as basename for output file')
     parser.add_argument('--hotspot_source',
                         help='Optional source of "hotspot" designated regions')
 
     args = parser.parse_args()
+
+    if args.ncallers < 1:
+        raise ValueError('ncallers must be positive')
+    if args.ncallers > len(CALLER_NAMES):
+        raise ValueError('ncallers cannot be greater than number of known callers (%s)' 
+                % len(CALLER_NAMES))
 
     # Create VCF and CRAM pysam objects
     strelka2_vcf = pysam.VariantFile(args.strelka2_vcf, 'r')
@@ -618,7 +626,7 @@ if __name__ == "__main__":
             except KeyError:
                 continue
 
-        if not hotspot and len(varlist) >= 2:
+        if not hotspot and len(varlist) >= args.ncallers:
             record = build_output_record(varlist, output_vcf, sample_names)
 
         if record:
