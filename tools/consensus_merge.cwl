@@ -21,42 +21,42 @@ inputs:
     inputBinding:
       position: 1
       prefix: '--strelka2_vcf'
-    secondaryFiles: .tbi
+    secondaryFiles: ['.tbi']
     doc: 'Strelka2 VCF with MNPs fixed'
   mutect2_vcf:
     type: File
     inputBinding:
       position: 2
       prefix: '--mutect2_vcf'
-    secondaryFiles: .tbi
+    secondaryFiles: ['.tbi']
     doc: 'Mutect2 VCF'
   lancet_vcf:
     type: File
     inputBinding:
       position: 3
       prefix: '--lancet_vcf'
-    secondaryFiles: .tbi
+    secondaryFiles: ['.tbi']
     doc: 'Lancet VCF'
   vardict_vcf:
     type: File
     inputBinding:
       position: 4
       prefix: '--vardict_vcf'
-    secondaryFiles: .tbi
+    secondaryFiles: ['.tbi']
     doc: 'VarDict VCF'
   cram:
     type: File
     inputBinding:
       position: 5
       prefix: '--cram'
-    secondaryFiles: .crai
+    secondaryFiles: ['.crai']
     doc: 'CRAM or BAM file'
   reference:
     type: File
     inputBinding:
       position: 6
       prefix: '--reference'
-    secondaryFiles: .fai
+    secondaryFiles: ['.fai']
     doc: 'Path to FASTA to which CRAM is aligned'
   ncallers:
     type: int?
@@ -71,7 +71,7 @@ inputs:
       prefix: '--output_basename'
   cores:
     type: int?
-    default: 20
+    default: 16
   ram:
     type: int?
     default: 3 
@@ -82,4 +82,4 @@ outputs:
     type: File
     outputBinding:
       glob: '*.vcf.gz'
-    secondaryFiles: .tbi
+    secondaryFiles: ['.tbi']
