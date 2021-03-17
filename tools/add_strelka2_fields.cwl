@@ -13,7 +13,13 @@ requirements:
     coresMin: $(inputs.cores)
   - class: ShellCommandRequirement
 
-baseCommand: [/usr/bin/add_strelka2_fields.py]
+baseCommand: []
+
+arguments:
+  - position: 0
+    shellQuote: false
+    valueFrom: >-
+      $(inputs.run_tool_flag ? ">&2 /usr/bin/add_strelka2_fields.py" : ">&2 echo 'User opted to skip adding fields to vcf' && exit 0;")
 
 inputs:
   strelka2_vcf:
@@ -21,7 +27,8 @@ inputs:
     inputBinding:
       position: 1
       prefix: '--strelka2_vcf'
-    secondaryFiles: .tbi
+    secondaryFiles: ['.tbi']
+  run_tool_flag: {type: boolean?, doc: "When run as part of a workflow, can skip", default: false}
   tumor_name:
     type: string
     inputBinding:
@@ -46,8 +53,4 @@ inputs:
     doc: 'RAM requirement in GB'
 
 outputs:
-  output:
-    type: File
-    outputBinding:
-      glob: '*.vcf.gz'
-    secondaryFiles: .tbi
+  output: { type: 'File', outputBinding: { glob: '*.gz', outputEval: '$( inputs.run_tool_flag ? self : inputs.strelka2_vcf)' }, secondaryFiles: [.tbi] }
