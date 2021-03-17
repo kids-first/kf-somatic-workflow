@@ -91,13 +91,9 @@ inputs:
   cache_version: {type: int?, doc: "Version being used, should match build version", default: 93}
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
 
-
 outputs:
   output_vcf:
     type: File
     outputBinding:
       glob: '*.vcf.gz'
-  output_tbi:
-    type: File  
-    outputBinding:
-      glob: '*.vcf.gz.tbi'
+    secondaryFiles: ['.tbi']
