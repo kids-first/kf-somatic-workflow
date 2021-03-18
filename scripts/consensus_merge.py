@@ -617,7 +617,8 @@ if __name__ == "__main__":
 
         for caller_var in varlist:
             try:
-                if caller_var.record.info['HotSpotAllele']:
+                # HotSpotAllele INFO field is stored as length-1 tuple 
+                if caller_var.record.info['HotSpotAllele'][0]:
                     hotspot = True
                     record = build_output_record(varlist, output_vcf, sample_names,
                             hotspot=True)
