@@ -463,8 +463,7 @@ def build_output_record(single_caller_variants, output_vcf, sample_names, hotspo
     # Set consistent attributes
     liftover_record = single_caller_variants[0].record
     output_record.chrom = liftover_record.chrom
-    output_record.ref = liftover_record.ref
-    output_record.alts = liftover_record.alts
+    output_record.alleles = liftover_record.alleles
     output_record.id = liftover_record.id
     output_record.start = liftover_record.start
     output_record.stop = liftover_record.stop
