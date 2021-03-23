@@ -34,9 +34,6 @@ steps:
     out: [output_vcfs]
 
   consensus_merge:
-    hints:
-    - class: 'sbg:AWSInstanceType'
-      value: c5.4xlarge
     run: ../tools/consensus_merge.cwl
     in:
       strelka2_vcf:
@@ -100,6 +97,3 @@ steps:
       tool_name:
         valueFrom: ${return "vcf2maf"}
     out: [output_maf]
-
-$namespaces:
-  sbg: https://sevenbridges.com
