@@ -11,7 +11,7 @@ doc: |-
 
   This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2,
   Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
-  Somatic variant and SV call results are annotated using Variant Effect Predictor, with the Memorial
+  Somatic variant call results are annotated using Variant Effect Predictor, with the Memorial
   Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
 
   ## Somatic Variant Calling
@@ -124,10 +124,9 @@ doc: |-
             - `lancet_prepass_vcf`: Somatic snv and indel call results with all `FILTER` categories for lancet. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter.
       - Structural variant callers
           - Manta
-              - `manta_vep_vcf`: Variant effect predictor annotated vcf, filtered on `PASS`, sv call results from manta
+              - `manta_vep_vcf`: SV call filtered on `PASS`, from manta
               - `manta_vep_tbi`: Index file of above bgzipped vcf
               - `manta_prepass_vcf`: SV results with all `FILTER` categories for manta. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter.
-              - `manta_vep_maf`: maf of format of `manta_vep_vcf`
       - Copy number variation callers
           - ControlFREEC
               - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualtitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
