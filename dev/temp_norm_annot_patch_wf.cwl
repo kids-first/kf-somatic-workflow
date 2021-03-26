@@ -21,14 +21,16 @@ inputs:
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
-  protein_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and HGVSp short values corresponding to hotspots" }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
   output_basename: string
   tool_name: string
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,HotSpotAllele`"}
+  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
-  annotated_outputs: {type: 'File[]', outputSource: [rename_outputs/renamed_files]}
+  annotated_output: {type: 'File[]', outputSource: rename_outputs/renamed_files}
 
 steps:
   normalize_vcf:
@@ -58,7 +60,8 @@ steps:
       vep_ref_build: vep_ref_build
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
-      protein_hotspots: protein_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
       tool_name: tool_name
     out: [annotated_vcf, annotated_maf]
