@@ -20,7 +20,8 @@ inputs:
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task." }
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
-  protein_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and HGVSp short values corresponding to hotspots" }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
   output_basename: string
   tool_name: string
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
@@ -78,7 +79,8 @@ steps:
       input_vcf: gatk_add_soft_filter/gatk_soft_filtered_vcf
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
-      protein_hotspots: protein_hotspots
+      protein_snv: protein_snv_hotspots
+      protein_indel: protein_indel_hotspots
       output_basename: output_basename
     out: [hotspots_vcf]
 

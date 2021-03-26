@@ -8,7 +8,7 @@ requirements:
     ramMin: 4000
     coresMin: 2
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.1'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.2'
 baseCommand: [gunzip, -c]
 arguments:
   - position: 1
@@ -38,6 +38,14 @@ arguments:
           return "";
         }
       }
+      ${
+        if(inputs.retain_fmt){
+          return "--retain-fmt " + inputs.retain_fmt;
+        }
+        else{
+          return "";
+        }
+      }
       --ref-fasta $(inputs.reference.path)
 
 inputs:
@@ -49,6 +57,7 @@ inputs:
   tool_name: string
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
+  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep`"}
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
