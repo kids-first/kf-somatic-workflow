@@ -216,11 +216,11 @@ requirements:
 - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File, sbg:suggestedValue: {class: File, path: 5d9f63e9e4b03edc89a24c96,
+  reference_fasta: {type: File, sbg:suggestedValue: {class: File, path: 60639014357c3a53540ca7a3,
       name: Homo_sapiens_assembly38.fasta}}
-  reference_fai: {type: 'File?', sbg:suggestedValue: {class: File, path: 5d9f63e9e4b03edc89a24c94,
+  reference_fai: {type: 'File?', sbg:suggestedValue: {class: File, path: 60639016357c3a53540ca7af,
       name: Homo_sapiens_assembly38.fasta.fai}}
-  reference_dict: {type: 'File?', sbg:suggestedValue: {class: File, path: 5d9f63e9e4b03edc89a24c90,
+  reference_dict: {type: 'File?', sbg:suggestedValue: {class: File, path: 60639019357c3a53540ca7e7,
       name: Homo_sapiens_assembly38.dict}}
   input_tumor_aligned:
     type: File
@@ -251,26 +251,26 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
-    sbg:suggestedValue: {class: File, path: 5d9f63e9e4b03edc89a24c9b, name: homo_sapiens_vep_93_GRCh38_convert_cache.tar.gz}}
+    sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051b5, name: homo_sapiens_vep_93_GRCh38_convert_cache.tar.gz}}
   cfree_chr_len: {type: File, doc: "file with chromosome lengths", sbg:suggestedValue: {
-      class: File, path: 5d9f70dee4b03edc89a25175, name: hs38_chr.len}}
+      class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
       \ to try"}
   cnvkit_annotation_file: {type: File, doc: "refFlat.txt file", sbg:suggestedValue: {
-      class: File, path: 5f652086e4b037037171050b, name: refFlat_HG38.txt}}
+      class: File, path: 5f500135e4b0370371c051c1, name: refFlat_HG38.txt}}
   hg38_strelka_bed: {type: File, doc: "Bgzipped interval bed file. Recommned padding\
       \ 100bp for WXS; Recommend canonical chromosomes for WGS", sbg:suggestedValue: {
-      class: File, path: 5d9f70dee4b03edc89a25179, name: hg38_strelka.bed.gz}}
+      class: File, path: 5f500135e4b0370371c051ae, name: hg38_strelka.bed.gz}}
   hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", sbg:suggestedValue: {
-      class: File, path: 5f652015e4b0a6d3c53f2da1, name: hg38_strelka.bed.gz.tbi}}
-  mutect2_af_only_gnomad_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5d9f70dee4b03edc89a2517a,
+      class: File, path: 5f500135e4b0370371c051aa, name: hg38_strelka.bed.gz.tbi}}
+  mutect2_af_only_gnomad_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
       name: af-only-gnomad.hg38.vcf.gz}}
   mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf",
-    sbg:suggestedValue: {class: File, path: 5f651fffe4b0a6d3c53f2cc7, name: af-only-gnomad.hg38.vcf.gz.tbi}}
-  mutect2_exac_common_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5d9f70dee4b03edc89a25178,
+    sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
+  mutect2_exac_common_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051ad,
       name: small_exac_common_3.hg38.vcf.gz}}
   mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf",
-    sbg:suggestedValue: {class: File, path: 5f65202ae4b0a6d3c53f2eac, name: small_exac_common_3.hg38.vcf.gz.tbi}}
+    sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051af, name: small_exac_common_3.hg38.vcf.gz.tbi}}
   output_basename: {type: string, doc: "String value to use as basename for outputs"}
   wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"]}, doc: "Select\
       \ if this run is WGS or WXS"}
@@ -346,11 +346,11 @@ inputs:
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed\
       \ file.  Recommend canocical chromosomes with N regions removed", sbg:suggestedValue: {
-      class: File, path: 5f65205ae4b0a6d3c53f3199, name: wgs_canonical_calling_regions.hg38.bed}}
+      class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
   lancet_calling_interval_bed: {type: File?, doc: "For WGS, highly recommended to\
       \ use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can\
       \ still give calling list as bed if true WGS calling desired instead of exome+",
-    sbg:suggestedValue: {class: File, path: 5f651fdde4b037037170ff01, name: GRCh38.gencode.v31.CDS.merged.bed}}
+    sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed}}
 
   # WXS only Fields
   padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
