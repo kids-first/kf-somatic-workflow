@@ -24,7 +24,6 @@ inputs:
   depth_lowerbound: {type: string?, default: '7', doc: "Normal-sample read depth at which to apply depth filter"}
   frequency_upperbound: {type: string?, default: '0.001', doc: "Population allele frequency above which to apply frequency filter"}
   maf_retain_info: {type: string?, default: 'MQ,MQ0,CAL,HotSpotAllele', doc: "comma-separated list of INFO fields to be retained in MAF output"}
-  maf_retain_fmt: {type: string?, doc: "comma-separated list of FORMAT fields to be retained in MAF output"}
 
 outputs:
   vep_consensus_vcf: {type: File, outputSource: variant_filter/gatk_soft_filtered_vcf, secondaryFiles: ['.tbi']}
@@ -85,7 +84,8 @@ steps:
         valueFrom: ${return "filter"}
       filter_name: filter_names
       filter_expression:
-        valueFrom: ${return [ "vc.getGenotype(" + "$(input_normal_name)" + ").getDP() <= "$(depth_lowerbound), "AF > "$(frequency_upperbound) ]}
+        source: [input_normal_name, depth_lowerbound, frequency_upperbound]
+        valueFrom: ${return [ "vc.getGenotype(" + self[0] + ").getDP() <= " + self[1], "AF > " + self[2] ]}
     out: [gatk_soft_filtered_vcf]
 
   vcf2maf:
