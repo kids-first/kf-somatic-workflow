@@ -14,6 +14,7 @@ inputs:
   add_common_fields: {type: boolean, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
   bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
   bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version"}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for clues"}
   vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
@@ -25,11 +26,14 @@ inputs:
   output_basename: string
   tool_name: string
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
+  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
-  annotated_vcf: {type: File, outputSource: hotspots_annotation/hotspots_vcf}
-  annotated_maf: {type: File, outputSource: kfdrc_vcf2maf/output_maf}
+  annotated_protected_vcf: {type: File, outputSource: hotspots_annotation/hotspots_vcf}
+  annotated_protected_maf: {type: File, outputSource: kfdrc_vcf2maf_protected/output_maf}
+  annotated_public_vcf: {type: File, outputSource: hard_filter_vcf/filtered_vcf}
+  annotated_public_maf: {type: File, outputSource: kfdrc_vcf2maf_public/output_maf}
 
 steps:
   add_standard_fields:
@@ -79,12 +83,12 @@ steps:
       input_vcf: gatk_add_soft_filter/gatk_soft_filtered_vcf
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
-      protein_snv: protein_snv_hotspots
-      protein_indel: protein_indel_hotspots
+      protein_snvs: protein_snv_hotspots
+      protein_indels: protein_indel_hotspots
       output_basename: output_basename
     out: [hotspots_vcf]
 
-  kfdrc_vcf2maf:
+  kfdrc_vcf2maf_protected:
     run: ../tools/kf_mskcc_vcf2maf.cwl
     in:
       reference: indexed_reference_fasta
@@ -94,7 +98,29 @@ steps:
       normal_id: input_normal_name
       tool_name: tool_name
       retain_info: retain_info
+      retain_fmt: retain_fmt
       use_kf_fields: use_kf_fields
     out: [output_maf]
 
+  hard_filter_vcf:
+    run: ../tools/bcftools_filter_vcf.cwl
+    in:
+      input_vcf: hotspots_annotation/hotspots_vcf
+      include_expression: bcftools_public_filter
+      output_basename: output_basename
+    out:
+      [filtered_vcf]
 
+  kfdrc_vcf2maf_public:
+    run: ../tools/kf_mskcc_vcf2maf.cwl
+    in:
+      reference: indexed_reference_fasta
+      input_vcf: hard_filter_vcf/filtered_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name: tool_name
+      retain_info: retain_info
+      retain_fmt: retain_fmt
+      use_kf_fields: use_kf_fields
+    out: [output_maf]

@@ -15,6 +15,7 @@ inputs:
   add_common_fields: {type: boolean, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
   bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
   bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
@@ -30,7 +31,8 @@ inputs:
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
-  annotated_output: {type: 'File[]', outputSource: rename_outputs/renamed_files}
+  annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
+  annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
 
 steps:
   normalize_vcf:
@@ -51,9 +53,11 @@ steps:
       input_normal_name: input_normal_name
       add_common_fields: add_common_fields
       retain_info: retain_info
+      retain_fmt: retain_fmt
       use_kf_fields: use_kf_fields
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
@@ -64,17 +68,32 @@ steps:
       protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
       tool_name: tool_name
-    out: [annotated_vcf, annotated_maf]
+    out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
 
-  rename_outputs:
+  rename_protected:
     run: ../tools/generic_rename_outputs.cwl
     in:
       input_files:
-        source: [annotate/annotated_vcf, annotate/annotated_maf]
-        valueFrom: "${return [self[0], self[0].secondaryFiles[0], self[1]]}"
+        source: [annotate/annotated_protected_vcf, annotate/annotated_protected_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
         source: [output_basename, tool_name]
-        valueFrom: "${var vcf=self[0] + '.' + self[1] + '.norm.annot.vcf.gz'; var tbi = self[0] + '.' + self[1] + '.norm.annot.vcf.gz.tbi'; var maf = self[0] + '.' + self[1] + '.norm.annot.maf'; return [vcf, tbi, maf];}"
+        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz'; \
+        var pro_tbi=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self[0] + '.' + self[1] + '.norm.annot.protected.maf'; \
+        return [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
-
+  rename_public:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate/annotated_public_vcf, annotate/annotated_public_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: [output_basename, tool_name]
+        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz'; \
+        var pub_tbi=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; \
+        return [pub_vcf, pub_tbi, pub_maf];}"
+    out: [renamed_files]
