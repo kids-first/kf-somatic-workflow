@@ -19,7 +19,10 @@ inputs:
   output_basename: string
   annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotions to add to consensus variants, e.g. gnomAD allele frequency"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: 'FILTER="PASS"|INFO/Hotspot=1'}
+  annot_columns: {type: string?, default: 'INFO/AF', doc: "column from annotation_vcf to add to consensus VCF; defaults to 'INFO/AF'"}
+  filter_names: {type: 'string[]?', default: [ "NORM_DP_LOW", "GNOMAD_AF_HIGH" ], doc: "Names of filters to be added to consensus VCF;\
+     \ defaults to [ 'NORM_DP_LOW', 'GNOMAD_AF_HIGH' ]"}
+  bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/Hotspot=1', default: 'FILTER="PASS"|INFO/Hotspot=1'}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,HotSpotAllele`", default: 'MQ,MQ0,CAL,HotSpotAllele'}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
@@ -72,8 +75,7 @@ steps:
       output_basename: output_basename
       tool_name:
         valueFrom: ${return "bcft_annot"}
-      columns:
-        valueFrom: ${return "INFO/AF"}
+      columns: annot_columns
     out: [bcftools_annotated_vcf]
 
   variant_filter:
@@ -84,8 +86,7 @@ steps:
       reference: indexed_reference_fasta
       tool_name:
         valueFrom: ${return "filter"}
-      filter_name:
-        valueFrom: ${return [ "NORM_DP_LOW", "GNOMAD_AF_HIGH" ]}
+      filter_name: filter_names
       filter_expression:
         valueFrom: ${return [ "vc.getGenotype(" + "$(input_normal_name)" + ").getDP() <= 7", "AF > 0.001" ]}
     out: [gatk_soft_filtered_vcf]
@@ -98,8 +99,7 @@ steps:
       tumor_id: input_tumor_name
       output_basename: output_basename
       reference: indexed_reference_fasta
-      retain_info:
-        valueFrom: ${return "MQ,MQ0,CAL,HotSpotAllele"}
+      retain_info: retain_info
       tool_name:
         valueFrom: ${return "vcf2maf"}
     out: [output_maf]
