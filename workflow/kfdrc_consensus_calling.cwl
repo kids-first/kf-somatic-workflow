@@ -19,10 +19,16 @@ inputs:
   output_basename: string
   annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotions to add to consensus variants, e.g. gnomAD allele frequency"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,HotSpotAllele`"}
+  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
+  use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
-  vep_consensus_vcf: {type: File, outputSource: variant_filter/gatk_soft_filtered_vcf, secondaryFiles: ['.tbi']}
-  vep_consensus_maf: {type: File, outputSource: vcf2maf/output_maf}
+#  vep_consensus_vcf: {type: File, outputSource: variant_filter/gatk_soft_filtered_vcf, secondaryFiles: ['.tbi']}
+#  vep_consensus_maf: {type: File, outputSource: vcf2maf/output_maf}
+  annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
+  annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
 
 steps:
   prep_mnp_variants:
@@ -97,3 +103,55 @@ steps:
       tool_name:
         valueFrom: ${return "vcf2maf"}
     out: [output_maf]
+
+  hard_filter_vcf:
+    run: ../tools/bcftools_filter_vcf.cwl
+    in:
+      input_vcf: variant_filter/gatk_soft_filtered_vcf
+      include_expression: bcftools_public_filter
+      output_basename: output_basename
+    out:
+      [filtered_vcf]
+
+  kfdrc_vcf2maf_public:
+    run: ../tools/kf_mskcc_vcf2maf.cwl
+    in:
+      reference: indexed_reference_fasta
+      input_vcf: hard_filter_vcf/filtered_vcf
+      output_basename: output_basename
+      tumor_id: input_tumor_name
+      normal_id: input_normal_name
+      tool_name:
+        valueFrom: ${return "public"}
+      retain_info: retain_info
+      retain_fmt: retain_fmt
+      use_kf_fields: use_kf_fields
+    out: [output_maf]
+
+  rename_protected:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [variant_filter/gatk_soft_filtered_vcf, vcf2maf/output_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pro_vcf=self + '.protected.vcf.gz'; \
+        var pro_tbi=self + '.protected.vcf.gz.tbi'; \
+        var pro_maf=self + '.protected.maf'; \
+        return [pro_vcf, pro_tbi, pro_maf];}"
+    out: [renamed_files]
+
+  rename_public:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [hard_filter_vcf/filtered_vcf, kfdrc_vcf2maf_public/output_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pub_vcf=self + '.public.vcf.gz'; \
+        var pub_tbi=self + '.public.vcf.gz.tbi'; \
+        var pub_maf=self + '.public.maf'; \
+        return [pub_vcf, pub_tbi, pub_maf];}"
+    out: [renamed_files]
