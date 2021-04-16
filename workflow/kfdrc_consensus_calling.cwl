@@ -17,13 +17,16 @@ inputs:
   input_tumor_name: string
   input_normal_name: string
   output_basename: string
+  ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]", default: 2}
   annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotions to add to consensus variants, e.g. gnomAD allele frequency"}
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   annot_columns: {type: string?, default: 'INFO/AF', doc: "column from annotation_vcf to add to consensus VCF; defaults to 'INFO/AF'"}
   filter_names: {type: 'string[]?', default: [ "NORM_DP_LOW", "GNOMAD_AF_HIGH" ], doc: "Names of filters to be added to consensus VCF;\
-     \ defaults to [ 'NORM_DP_LOW', 'GNOMAD_AF_HIGH' ]"}
-  bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/Hotspot=1', default: 'FILTER="PASS"|INFO/Hotspot=1'}
-  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,HotSpotAllele`", default: 'MQ,MQ0,CAL,HotSpotAllele'}
+     \ default values set"}
+  depth_lowerbound: {type: int?, default: 7, doc: "Normal-sample read depth at which to apply depth filter; default set"}
+  frequency_upperbound: {type: float?, default: 0.001, doc: "Population allele frequency above which to apply frequency filter; default set"}
+  bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/Hotspot=1; default set', default: 'FILTER="PASS"|INFO/Hotspot=1'}
+  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
@@ -50,6 +53,7 @@ steps:
       lancet_vcf: lancet_vcf
       vardict_vcf: vardict_vcf
       cram: cram
+      ncallers: ncallers
       reference: indexed_reference_fasta
       output_basename: output_basename
     out: [output]
@@ -86,7 +90,8 @@ steps:
         valueFrom: ${return "filter"}
       filter_name: filter_names
       filter_expression:
-        valueFrom: ${return [ "vc.getGenotype(" + "$(input_normal_name)" + ").getDP() <= 7", "AF > 0.001" ]}
+        source: [input_normal_name, depth_lowerbound, frequency_upperbound]
+        valueFrom: ${return [ "vc.getGenotype(" + self[0] + ").getDP() <= " + self[1], "AF > " + self[2] ]}
     out: [gatk_soft_filtered_vcf]
 
   vcf2maf:
