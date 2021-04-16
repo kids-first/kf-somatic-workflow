@@ -91,7 +91,7 @@ steps:
       filter_name: filter_names
       filter_expression:
         source: [input_normal_name, depth_lowerbound, frequency_upperbound]
-        valueFrom: ${return [ "vc.getGenotype(" + self[0] + ").getDP() <= " + self[1], "AF > " + self[2] ]}
+        valueFrom: ${return [ "vc.getGenotype('" + self[0] + "').getDP() <= " + self[1], "AF > " + self[2] ]}
     out: [gatk_soft_filtered_vcf]
 
   vcf2maf:
