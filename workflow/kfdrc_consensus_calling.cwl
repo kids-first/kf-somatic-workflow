@@ -28,8 +28,6 @@ inputs:
   use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
 
 outputs:
-#  vep_consensus_vcf: {type: File, outputSource: variant_filter/gatk_soft_filtered_vcf, secondaryFiles: ['.tbi']}
-#  vep_consensus_maf: {type: File, outputSource: vcf2maf/output_maf}
   annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
   annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
 
