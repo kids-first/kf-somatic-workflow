@@ -252,7 +252,7 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
             sample_list (pysam.libcbcf.VariantHeaderSamples): samples to write into header
             contig_list (list of pysam.libcbcf.VariantContig objects):
                 names of contigs to write into header
-            hotspot_source (str): information about source of 'Hotspot' designated regions
+            hotspot_source (str): information about source of 'HotSpotAllele' designated regions
                 for inclusion in header; default None
     """
     # Version is set to VCF4.2 on creation
@@ -272,7 +272,7 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
             'Number of MAPQ=0 reads (normal sample)')
     output_vcf.header.info.add('CAL','.','String',
             'List of callers making this call')
-    output_vcf.header.info.add('Hotspot', 0, 'Flag',
+    output_vcf.header.info.add("HotSpotAllele",'A','Integer',
             'Included by exception to consensus rule due to hotspot status%s' % hotspot_string)
     output_vcf.header.formats.add('GT', '1', 'String',
             'Consensus genotype')
@@ -521,8 +521,7 @@ def build_output_record(single_caller_variants, output_vcf, sample_names, hotspo
 
     output_record.info['CAL'] = ','.join([c for c in CALLER_NAMES if c.lower() in variant_lookup])
 
-    if hotspot:
-        output_record.info['Hotspot'] = True
+    output_record.info['HotSpotAllele'] = (int(hotspot),)
 
     output_record.filter.add('PASS')
 
