@@ -341,6 +341,16 @@ inputs:
       \ 10 (soft-capped)"}
   manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults\
       \ to 18"}
+  # annotation vars
+  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
+  bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
+  disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed\
@@ -537,8 +547,16 @@ steps:
       ram: vardict_ram
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
-    out: [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf,
-      vardict_prepass_vcf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+    out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
 
   select_mutect_bed_interval:
     run: ../tools/mode_selector.cwl
@@ -571,8 +589,17 @@ steps:
       getpileup_memory: getpileup_memory
       filtermutectcalls_memory: filtermutectcalls_memory
       select_vars_mode: select_vars_mode
-    out: [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi,
-      mutect2_vep_maf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+    out: [mutect2_filtered_stats, mutect2_filtered_vcf,
+    mutect2_protected_outputs, mutect2_public_outputs]
 
   run_strelka2:
     run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
@@ -591,7 +618,16 @@ steps:
       vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
-    out: [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+    out: [strelka2_vep_vcf, strelka2_protected_outputs, strelka2_public_outputs]
 
   bedops_gen_lancet_intervals:
     run: ../tools/preprocess_lancet_intervals.cwl
@@ -643,7 +679,16 @@ steps:
       padding: choose_defaults/out_lancet_padding
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
-    out: [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+    out: [ancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
 
   run_controlfreec:
     run: ../sub_workflows/kfdrc_controlfreec_sub_wf.cwl
@@ -748,5 +793,5 @@ sbg:categories:
 - VCF
 - VEP
 sbg:links:
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.3.2'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.4.0'
   label: github-release
