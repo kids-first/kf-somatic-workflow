@@ -4,7 +4,7 @@ id: theta2
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 32000
