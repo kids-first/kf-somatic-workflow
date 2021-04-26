@@ -8,7 +8,7 @@ requirements:
     ramMin: 4000
     coresMin: 2
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.2'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.3'
 baseCommand: [gunzip, -c]
 arguments:
   - position: 1
@@ -21,15 +21,16 @@ arguments:
       --tumor-id $(inputs.tumor_id)
       --normal-id $(inputs.normal_id)
       --custom-enst /vcf2maf/data/isoform_overrides_uniprot
+      --ncbi-build $(inputs.ref_build)
+      --ref-fasta $(inputs.reference.path)
       ${
-        if(inputs.use_kf_fields){
-          return "--use-kf-fields";
+        if(inputs.maf_center){
+          return "--maf-center " + inputs.maf_center
         }
         else{
           return "";
         }
       }
-      --ncbi-build $(inputs.ref_build)
       ${
         if(inputs.retain_info){
           return "--retain-info " + inputs.retain_info;
@@ -46,7 +47,6 @@ arguments:
           return "";
         }
       }
-      --ref-fasta $(inputs.reference.path)
 
 inputs:
   reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
@@ -58,7 +58,7 @@ inputs:
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
+  maf_center: {type: string?, doc: "Sequencing center of variant called"}
 
 outputs:
   output_maf:
