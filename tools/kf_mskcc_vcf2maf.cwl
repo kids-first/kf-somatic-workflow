@@ -25,7 +25,7 @@ arguments:
       --ref-fasta $(inputs.reference.path)
       ${
         if(inputs.maf_center){
-          return "--maf-center " + inputs.maf_center
+          return "--maf-center \"" + inputs.maf_center + "\""
         }
         else{
           return "";
@@ -58,7 +58,7 @@ inputs:
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  maf_center: {type: string?, doc: "Sequencing center of variant called"}
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 
 outputs:
   output_maf:
