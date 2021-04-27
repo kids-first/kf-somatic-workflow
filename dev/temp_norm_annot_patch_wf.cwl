@@ -28,8 +28,7 @@ inputs:
   tool_name: string
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,HotSpotAllele`"}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
-
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 outputs:
   annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
   annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
@@ -54,7 +53,7 @@ steps:
       add_common_fields: add_common_fields
       retain_info: retain_info
       retain_fmt: retain_fmt
-      use_kf_fields: use_kf_fields
+      maf_center: maf_center
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_public_filter: bcftools_public_filter
