@@ -648,10 +648,10 @@ steps:
     in:
       strelka2_vcf:
         source: run_strelka2/strelka2_protected_outputs
-        valueFrom: "${var str_vcf = self[0]; str_vcf.secondaryFiles = self[1]; return str_vcf;}"
+        valueFrom: "${var str_vcf = self[1]; return str_vcf;}" # vcf is always item 2 from rename file glob in this context
       mutect2_vcf:
         source: run_mutect2/mutect2_protected_outputs
-        valueFrom: "${var mut_vcf = self[0]; mut_vcf.secondaryFiles = self[1]; return mut_vcf;}"
+        valueFrom: "${var mut_vcf = self[1]; return mut_vcf;}"
       ref_bed: lancet_calling_interval_bed
       output_basename: output_basename
     out: [run_bed]

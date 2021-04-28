@@ -45,10 +45,10 @@ arguments:
               bed.push("mutect2.snvs.bed");
           }
           if(flag == 0){
-              cmd += "echo \"No input vcfs found to convert.  Returning ref bed\"; cp " + inputs.ref_bed.path + " " + inputs.output_basename + ".lancet_intvervals.bed;";
+              cmd += "echo \"No input vcfs found to convert.  Returning ref bed\"; cp " + inputs.ref_bed.path + " " + inputs.output_basename + ".lancet_intervals.bed;";
           }
           else{
-              cmd += "cat " + bed.join(" ") + " " + inputs.ref_bed.path + " | bedtools sort | bedtools merge > " + inputs.output_basename + ".lancet_intvervals.bed;";
+              cmd += "cat " + bed.join(" ") + " " + inputs.ref_bed.path + " | bedtools sort | bedtools merge > " + inputs.output_basename + ".lancet_intervals.bed;";
           }
           return cmd;
         }
