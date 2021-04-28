@@ -392,19 +392,19 @@ outputs:
   theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclobal_results/output}
   theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_cns}
   theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclone_seg}
-  strelka2_public_outputs: {type: File, outputSource: run_strelka2/strelka2_public_outputs}
-  strelka2_protected_outputs: {type: File, outputSource: run_strelka2/strelka2_protected_outputs}
+  strelka2_public_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_public_outputs}
+  strelka2_protected_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs}
   strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
   manta_pass_vcf: {type: File, outputSource: run_manta/manta_pass_vcf}
   manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
-  mutect2_public_outputs: {type: File, outputSource: run_mutect2/mutect2_public_outputs}
-  mutect2_protected_outputs: {type: File, outputSource: run_mutect2/mutect2_protected_outputs}
+  mutect2_public_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_public_outputs}
+  mutect2_protected_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_protected_outputs}
   mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
-  vardict_public_outputs: {type: File, outputSource: run_vardict/vardict_public_outputs}
-  vardict_protected_outputs: {type: File, outputSource: run_vardict/vardict_protected_outputs}
+  vardict_public_outputs: {type: 'File[]', outputSource: run_vardict/vardict_public_outputs}
+  vardict_protected_outputs: {type: 'File[]', outputSource: run_vardict/vardict_protected_outputs}
   vardict_prepass_vcf: {type: File, outputSource: run_vardict/vardict_prepass_vcf}
-  lancet_public_outputs: {type: File, outputSource: run_lancet/lancet_public_outputs}
-  lancet_protected_outputs: {type: File, outputSource: run_lancet/lancet_protected_outputs}
+  lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
+  lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
   lancet_prepass_vcf: {type: File, outputSource: run_lancet/lancet_prepass_vcf}
 
 steps:
@@ -640,13 +640,17 @@ steps:
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       maf_center: maf_center
-    out: [strelka2_vep_vcf, strelka2_protected_outputs, strelka2_public_outputs]
+    out: [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
 
   bedops_gen_lancet_intervals:
     run: ../tools/preprocess_lancet_intervals.cwl
     in:
-      strelka2_vcf: run_strelka2/strelka2_vep_vcf
-      mutect2_vcf: run_mutect2/mutect2_vep_vcf
+      strelka2_vcf:
+        source: run_strelka2/strelka2_protected_outputs
+        valueFrom: "${var str_vcf = self[0]; str_vcf.econdaryFiles = self[1]; return str_vcf;}"
+      mutect2_vcf:
+        source: run_mutect2/mutect2_protected_outputs
+        valueFrom: "${var mut_vcf = self[0]; mut_vcf.econdaryFiles = self[1]; return mut_vcf;}"
       ref_bed: lancet_calling_interval_bed
       output_basename: output_basename
     out: [run_bed]

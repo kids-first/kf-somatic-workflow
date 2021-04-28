@@ -110,7 +110,6 @@ steps:
       add_common_fields: add_common_fields
       retain_info: retain_info
       retain_fmt: retain_fmt
-      use_kf_fields: use_kf_fields
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_public_filter: bcftools_public_filter
