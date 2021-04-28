@@ -343,16 +343,21 @@ inputs:
       \ to 18"}
   # annotation vars
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots",
-                      sbg:suggestedValue: {class: 'File[]', path: [607713829360f10e3982a423], name: [tert.bed]} }
-  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
-  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a423, name: tert.bed}] }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a426, name: protein_snv_cancer_hotspots_v2.tsv}] }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a424, name: protein_indel_cancer_hotspots_v2.tsv}] }
   bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
-  bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
+  bcftools_annot_vcf: {type: File, doc: "bgzipped annotation vcf file", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
       name: af-only-gnomad.hg38.vcf.gz}}
+  bcftools_annot_vcf_index: {type: File, doc: "index of bcftools_annot_vcf", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e5,
+      name: af-only-gnomad.hg38.vcf.gz.tbi}}
   bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed\
@@ -443,6 +448,13 @@ steps:
     in:
       input_file: mutect2_af_only_gnomad_vcf
       input_index: mutect2_af_only_gnomad_tbi
+    out: [output]
+
+  index_bcftools_annot_vcf:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: bcftools_annot_vcf
+      input_index: bcftools_annot_vcf_index
     out: [output]
 
   index_mutect_exac:
@@ -546,7 +558,7 @@ steps:
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
       bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
@@ -554,6 +566,7 @@ steps:
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
     out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
 
   select_mutect_bed_interval:
@@ -589,13 +602,14 @@ steps:
       select_vars_mode: select_vars_mode
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: bcftools_annot_vcf
-      bcftools_public_filter: bcftools_public_filter
+      bcftools_public_filter: index_bcftools_annot_vcf/output
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
     out: [mutect2_filtered_stats, mutect2_filtered_vcf,
     mutect2_protected_outputs, mutect2_public_outputs]
 
@@ -618,13 +632,14 @@ steps:
       select_vars_mode: select_vars_mode
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: bcftools_annot_vcf
-      bcftools_public_filter: bcftools_public_filter
+      bcftools_public_filter: index_bcftools_annot_vcf/output
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
     out: [strelka2_vep_vcf, strelka2_protected_outputs, strelka2_public_outputs]
 
   bedops_gen_lancet_intervals:
@@ -678,7 +693,7 @@ steps:
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
       bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
@@ -686,6 +701,7 @@ steps:
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
     out: [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
 
   run_controlfreec:
