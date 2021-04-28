@@ -27,7 +27,7 @@ inputs:
   tool_name: string
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 
 outputs:
   annotated_protected_vcf: {type: File, outputSource: hotspots_annotation/hotspots_vcf}
@@ -36,15 +36,25 @@ outputs:
   annotated_public_maf: {type: File, outputSource: kfdrc_vcf2maf_public/output_maf}
 
 steps:
+  bcftools_strip_info:
+    run: ../tools/bcftools_strip_ann.cwl
+    in:
+      input_vcf: input_vcf
+      output_basename: output_basename
+      tool_name: tool_name
+      strip_info: bcftools_annot_columns
+    out: [stripped_vcf]
+
   add_standard_fields:
     run: ../tools/add_strelka2_fields.cwl
     in:
-      strelka2_vcf: input_vcf
+      strelka2_vcf: bcftools_strip_info/stripped_vcf
       run_tool_flag: add_common_fields
       tumor_name: input_tumor_name
       normal_name: input_normal_name
       output_basename: output_basename
     out: [output]
+
   vep_annotate_vcf:
     run: ../tools/vep_somatic_annotate_r93.cwl
     in:
@@ -99,7 +109,7 @@ steps:
       tool_name: tool_name
       retain_info: retain_info
       retain_fmt: retain_fmt
-      use_kf_fields: use_kf_fields
+      maf_center: maf_center
     out: [output_maf]
 
   hard_filter_vcf:
@@ -122,5 +132,5 @@ steps:
       tool_name: tool_name
       retain_info: retain_info
       retain_fmt: retain_fmt
-      use_kf_fields: use_kf_fields
+      maf_center: maf_center
     out: [output_maf]

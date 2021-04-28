@@ -18,10 +18,11 @@ arguments:
     valueFrom: >-
       set -eo pipefail
 
-      bcftools annotate -x $(inputs.strip_info) $(inputs.input_vcf.path) -O z 
-      -o $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
-
-      tabix $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz
+      (bcftools annotate -x $(inputs.strip_info) $(inputs.input_vcf.path) -O z 
+      -o $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz &&
+      tabix $(inputs.output_basename).$(inputs.tool_name).INFO_stripped.vcf.gz) ||
+      (echo "Check errors, likely does not have INFO, trying to pass input instead" >&2; cp $(inputs.input_vcf.path) .;
+      cp $(inputs.input_vcf.secondaryFiles[0].path)  .;)
 
 inputs:
     input_vcf: {type: File, secondaryFiles: ['.tbi']}
@@ -33,5 +34,5 @@ outputs:
   stripped_vcf:
     type: File
     outputBinding:
-      glob: '*.INFO_stripped.vcf.gz'
+      glob: '*.vcf.gz'
     secondaryFiles: ['.tbi']
