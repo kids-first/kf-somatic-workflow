@@ -63,4 +63,4 @@ outputs:
   run_bed:
     type: 'File?'
     outputBinding:
-      glob: '*.lancet_intvervals.bed'
+      glob: '*.lancet_intervals.bed'
