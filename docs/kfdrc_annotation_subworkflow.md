@@ -1,6 +1,9 @@
 # Kids First DRC Somatic Variant Annotation Workflow
 This is a subworkflow that is part of the Kids First DRC Somatic Variant Workflow that can be run as standalone.
 Annotation of variant calls helps give context to the possible biological consequences of each variant.
+
+![annot workflow flowchart](../docs/somatic_annotation_wf.png)
+
 It does the following things as described below:
 
 1. Normalize VCF
@@ -84,6 +87,4 @@ For each input, the sub-bullet refers to when to use the suggested input
    - `Lancet`: `lancet_somatic`
    - `VarDict Java`: `vardict_somatic`
 
-## Overall Workflow Diagram
 
-![annot workflow flowchart](./docs/somatic_annotation_wf.png)
