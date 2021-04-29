@@ -17,7 +17,7 @@ doc: |
 
   ## Running WGS or WXS
 
-  The [combinded workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
+  The [combined workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
   This functionality comes from usage of the `wgs_or_wxs` input enum. Depending on what is provided for this input, the tool will
   set the appropriate default values and check that the user has provided the correct inputs. For example, if the user sets the
   input to WGS the lancet_padding value will be defaulted to 300; alternatively, if the user sets the input to WXS the lancet_padding
@@ -812,5 +812,5 @@ sbg:categories:
 - VCF
 - VEP
 sbg:links:
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.4.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v3.0.0'
   label: github-release

@@ -91,20 +91,11 @@ steps:
       mode: select_vars_mode
     out: [pass_vcf]
 
-  normalize_vcf:
-    run: ../tools/normalize_vcf.cwl
-    in:
-      indexed_reference_fasta: indexed_reference_fasta
-      input_vcf: gatk_selectvariants_vardict/pass_vcf
-      output_basename: output_basename
-      tool_name: tool_name
-    out: [normalized_vcf]
-
   annotate:
     run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
-      input_vcf: normalize_vcf/normalized_vcf
+      input_vcf: gatk_selectvariants_vardict/pass_vcf
       input_tumor_name: input_tumor_name
       input_normal_name: input_normal_name
       add_common_fields: add_common_fields

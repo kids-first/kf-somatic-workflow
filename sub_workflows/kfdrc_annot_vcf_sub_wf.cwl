@@ -36,10 +36,19 @@ outputs:
   annotated_public_maf: {type: File, outputSource: kfdrc_vcf2maf_public/output_maf}
 
 steps:
+  normalize_vcf:
+    run: ../tools/normalize_vcf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      input_vcf: input_vcf
+      output_basename: output_basename
+      tool_name: tool_name
+    out: [normalized_vcf]
+
   bcftools_strip_info:
     run: ../tools/bcftools_strip_ann.cwl
     in:
-      input_vcf: input_vcf
+      input_vcf: normalize_vcf/normalized_vcf
       output_basename: output_basename
       tool_name: tool_name
       strip_info: bcftools_annot_columns

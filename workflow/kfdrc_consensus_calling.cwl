@@ -28,8 +28,7 @@ inputs:
   bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/Hotspot=1; default set', default: 'FILTER="PASS"|INFO/Hotspot=1'}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  use_kf_fields: {type: boolean?, doc: "Flag to drop fields normally not used in KF, or keep cBio defaults", default: true}
-
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 outputs:
   annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
   annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
@@ -103,8 +102,10 @@ steps:
       output_basename: output_basename
       reference: indexed_reference_fasta
       retain_info: retain_info
+      retain_fmt: retain_fmt
+      maf_center: maf_center
       tool_name:
-        valueFrom: ${return "vcf2maf"}
+        valueFrom: ${return "protected"}
     out: [output_maf]
 
   hard_filter_vcf:
@@ -128,7 +129,7 @@ steps:
         valueFrom: ${return "public"}
       retain_info: retain_info
       retain_fmt: retain_fmt
-      use_kf_fields: use_kf_fields
+      maf_center: maf_center
     out: [output_maf]
 
   rename_protected:
