@@ -20,7 +20,6 @@ arguments:
       --output-maf $(inputs.output_basename).$(inputs.tool_name).vep.maf
       --tumor-id $(inputs.tumor_id)
       --normal-id $(inputs.normal_id)
-      --custom-enst /vcf2maf/data/isoform_overrides_uniprot
       --ncbi-build $(inputs.ref_build)
       --ref-fasta $(inputs.reference.path)
       ${
@@ -47,6 +46,14 @@ arguments:
           return "";
         }
       }
+      ${
+        if(inputs.custom_enst){
+          return "--custom-enst " + inputs.custom_enst.path;
+        }
+        else{
+          return "";
+        }
+      }
 
 inputs:
   reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
@@ -58,6 +65,7 @@ inputs:
   ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
   retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
   retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
+  custom_enst: {type: File?, doc: "Use a file with ens tx IDs for each gene to override VEP PICK"}
   maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 
 outputs:
