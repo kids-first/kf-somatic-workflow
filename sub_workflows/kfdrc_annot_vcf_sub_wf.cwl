@@ -17,7 +17,7 @@ inputs:
   bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for clues"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task." }
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
@@ -36,10 +36,19 @@ outputs:
   annotated_public_maf: {type: File, outputSource: kfdrc_vcf2maf_public/output_maf}
 
 steps:
+  normalize_vcf:
+    run: ../tools/normalize_vcf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      input_vcf: input_vcf
+      output_basename: output_basename
+      tool_name: tool_name
+    out: [normalized_vcf]
+
   bcftools_strip_info:
     run: ../tools/bcftools_strip_ann.cwl
     in:
-      input_vcf: input_vcf
+      input_vcf: normalize_vcf/normalized_vcf
       output_basename: output_basename
       tool_name: tool_name
       strip_info: bcftools_annot_columns
