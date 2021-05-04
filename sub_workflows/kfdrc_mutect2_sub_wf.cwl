@@ -43,7 +43,7 @@ inputs:
 
   input_normal_name: string
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   output_basename: string
   getpileup_memory: {type: int?}

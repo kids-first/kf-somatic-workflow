@@ -20,7 +20,7 @@ inputs:
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   cpus: {type: ['null', int], default: 9}
   ram: {type: ['null', int], default: 18, doc: "In GB"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   tool_name: {type: string?, doc: "String to describe what tool was run as part of file name", default: "vardict_somatic"}
   # annotation vars

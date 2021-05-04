@@ -41,7 +41,7 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   output_basename: string
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
@@ -69,6 +69,7 @@ outputs:
 steps:
   strelka2:
     run: ../tools/strelka2.cwl
+    label: Run Strelka2
     in:
       input_tumor_aligned: input_tumor_aligned
       input_normal_aligned: input_normal_aligned
@@ -81,7 +82,7 @@ steps:
 
   merge_strelka2_vcf:
     run: ../tools/gatk_mergevcfs.cwl
-    label: Merge & pass filter strekla2
+    label: Merge Strelka2 SNV + Indel
     in:
       input_vcfs: [strelka2/output_snv, strelka2/output_indel]
       output_basename: output_basename
@@ -109,6 +110,7 @@ steps:
 
   annotate:
     run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
+    label: Annotate VCF
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_vcf: gatk_selectvariants_strelka2/pass_vcf
@@ -135,6 +137,7 @@ steps:
 
   rename_protected:
     run: ../tools/generic_rename_outputs.cwl
+    label: Rename Protected Outputs
     in:
       input_files:
         source: [annotate/annotated_protected_vcf, annotate/annotated_protected_maf]
@@ -149,6 +152,7 @@ steps:
 
   rename_public:
     run: ../tools/generic_rename_outputs.cwl
+    label: Rename Public Outputs
     in:
       input_files:
         source: [annotate/annotated_public_vcf, annotate/annotated_public_maf]
