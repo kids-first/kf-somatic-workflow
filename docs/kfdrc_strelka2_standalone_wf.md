@@ -7,5 +7,3 @@ Strelka2 is a variant caller that calls single nucleotide variants and small ins
 1. Create any missing index files
 1. Run the [Strelka2 subworkflow](../sub_workflows/kfdrc_strelka2_sub_wf.cwl) as described [here](../docs/kfdrc_strelka2_subworkflow.md)
 1. Collect the outputs from the subworkflow
-
-The following docker images are used through the workflow:
