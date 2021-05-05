@@ -9,7 +9,7 @@ requirements:
     ramMin: 8000
     coresMin: 4
   - class: DockerRequirement
-    dockerPull: 'kfdrc/vcfutils:latest'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest'
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:
