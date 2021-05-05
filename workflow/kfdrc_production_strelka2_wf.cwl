@@ -53,11 +53,26 @@ inputs:
   # Optional with Multiple Defaults (handled in choose_defaults)
   exome_flag: { type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS" }
 
+  # annotation vars
+  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
+  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep", default: "MQ,MQ0,QSI,HotSpotAllele"}
+  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
+  add_common_fields: {type: boolean?, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: true}
+  bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
+  disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+
+
 outputs:
-  strelka2_vep_vcf: { type: File, outputSource: run_strelka2/strelka2_vep_vcf }
-  strelka2_vep_tbi: { type: File, outputSource: run_strelka2/strelka2_vep_tbi }
   strelka2_prepass_vcf: { type: File, outputSource: run_strelka2/strelka2_prepass_vcf }
-  strelka2_vep_maf: { type: File, outputSource: run_strelka2/strelka2_vep_maf }
+  strelka2_protected_outputs: { type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs }
+  strelka2_public_outputs: { type: 'File[]', outputSource: run_strelka2/strelka2_public_outputs }
 
 steps:
   choose_defaults:
@@ -99,8 +114,22 @@ steps:
       vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      retain_info: retain_info
+      retain_fmt: retain_fmt
+      add_common_fields: add_common_fields
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      maf_center: maf_center
+
     out:
-      [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
+      [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
 
 $namespaces:
   sbg: https://sevenbridges.com
