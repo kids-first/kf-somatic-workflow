@@ -30,7 +30,20 @@ inputs:
                       sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a426, name: protein_snv_cancer_hotspots_v2.tsv}] }
   protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots",
                       sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a424, name: protein_indel_cancer_hotspots_v2.tsv}] }
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   output_basename: string
+  # defaults, do not edit
+  gatk_filter_name: { type: 'string[]?', doc: "GATK filter names", default: ["NORM_DP_LOW", "GNOMAD_AF_HIGH"] }
+  tool_s: {type: string?, default: "strelka2_somatic"}
+  tool_m: {type: string?, default: "mutect2_somatic"}
+  tool_l: {type: string?, default: "lancet_somatic"}
+  tool_v: {type: string?, default: "vardict_somatic"}
+  add_common_fields_s: {type: boolean?, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: true}
+  add_common_fields_r: {type: boolean?, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
+  strelka2_info: { type: string?, default: "MQ,MQ0,QSI,HotSpotAllele" }
+  mutect2_info: { type: string?, default: "MBQ,TLOD,HotSpotAllele" }
+  lancet_info: { type: string?, default: "MS,FETS,HotSpotAllele" }
+  vardict_info: { type: string?, default: "MSI,MSILEN,SOR,SSF,HotSpotAllele" }
 
 outputs:
   annotated_protected_strelka2: {type: 'File[]', outputSource: rename_strelka2_protected/renamed_files}
@@ -53,22 +66,16 @@ steps:
       bcftools_public_filter: bcftools_public_filter
       bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_annot_columns: bcftools_annot_columns
-      add_common_fields:
-        valueFrom: ${return true}
-      retain_info:
-        valueFrom: ${ return "MQ,MQ0,QSI,HotSpotAllele"}
-      gatk_filter_name:
-        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
-      gatk_filter_expression:
-        source: input_normal_name
-        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      add_common_fields: add_common_fields_s
+      retain_info: strelka2_info
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
-      tool_name:
-        valueFrom: ${ return "strelka2_somatic" }
+      tool_name: tool_s
     out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
 
   annotate_mutect2:
@@ -81,22 +88,16 @@ steps:
       bcftools_public_filter: bcftools_public_filter
       bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_annot_columns: bcftools_annot_columns
-      add_common_fields:
-        valueFrom: ${return false}
-      retain_info:
-        valueFrom: ${ return "MBQ,TLOD,HotSpotAllele"}
-      gatk_filter_name:
-        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
-      gatk_filter_expression:
-        source: input_normal_name
-        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      add_common_fields: add_common_fields_r
+      retain_info: mutect2_info
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
-      tool_name:
-        valueFrom: ${ return "mutect2_somatic" }
+      tool_name: tool_m
     out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
 
   annotate_lancet:
@@ -109,22 +110,16 @@ steps:
       bcftools_public_filter: bcftools_public_filter
       bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_annot_columns: bcftools_annot_columns
-      add_common_fields:
-        valueFrom: ${return false}
-      retain_info:
-        valueFrom: ${ return "MS,FETS,HotSpotAllele"}
-      gatk_filter_name:
-        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
-      gatk_filter_expression:
-        source: input_normal_name
-        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      add_common_fields: add_common_fields_r
+      retain_info: lancet_info
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
-      tool_name:
-        valueFrom: ${ return "lancet_somatic" }
+      tool_name: tool_l
     out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
 
   annotate_vardict:
@@ -137,22 +132,16 @@ steps:
       bcftools_public_filter: bcftools_public_filter
       bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_annot_columns: bcftools_annot_columns
-      add_common_fields:
-        valueFrom: ${return false}
-      retain_info:
-        valueFrom: ${ return "MSI,MSILEN,SOR,SSF,HotSpotAllele"}
-      gatk_filter_name:
-        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
-      gatk_filter_expression:
-        source: input_normal_name
-        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      add_common_fields: add_common_fields_r
+      retain_info: vardict_info
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
-      tool_name:
-        valueFrom: ${ return "vardict_somatic" }
+      tool_name: tool_v
     out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
 
   rename_strelka2_protected:
@@ -270,3 +259,6 @@ steps:
 
 $namespaces:
   sbg: https://sevenbridges.com
+hints:
+  - class: 'sbg:maxNumberOfParallelInstances'
+    value: 2
