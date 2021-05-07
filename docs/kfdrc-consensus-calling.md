@@ -53,7 +53,10 @@ inputs:
   input_tumor_name: string
   input_normal_name: string
   output_basename: string
-  ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]", default: 2}
+  tool_name: {type: string?, default: "consensus_somatic", doc: "A helpful file name building component"}
+  ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
+    default: 2}
+  consensus_ram: {type: int, doc: "Set min memory in GB for consensus merge step", default: 3}
   annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations to add to consensus variants, e.g. gnomAD allele frequency",
                    sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
                    secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]
@@ -81,11 +84,13 @@ Secondary files needed for each reference file will be a sub-bullet point
    - `af-only-gnomad.hg38.vcf.gz.tbi`
  - `bcftools_public_filter`: 'FILTER="PASS"|INFO/HotSpotAllele=1'
  - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz`
+ - `tool_name`: "consensus_somatic"
 
 ### Situational inputs
  - `depth_lowerbound`: Change this `int` if you believe the threshold for `NORM_DP_LOW` should be different
  - `frequency_upperbound` Change this `float` if you believe the max value for `GNOMAD_AF_HIGH` should be different
  - `ncallers`: Change this `int` to adjust the stringency of what is defined as a consensus
+ - `consensus_ram`: Change this `int` if the script runs out of memory to increase the size of the instance type used
 
 ## Workflow outputs
 ```yaml

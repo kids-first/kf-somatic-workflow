@@ -58,7 +58,10 @@ doc: |
     input_tumor_name: string
     input_normal_name: string
     output_basename: string
-    ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]", default: 2}
+    tool_name: {type: string?, default: "consensus_somatic", doc: "A helpful file name building component"}
+    ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
+      default: 2}
+    consensus_ram: {type: int, doc: "Set min memory in GB for consensus merge step", default: 3}
     annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations to add to consensus variants, e.g. gnomAD allele frequency",
                      sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
                      secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]
@@ -86,11 +89,13 @@ doc: |
      - `af-only-gnomad.hg38.vcf.gz.tbi`
    - `bcftools_public_filter`: 'FILTER="PASS"|INFO/HotSpotAllele=1'
    - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz`
+   - `tool_name`: "consensus_somatic"
 
   ### Situational inputs
    - `depth_lowerbound`: Change this `int` if you believe the threshold for `NORM_DP_LOW` should be different
    - `frequency_upperbound` Change this `float` if you believe the max value for `GNOMAD_AF_HIGH` should be different
    - `ncallers`: Change this `int` to adjust the stringency of what is defined as a consensus
+   - `consensus_ram`: Change this `int` if the script runs out of memory to increase the size of the instance type used
 
   ## Workflow outputs
   ```yaml
@@ -121,8 +126,12 @@ inputs:
   input_tumor_name: string
   input_normal_name: string
   output_basename: string
+  tool_name: {type: string?, default: "consensus_somatic", doc: "A helpful file name\
+      \ building component"}
   ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
     default: 2}
+  consensus_ram: {type: int?, doc: "Set min memory in GB for consensus merge step",
+    default: 3}
   annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations\
       \ to add to consensus variants, e.g. gnomAD allele frequency", sbg:suggestedValue: {
       class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
@@ -169,6 +178,7 @@ steps:
       vardict_vcf: vardict_vcf
       cram: cram
       ncallers: ncallers
+      ram: consensus_ram
       reference: indexed_reference_fasta
       output_basename: output_basename
     out: [output]
@@ -178,8 +188,7 @@ steps:
     in:
       input_vcf: consensus_merge/output
       output_basename: output_basename
-      tool_name:
-        valueFrom: ${return "consensus_somatic"}
+      tool_name: tool_name
       reference: indexed_reference_fasta
       cache: vep_cache
     out: [output_vcf]
@@ -191,7 +200,7 @@ steps:
       annotation_vcf: annotation_vcf
       output_basename: output_basename
       tool_name:
-        valueFrom: ${return "bcft_annot"}
+        valueFrom: ${return inputs.tool_name + ".bcft_annot"}
       columns: annot_columns
     out: [bcftools_annotated_vcf]
 
@@ -219,7 +228,7 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return "protected"}
+        valueFrom: ${return inputs.tool_name + ".protected"}
       retain_info: retain_info
       retain_fmt: retain_fmt
       maf_center: maf_center
@@ -242,7 +251,7 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return "public"}
+        valueFrom: ${return inputs.tool_name + ".public"}
       retain_info: retain_info
       retain_fmt: retain_fmt
       maf_center: maf_center
@@ -255,9 +264,11 @@ steps:
         source: [variant_filter/gatk_soft_filtered_vcf, kfdrc_vcf2maf_protected/output_maf]
         valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
-        source: output_basename
-        valueFrom: "${var pro_vcf=self + '.protected.vcf.gz'; var pro_tbi=self + '.protected.vcf.gz.tbi';\
-          \ var pro_maf=self + '.protected.maf'; return [pro_vcf, pro_tbi, pro_maf];}"
+        source: [output_basename, tool_name]
+        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz';\
+          \ var pro_tbi=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz.tbi';\
+          \ var pro_maf=self[0] + '.' + self[1] + '.norm.annot.protected.maf'; return\
+          \ [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
   rename_public:
@@ -267,9 +278,11 @@ steps:
         source: [hard_filter_vcf/filtered_vcf, kfdrc_vcf2maf_public/output_maf]
         valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
-        source: output_basename
-        valueFrom: "${var pub_vcf=self + '.public.vcf.gz'; var pub_tbi=self + '.public.vcf.gz.tbi';\
-          \ var pub_maf=self + '.public.maf'; return [pub_vcf, pub_tbi, pub_maf];}"
+        source: [output_basename, tool_name]
+        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz';\
+          \ var pub_tbi=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz.tbi';\
+          \ var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; return\
+          \ [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
 
 $namespaces:
