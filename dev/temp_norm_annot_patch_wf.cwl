@@ -8,91 +8,265 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
-  input_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "Input vcf to normalize, annotate, and soft filter"}
+  indexed_reference_fasta: {type: File, secondaryFiles: ['.fai', '^.dict'], sbg:suggestedValue: {
+      class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
+      secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta},
+        {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]}}
+  strelka2_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+  mutect2_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+  lancet_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+  vardict_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
   input_tumor_name: string
   input_normal_name: string
-  add_common_fields: {type: boolean, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
-  bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
-  bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  bcftools_annot_columns: {type: string?, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_vcf: {type: File, doc: "bgzipped annotation vcf file", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
+      name: af-only-gnomad.hg38.vcf.gz,  secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]} }
   bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
-  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
-  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
-  disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
-  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
-  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
-  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
+  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
+    sbg:suggestedValue: {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
+  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a423, name: tert.bed}] }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a426, name: protein_snv_cancer_hotspots_v2.tsv}] }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a424, name: protein_indel_cancer_hotspots_v2.tsv}] }
   output_basename: string
-  tool_name: string
-  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,HotSpotAllele`"}
-  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+
 outputs:
-  annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
-  annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
+  annotated_protected_strelka2: {type: 'File[]', outputSource: rename_strelka2_protected/renamed_files}
+  annotated_public_strelka2: {type: 'File[]', outputSource: rename_strelka2_public/renamed_files}
+  annotated_protected_mutect2: {type: 'File[]', outputSource: rename_mutect2_protected/renamed_files}
+  annotated_public_mutect2: {type: 'File[]', outputSource: rename_mutect2_public/renamed_files}
+  annotated_protected_lancet: {type: 'File[]', outputSource: rename_lancet_protected/renamed_files}
+  annotated_public_lancet: {type: 'File[]', outputSource: rename_lancet_public/renamed_files}
+  annotated_protected_vardict: {type: 'File[]', outputSource: rename_vardict_protected/renamed_files}
+  annotated_public_vardict: {type: 'File[]', outputSource: rename_vardict_public/renamed_files}
 
 steps:
-  normalize_vcf:
-    run: ../tools/normalize_vcf.cwl
-    in:
-      indexed_reference_fasta: indexed_reference_fasta
-      input_vcf: input_vcf
-      output_basename: output_basename
-      tool_name: tool_name
-    out: [normalized_vcf]
-
-  annotate:
+  annotate_strelka2:
     run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
-      input_vcf: normalize_vcf/normalized_vcf
+      input_vcf: strelka2_pass_vcf
       input_tumor_name: input_tumor_name
       input_normal_name: input_normal_name
-      add_common_fields: add_common_fields
-      retain_info: retain_info
-      retain_fmt: retain_fmt
-      maf_center: maf_center
-      bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_public_filter: bcftools_public_filter
-      gatk_filter_name: gatk_filter_name
-      gatk_filter_expression: gatk_filter_expression
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_annot_columns: bcftools_annot_columns
+      add_common_fields:
+        valueFrom: ${return true}
+      retain_info:
+        valueFrom: ${ return "MQ,MQ0,QSI,HotSpotAllele"}
+      gatk_filter_name:
+        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
+      gatk_filter_expression:
+        source: input_normal_name
+        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
       vep_cache: vep_cache
-      vep_ref_build: vep_ref_build
-      disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       output_basename: output_basename
-      tool_name: tool_name
+      tool_name:
+        valueFrom: ${ return "strelka2_somatic" }
     out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
 
-  rename_protected:
+  annotate_mutect2:
+    run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      input_vcf: mutect2_pass_vcf
+      input_tumor_name: input_tumor_name
+      input_normal_name: input_normal_name
+      bcftools_public_filter: bcftools_public_filter
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_annot_columns: bcftools_annot_columns
+      add_common_fields:
+        valueFrom: ${return false}
+      retain_info:
+        valueFrom: ${ return "MBQ,TLOD,HotSpotAllele"}
+      gatk_filter_name:
+        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
+      gatk_filter_expression:
+        source: input_normal_name
+        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      vep_cache: vep_cache
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      output_basename: output_basename
+      tool_name:
+        valueFrom: ${ return "mutect2_somatic" }
+    out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
+
+  annotate_lancet:
+    run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      input_vcf: lancet_pass_vcf
+      input_tumor_name: input_tumor_name
+      input_normal_name: input_normal_name
+      bcftools_public_filter: bcftools_public_filter
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_annot_columns: bcftools_annot_columns
+      add_common_fields:
+        valueFrom: ${return false}
+      retain_info:
+        valueFrom: ${ return "MS,FETS,HotSpotAllele"}
+      gatk_filter_name:
+        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
+      gatk_filter_expression:
+        source: input_normal_name
+        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      vep_cache: vep_cache
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      output_basename: output_basename
+      tool_name:
+        valueFrom: ${ return "lancet_somatic" }
+    out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
+
+  annotate_vardict:
+    run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
+    in:
+      indexed_reference_fasta: indexed_reference_fasta
+      input_vcf: vardict_pass_vcf
+      input_tumor_name: input_tumor_name
+      input_normal_name: input_normal_name
+      bcftools_public_filter: bcftools_public_filter
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_annot_columns: bcftools_annot_columns
+      add_common_fields:
+        valueFrom: ${return false}
+      retain_info:
+        valueFrom: ${ return "MSI,MSILEN,SOR,SSF,HotSpotAllele"}
+      gatk_filter_name:
+        valueFrom: ${ return ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]}
+      gatk_filter_expression:
+        source: input_normal_name
+        valueFrom: ${ return ["vc.getGenotype('" + self + "').getDP() <= 7", "AF > 0.001"]}
+      vep_cache: vep_cache
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      output_basename: output_basename
+      tool_name:
+        valueFrom: ${ return "vardict_somatic" }
+    out: [annotated_protected_vcf, annotated_protected_maf, annotated_public_vcf, annotated_public_maf]
+
+  rename_strelka2_protected:
     run: ../tools/generic_rename_outputs.cwl
     in:
       input_files:
-        source: [annotate/annotated_protected_vcf, annotate/annotated_protected_maf]
+        source: [annotate_strelka2/annotated_protected_vcf, annotate_strelka2/annotated_protected_maf]
         valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
-        source: [output_basename, tool_name]
-        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz'; \
-        var pro_tbi=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz.tbi'; \
-        var pro_maf=self[0] + '.' + self[1] + '.norm.annot.protected.maf'; \
+        source: output_basename
+        valueFrom: "${var pro_vcf=self + '.strelka2_somatic.norm.annot.protected.vcf.gz'; \
+        var pro_tbi=self[0] + '.strelka2_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self[0] + '.strelka2_somatic.norm.annot.protected.maf'; \
         return [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
-  rename_public:
+  rename_strelka2_public:
     run: ../tools/generic_rename_outputs.cwl
     in:
       input_files:
-        source: [annotate/annotated_public_vcf, annotate/annotated_public_maf]
+        source: [annotate_strelka2/annotated_public_vcf, annotate_strelka2/annotated_public_maf]
         valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
-        source: [output_basename, tool_name]
-        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz'; \
-        var pub_tbi=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz.tbi'; \
-        var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; \
+        source: output_basename
+        valueFrom: "${var pub_vcf=self + '.strelka2_somatic.norm.annot.public.vcf.gz'; \
+        var pub_tbi=self[0] + '.strelka2_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self[0] + '.strelka2_somatic.norm.annot.public.maf'; \
         return [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
+
+  rename_mutect2_protected:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate_mutect2/annotated_protected_vcf, annotate_mutect2/annotated_protected_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pro_vcf=self + '.mutect2_somatic.norm.annot.protected.vcf.gz'; \
+        var pro_tbi=self[0] + '.mutect2_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self[0] + '.mutect2_somatic.norm.annot.protected.maf'; \
+        return [pro_vcf, pro_tbi, pro_maf];}"
+    out: [renamed_files]
+
+  rename_mutect2_public:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate_mutect2/annotated_public_vcf, annotate_mutect2/annotated_public_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pub_vcf=self + '.mutect2_somatic.norm.annot.public.vcf.gz'; \
+        var pub_tbi=self[0] + '.mutect2_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self[0] + '.mutect2_somatic.norm.annot.public.maf'; \
+        return [pub_vcf, pub_tbi, pub_maf];}"
+    out: [renamed_files]
+
+  rename_vardict_protected:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate_vardict/annotated_protected_vcf, annotate_vardict/annotated_protected_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pro_vcf=self + '.vardict_somatic.norm.annot.protected.vcf.gz'; \
+        var pro_tbi=self[0] + '.vardict_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self[0] + '.vardict_somatic.norm.annot.protected.maf'; \
+        return [pro_vcf, pro_tbi, pro_maf];}"
+    out: [renamed_files]
+
+  rename_vardict_public:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate_vardict/annotated_public_vcf, annotate_vardict/annotated_public_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pub_vcf=self + '.vardict_somatic.norm.annot.public.vcf.gz'; \
+        var pub_tbi=self[0] + '.vardict_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self[0] + '.vardict_somatic.norm.annot.public.maf'; \
+        return [pub_vcf, pub_tbi, pub_maf];}"
+    out: [renamed_files]
+
+  rename_lancet_protected:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate_lancet/annotated_protected_vcf, annotate_lancet/annotated_protected_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pro_vcf=self + '.lancet_somatic.norm.annot.protected.vcf.gz'; \
+        var pro_tbi=self[0] + '.lancet_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self[0] + '.lancet_somatic.norm.annot.protected.maf'; \
+        return [pro_vcf, pro_tbi, pro_maf];}"
+    out: [renamed_files]
+
+  rename_lancet_public:
+    run: ../tools/generic_rename_outputs.cwl
+    in:
+      input_files:
+        source: [annotate_lancet/annotated_public_vcf, annotate_lancet/annotated_public_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: output_basename
+        valueFrom: "${var pub_vcf=self + '.lancet_somatic.norm.annot.public.vcf.gz'; \
+        var pub_tbi=self[0] + '.lancet_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self[0] + '.lancet_somatic.norm.annot.public.maf'; \
+        return [pub_vcf, pub_tbi, pub_maf];}"
+    out: [renamed_files]
+
+
+$namespaces:
+  sbg: https://sevenbridges.com
