@@ -153,8 +153,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pro_vcf=self + '.strelka2_somatic.norm.annot.protected.vcf.gz'; \
-        var pro_tbi=self[0] + '.strelka2_somatic.norm.annot.protected.vcf.gz.tbi'; \
-        var pro_maf=self[0] + '.strelka2_somatic.norm.annot.protected.maf'; \
+        var pro_tbi=self + '.strelka2_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self + '.strelka2_somatic.norm.annot.protected.maf'; \
         return [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
@@ -167,8 +167,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pub_vcf=self + '.strelka2_somatic.norm.annot.public.vcf.gz'; \
-        var pub_tbi=self[0] + '.strelka2_somatic.norm.annot.public.vcf.gz.tbi'; \
-        var pub_maf=self[0] + '.strelka2_somatic.norm.annot.public.maf'; \
+        var pub_tbi=self + '.strelka2_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self + '.strelka2_somatic.norm.annot.public.maf'; \
         return [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
 
@@ -181,8 +181,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pro_vcf=self + '.mutect2_somatic.norm.annot.protected.vcf.gz'; \
-        var pro_tbi=self[0] + '.mutect2_somatic.norm.annot.protected.vcf.gz.tbi'; \
-        var pro_maf=self[0] + '.mutect2_somatic.norm.annot.protected.maf'; \
+        var pro_tbi=self + '.mutect2_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self + '.mutect2_somatic.norm.annot.protected.maf'; \
         return [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
@@ -195,8 +195,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pub_vcf=self + '.mutect2_somatic.norm.annot.public.vcf.gz'; \
-        var pub_tbi=self[0] + '.mutect2_somatic.norm.annot.public.vcf.gz.tbi'; \
-        var pub_maf=self[0] + '.mutect2_somatic.norm.annot.public.maf'; \
+        var pub_tbi=self + '.mutect2_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self + '.mutect2_somatic.norm.annot.public.maf'; \
         return [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
 
@@ -209,8 +209,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pro_vcf=self + '.vardict_somatic.norm.annot.protected.vcf.gz'; \
-        var pro_tbi=self[0] + '.vardict_somatic.norm.annot.protected.vcf.gz.tbi'; \
-        var pro_maf=self[0] + '.vardict_somatic.norm.annot.protected.maf'; \
+        var pro_tbi=self + '.vardict_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self + '.vardict_somatic.norm.annot.protected.maf'; \
         return [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
@@ -223,8 +223,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pub_vcf=self + '.vardict_somatic.norm.annot.public.vcf.gz'; \
-        var pub_tbi=self[0] + '.vardict_somatic.norm.annot.public.vcf.gz.tbi'; \
-        var pub_maf=self[0] + '.vardict_somatic.norm.annot.public.maf'; \
+        var pub_tbi=self + '.vardict_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self + '.vardict_somatic.norm.annot.public.maf'; \
         return [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
 
@@ -237,8 +237,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pro_vcf=self + '.lancet_somatic.norm.annot.protected.vcf.gz'; \
-        var pro_tbi=self[0] + '.lancet_somatic.norm.annot.protected.vcf.gz.tbi'; \
-        var pro_maf=self[0] + '.lancet_somatic.norm.annot.protected.maf'; \
+        var pro_tbi=self + '.lancet_somatic.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self + '.lancet_somatic.norm.annot.protected.maf'; \
         return [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
@@ -251,8 +251,8 @@ steps:
       rename_to:
         source: output_basename
         valueFrom: "${var pub_vcf=self + '.lancet_somatic.norm.annot.public.vcf.gz'; \
-        var pub_tbi=self[0] + '.lancet_somatic.norm.annot.public.vcf.gz.tbi'; \
-        var pub_maf=self[0] + '.lancet_somatic.norm.annot.public.maf'; \
+        var pub_tbi=self + '.lancet_somatic.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self + '.lancet_somatic.norm.annot.public.maf'; \
         return [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
 
