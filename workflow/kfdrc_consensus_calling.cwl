@@ -200,7 +200,8 @@ steps:
       annotation_vcf: annotation_vcf
       output_basename: output_basename
       tool_name:
-        valueFrom: ${return inputs.tool_name + ".bcft_annot"}
+        source: tool_name
+        valueFrom: ${return self + ".bcft_annot"}
       columns: annot_columns
     out: [bcftools_annotated_vcf]
 
@@ -228,7 +229,8 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return inputs.tool_name + ".protected"}
+        source: tool_name
+        valueFrom: ${return self + ".protected"}
       retain_info: retain_info
       retain_fmt: retain_fmt
       maf_center: maf_center
@@ -251,7 +253,8 @@ steps:
       tumor_id: input_tumor_name
       normal_id: input_normal_name
       tool_name:
-        valueFrom: ${return inputs.tool_name + ".public"}
+        source: tool_name
+        valueFrom: ${return self + ".public"}
       retain_info: retain_info
       retain_fmt: retain_fmt
       maf_center: maf_center
