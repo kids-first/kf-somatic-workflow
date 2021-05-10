@@ -73,7 +73,6 @@ inputs:
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
 
-
 outputs:
   strelka2_prepass_vcf: { type: File, outputSource: run_strelka2/strelka2_prepass_vcf }
   strelka2_protected_outputs: { type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs }
@@ -139,7 +138,6 @@ steps:
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
       maf_center: maf_center
-
     out:
       [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
 
