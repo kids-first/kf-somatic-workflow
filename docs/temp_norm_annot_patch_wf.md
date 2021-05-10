@@ -1,5 +1,6 @@
 # Annotation Workflow Spec Upgrade
-This workflow is a temp workflow for Ops to patch our current outputs and bring them up to spec
+This workflow is a temp workflow for Ops to patch our current outputs and bring them up to spec.
+It will use up to 2 instance per task
 
 ## What does it do?
  - Normalize the vcf
@@ -13,54 +14,32 @@ This workflow is a temp workflow for Ops to patch our current outputs and bring 
     - Hard filter selecting PASS or HotSpotAllele=1 (public vcf final)
     - Run vcf2maf on that output for public version (public maf final)
 
-## Common inputs
+## Fields that need to be edited
 These inputs would be used for every caller. Note: the sample names and base names are EXAMPLES.
 Need to edit those for the actual value
 ```python
 input_normal_name = "normal_sample_id"
 input_tumor_name = "tumor_sample_id"
 output_basename = "task_id"
-bcftools_annot_columns = "INFO/AF"
-disable_hotspot_annotation = False
-gatk_filter_expression = ["vc.getGenotype('" + input_normal_name + "').getDP() <= 7", "AF > 0.001"]
-gatk_filter_name = ["NORM_DP_LOW", "GNOMAD_AF_HIGH"]
-use_kf_fields = True
-bcftools_public_filter = "FILTER=\"PASS\"|INFO/HotSpotAllele=1"
+gatk_filter_expression = ["vc.getGenotype('" + input_normal_name + "').getDP() <= 7", "AF > 0.001"] # replace input_normal_name with normal sample BS ID!!!
+```
+```yaml
+strelka2_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+mutect2_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+lancet_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+vardict_pass_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
 
 ```
-
-## Per tool inputs
-### Strelka2
-```python
-add_common_fields = True
-retain_info = "MQ,MQ0,QSI,HotSpotAllele"
-tool_name = "strelka2_somatic"
-```
-### Mutect2
-```python
-add_common_fields = False
-retain_info = "MBQ,TLOD,HotSpotAllele"
-tool_name = "mutect2_somatic"
-```
-### Lancet
-```python
-add_common_fields = False
-retain_info = "MS,FETS,HotSpotAllele"
-tool_name = "lancet_somatic"
-```
-### Vardict
-```python
-add_common_fields = False
-retain_info = "MSI,MSILEN,SOR,SSF,HotSpotAllele"
-tool_name = "vardict_somatic"
-```
+There are a bunch of other inputs that have sbg suggested files and default values. Don't touch those unless absolutely certain you should!
 
 ## Outputs:
 ```yaml
-  annotated_protected_vcf: {type: 'File[]', outputSource: rename_pro_vcf/renamed_files}
-  annotated_protected_tbi: {type: 'File[]', outputSource: rename_pro_tbi/renamed_files}
-  annotated_protected_maf: {type: 'File[]', outputSource: rename_pro_maf/renamed_files}
-  annotated_public_vcf: {type: 'File[]', outputSource: rename_pub_vcf/renamed_files}
-  annotated_public_tbi: {type: 'File[]', outputSource: rename_pub_tbi/renamed_files}
-  annotated_public_maf: {type: 'File[]', outputSource: rename_pub_maf/renamed_files}
+  annotated_protected_strelka2: {type: 'File[]', outputSource: rename_strelka2_protected/renamed_files}
+  annotated_public_strelka2: {type: 'File[]', outputSource: rename_strelka2_public/renamed_files}
+  annotated_protected_mutect2: {type: 'File[]', outputSource: rename_mutect2_protected/renamed_files}
+  annotated_public_mutect2: {type: 'File[]', outputSource: rename_mutect2_public/renamed_files}
+  annotated_protected_lancet: {type: 'File[]', outputSource: rename_lancet_protected/renamed_files}
+  annotated_public_lancet: {type: 'File[]', outputSource: rename_lancet_public/renamed_files}
+  annotated_protected_vardict: {type: 'File[]', outputSource: rename_vardict_protected/renamed_files}
+  annotated_public_vardict: {type: 'File[]', outputSource: rename_vardict_public/renamed_files}
 ```
