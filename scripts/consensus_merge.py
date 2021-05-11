@@ -181,11 +181,6 @@ class Variant(object):
             """ Establish correct sort order for canonical human chromosomes
                 Returns True if chrom1 < chrom2, else False
             """
-
-            for name in chr1, chr2:
-                if name not in ALLOWED_CHROMS:
-                    raise ValueError('Uncanonical chromosome %s uncomparable' % name)
-
             return ALLOWED_CHROMS.index(chr1) < ALLOWED_CHROMS.index(chr2)
 
         if not isinstance(other, Variant):
@@ -285,6 +280,7 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
 
 def get_all_variants(caller_name, pysam_vcf):
     """ Ingest all records from a pysam VCF object
+        Excludes records associated with chromosomes not allowed by user
 
         Args:
             caller_name (str)
@@ -295,7 +291,8 @@ def get_all_variants(caller_name, pysam_vcf):
                 'caller' attribute of Variants will be caller_name.
     """
 
-    all_records = sorted([Variant(rec, caller_name) for rec in pysam_vcf.fetch()])
+    all_records = sorted([Variant(rec, caller_name) for rec in pysam_vcf.fetch() 
+                          if rec.chrom in ALLOWED_CHROMS])
     return {caller_name: all_records}
 
 def find_variant_callers(variant_list, all_variants_dict):
