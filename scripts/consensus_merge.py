@@ -177,7 +177,7 @@ class Variant(object):
             Then based on chromosomal coordinate, as 'int'
             Then alphabetically by first alternate allele
         """
-        def order_chroms(chrom1, chrom2):
+        def order_chroms(chr1, chr2):
             """ Establish correct sort order for canonical human chromosomes
                 Returns True if chrom1 < chrom2, else False
             """
