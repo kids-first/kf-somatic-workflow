@@ -63,11 +63,28 @@ inputs:
   strelka2_vep_vcf: { type: 'File?', doc: "VEP VCF output from Strelka2 caller" }
   mutect2_vep_vcf: { type: 'File?', doc: "VEP VCF output from Mutect2 caller" }
 
+  # annotation vars
+  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots", sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a423, name: tert.bed}] }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots", sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a426, name: protein_snv_cancer_hotspots_v2.tsv}] }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots", sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a424, name: protein_indel_cancer_hotspots_v2.tsv}] }
+  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep", default: "MS,FETS,HotSpotAllele"}
+  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
+  add_common_fields: {type: boolean?, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
+  bcftools_annot_columns: {type: string?, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_vcf: {type: File, doc: "bgzipped annotation vcf file", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
+      name: af-only-gnomad.hg38.vcf.gz} }
+  bcftools_annot_vcf_index: {type: File, doc: "index of bcftools_annot_vcf", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e5,
+      name: af-only-gnomad.hg38.vcf.gz.tbi}}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
+  disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+
 outputs:
-  lancet_vep_vcf: { type: File, outputSource: run_lancet/lancet_vep_vcf }
-  lancet_vep_tbi: { type: File, outputSource: run_lancet/lancet_vep_tbi }
-  lancet_vep_maf: { type: File, outputSource: run_lancet/lancet_vep_maf }
   lancet_prepass_vcf: { type: File, outputSource: run_lancet/lancet_prepass_vcf }
+  lancet_protected_outputs: { type: 'File[]', outputSource: run_lancet/lancet_protected_outputs }
+  lancet_public_outputs: { type: 'File[]', outputSource: run_lancet/lancet_public_outputs }
 
 steps:
   choose_defaults:
@@ -87,6 +104,13 @@ steps:
       input_dict: reference_dict
     out: [indexed_fasta,reference_dict]
 
+  index_bcftools_annot_vcf:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: bcftools_annot_vcf
+      input_index: bcftools_annot_vcf_index
+    out: [output]
+  
   select_interval_list:
     run: ../tools/mode_selector.cwl
     in:
@@ -175,8 +199,21 @@ steps:
       padding: choose_defaults/out_lancet_padding
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      retain_info: retain_info
+      retain_fmt: retain_fmt
+      add_common_fields: add_common_fields
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      maf_center: maf_center
     out:
-      [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
+      [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
 
 $namespaces:
   sbg: https://sevenbridges.com
