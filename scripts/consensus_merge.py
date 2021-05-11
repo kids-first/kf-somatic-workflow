@@ -502,18 +502,19 @@ def build_output_record(single_caller_variants, output_vcf, sample_names, hotspo
 
     return output_record
 
-def allowed_contigs_from_bed(bed_path):
+def allowed_contigs_from_bed(bed_path, known_contigs):
     """ Gets list of contigs from BED file
         File must be tab-delimited with contig names in first field
-        Order of contigs in file will be preserved in consensus output
+        Order of contigs will be same as in list of known contigs
 
         Args:
             bed_path (str): path to BED file
+            known_contigs (list): valid contig names (strings), presumably from VCF header
 
         Raises:
             IOError if bed_path does not point to a file
                     if no contig names are identified
-                    if contig names are not unique in file
+                    if any contig name is not in known_contigs
 
         Return:
             list: list of contig names (strings)
@@ -526,15 +527,17 @@ def allowed_contigs_from_bed(bed_path):
     with open(bed_path, 'r') as bed:
         for line in bed:
             fields = line.rstrip().split('\t')
-            contig_names.append(fields[0])
+            name = fields[0]
+            if name in contig_names:
+                continue
+            if name not in known_contigs:
+                raise IOError('Contig %s not known from e.g. VCF header' % name)
+            contig_names.append(name)
 
     if not contig_names:
         raise IOError('No contig names identified in %s' % bed_path)
 
-    if len(contig_names) != len(set(contig_names)):
-        raise IOError('Contig names not unique in %s' % bed_path)
-
-    return contig_names
+    return sorted(contig_names, key=lambda name: known_contigs.index(name))
 
 def build_output_name(inpath, output_basename):
     """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name
@@ -590,10 +593,11 @@ if __name__ == "__main__":
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
 
     # Get ordered names of contigs desired in output VCF and store in global variable
+    known_contigs = list(strelka2_vcf.header.contigs)
     if args.contig_bed:
-        allowed_contigs = allowed_contigs_from_bed(args.contig_bed)
+        allowed_contigs = allowed_contigs_from_bed(args.contig_bed, known_contigs)
     else:
-        allowed_contigs = list(strelka2_vcf.header.contigs)
+        allowed_contigs = known_contigs
     global ALLOWED_CHROMS
     ALLOWED_CHROMS = allowed_contigs
 
