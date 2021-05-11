@@ -26,9 +26,9 @@ import pysam
 
 # Ordered list of names of callers being used for consensus
 CALLER_NAMES = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
-# Only canonical chromosomes desired in consensus output
-# Note that these names with 'chr' prepended are also allowed
-ALLOWED_CHROMS = [str(i) for i in range(1, 23)] + ['X', 'Y', 'M']
+# Only certain contigs will be permitted in the output VCF,
+#     but the list depends on user input 
+ALLOWED_CHROMS = []
 # Character for separating caller information in FORMAT fields
 FORMAT_JOIN = '|'
 
@@ -47,12 +47,6 @@ def get_range(iterable):
         return 0.0
     sorted_floats = sorted(floats)
     return sorted_floats[-1] - sorted_floats[0]
-
-def strip_chr(chrom_name):
-    """ Remove leading 'chr', if any, from chrom_name and return """
-    if chrom_name.startswith('chr'):
-        return chrom_name[3:]
-    return chrom_name
 
 def stringify(iterable, sep_char=','):
     """ Turn an iterable into a delimited string with no spaces
@@ -190,25 +184,12 @@ class Variant(object):
             """ Establish correct sort order for canonical human chromosomes
                 Returns True if chrom1 < chrom2, else False
             """
-            chr1 = strip_chr(chrom1)
-            chr2 = strip_chr(chrom2)
 
             for name in chr1, chr2:
                 if name not in ALLOWED_CHROMS:
                     raise ValueError('Uncanonical chromosome %s uncomparable' % name)
 
-            letter_mappings = {'X': 23, 'Y': 24, 'M': 25}
-            try:
-                chr1_num = letter_mappings[chr1]
-            except KeyError:
-                chr1_num = int(chr1)
-            try:
-                chr2_num = letter_mappings[chr2]
-            except KeyError:
-                chr2_num = int(chr2)
-
-            return (chr1_num < chr2_num)
-
+            return ALLOWED_CHROMS.index(chr1) < ALLOWED_CHROMS.index(chr2)
 
         if not isinstance(other, Variant):
             raise ValueError('Cannot compare Variant %s to non-Variant %s'
@@ -300,7 +281,7 @@ def write_output_header(output_vcf, sample_list, contig_list, hotspot_source=Non
     output_vcf.header.formats.add('DPR', '1', 'Integer',
             'Difference between highest and lowest DP')
     for contig in sorted(contig_list, key=lambda x: x.id):
-        if strip_chr(contig.name) in ALLOWED_CHROMS:
+        if contig.name in ALLOWED_CHROMS:
             output_vcf.header.contigs.add(contig.name, contig.length)
     for sample in sample_list:
         output_vcf.header.add_sample(sample)
@@ -418,7 +399,7 @@ def get_mapq(cram_path, chrom, pos, reference=None):
             IOError if CRAM provided without reference
                     if cram_path has neither cram nor bam extension
 
-        Returns:
+        Return:
             tuple of ints RMS mapq and # of mapq reads at locus
     """
     if cram_path.endswith('cram'):
@@ -527,6 +508,40 @@ def build_output_record(single_caller_variants, output_vcf, sample_names, hotspo
 
     return output_record
 
+def allowed_contigs_from_bed(bed_path):
+    """ Gets list of contigs from BED file
+        File must be tab-delimited with contig names in first field
+        Order of contigs in file will be preserved in consensus output
+
+        Args:
+            bed_path (str): path to BED file
+
+        Raises:
+            IOError if bed_path does not point to a file
+                    if no contig names are identified
+                    if contig names are not unique in file
+
+        Return:
+            list: list of contig names (strings)
+    """
+
+    if not os.path.isfile(bed_path):
+        raise IOError('Contig BED file not found at %s' % bed_path)
+
+    contig_names = []
+    with open(bed_path, 'r') as bed:
+        for line in bed:
+            fields = line.rstrip().split('\t')
+            contig_names.append(fields[0])
+
+    if not contig_names:
+        raise IOError('No contig names identified in %s' % bed_path)
+
+    if len(contig_names) != len(set(contig_names)):
+        raise IOError('Contig names not unique in %s' % bed_path)
+
+    return contig_names
+
 def build_output_name(inpath, output_basename):
     """Builds an VCF.GZ output filename based on the input (VCF/VCF.GZ) name
        The filename will be the input filename with '.consensus' inserted before '.vcf.gz'
@@ -563,6 +578,8 @@ if __name__ == "__main__":
                         help='String to use as basename for output file')
     parser.add_argument('--hotspot_source',
                         help='Optional source of "hotspot" designated regions')
+    parser.add_argument('--contig_bed',
+                        help='Optional source of names of contigs to be included in output')
 
     args = parser.parse_args()
 
@@ -577,6 +594,14 @@ if __name__ == "__main__":
     mutect2_vcf = pysam.VariantFile(args.mutect2_vcf, 'r')
     lancet_vcf = pysam.VariantFile(args.lancet_vcf, 'r')
     vardict_vcf = pysam.VariantFile(args.vardict_vcf, 'r')
+
+    # Get ordered names of contigs desired in output VCF and store in global variable
+    if args.contig_bed:
+        allowed_contigs = allowed_contigs_from_bed(args.contig_bed)
+    else:
+        allowed_contigs = list(strelka2_vcf.header.contigs)
+    global ALLOWED_CHROMS
+    ALLOWED_CHROMS = allowed_contigs
 
     # Create output vcf
     base_dir = os.getcwd()
