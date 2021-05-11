@@ -26,9 +26,6 @@ import pysam
 
 # Ordered list of names of callers being used for consensus
 CALLER_NAMES = ('Strelka2', 'Mutect2', 'VarDict', 'Lancet')
-# Only certain contigs will be permitted in the output VCF,
-#     but the list depends on user input 
-ALLOWED_CHROMS = []
 # Character for separating caller information in FORMAT fields
 FORMAT_JOIN = '|'
 
