@@ -53,8 +53,8 @@ inputs:
   lancet_padding: { type: 'int?', doc: "Recommend 0 if interval file padded already, half window size if not. Recommended: 0 for WXS; 300 for WGS" }
 
   # WGS only Fields
-  wgs_calling_interval_list: { type: 'File?', doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N regions removed" }
-  lancet_calling_interval_bed: { type: 'File?', doc: "For WGS, highly recommended to use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can still give calling list as bed if true WGS calling desired instead of exome+" }
+  wgs_calling_interval_list: { type: 'File?', doc: "GATK intervals list-style, or bed file.  Recommend canonical chromosomes with N regions removed" }
+  lancet_calling_interval_bed: { type: 'File?', doc: "For WGS, highly recommended to use CDS bed, and provide strelka2 & mutect2 vcf files.  Can still give calling list as bed if true WGS calling desired instead of exome+" }
 
   # WXS only Fields
   padded_capture_regions: { type: 'File?', doc: "Recommend 100bp pad, for somatic variant" }

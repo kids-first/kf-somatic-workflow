@@ -21,7 +21,7 @@ inputs:
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   window: {type: int, doc: "window size for lancet.  default is 600, recommend 500 for WGS, 600 for exome+"}
-  padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend half window size"}
+  padding: {type: int, doc: "If WGS (less likely), default 25, if exome+, recommend half window size, 0 if pure exome or panel"}
   tool_name: {type: string?, doc: "String to describe what tool was run as part of file name", default: "lancet_somatic"}
   # annotation vars
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
