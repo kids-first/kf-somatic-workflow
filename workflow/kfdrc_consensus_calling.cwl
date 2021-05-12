@@ -130,6 +130,8 @@ inputs:
       \ building component"}
   ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
     default: 2}
+  hotspot_source: {type: string?, doc: "Optional description of hotspot definition source"}
+  contig_bed: {type: File?, doc: "Optional BED file containing names of target contigs / chromosomes"}
   consensus_ram: {type: int?, doc: "Set min memory in GB for consensus merge step",
     default: 3}
   annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations\
@@ -181,6 +183,8 @@ steps:
       ram: consensus_ram
       reference: indexed_reference_fasta
       output_basename: output_basename
+      hotspot_source: hotspot_source
+      contig_bed: contig_bed
     out: [output]
 
   vep_annot_consensus:
