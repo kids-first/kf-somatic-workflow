@@ -6,7 +6,7 @@ doc: >-
       into a single consensus VCF
 requirements:
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/consensus-merge:1.0.0'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/consensus-merge:1.1.0'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: ${ return inputs.ram * 1000 }
@@ -69,6 +69,16 @@ inputs:
     inputBinding:
       position: 8
       prefix: '--output_basename'
+  hotspot_source:
+    type: string?
+    inputBinding:
+      position: 9
+      prefix: '--hotspot_source'
+  contig_bed:
+    type: File?
+    inputBinding:
+      position: 10
+      prefix: '--contig_bed'
   cores:
     type: int?
     default: 16
