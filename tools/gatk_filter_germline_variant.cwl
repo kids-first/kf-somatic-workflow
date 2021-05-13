@@ -59,7 +59,7 @@ arguments:
 
 inputs:
   reference_fasta: File
-  input_vcf: {type: File?, secondaryFiles: [.tbi]}
+  input_vcf: {type: 'File?', secondaryFiles: [.tbi]}
   output_basename: string
 outputs:
   filtered_vcf:

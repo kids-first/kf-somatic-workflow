@@ -61,6 +61,8 @@ outputs:
   cnvkit_metrics: { type: File, outputSource: run_cnvkit/cnvkit_metrics }
   cnvkit_gainloss: { type: File, outputSource: run_cnvkit/cnvkit_gainloss }
   cnvkit_seg: { type: File, outputSource: run_cnvkit/cnvkit_seg }
+  cnvkit_scatter_plot: {type: File, outputSource: run_cnvkit/cnvkit_scatter_plot}
+  cnvkit_diagram: {type: File, outputSource: run_cnvkit/cnvkit_diagram}
 
 steps:
   choose_defaults:
@@ -138,7 +140,7 @@ steps:
       output_basename: output_basename
       sex: cnvkit_sex
     out:
-      [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss, cnvkit_seg]
+      [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss, cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
 
 $namespaces:
   sbg: https://sevenbridges.com

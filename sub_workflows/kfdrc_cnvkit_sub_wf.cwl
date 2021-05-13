@@ -29,6 +29,8 @@ outputs:
   cnvkit_metrics: {type: File, outputSource: cnvkit/output_metrics}
   cnvkit_gainloss: {type: File, outputSource: cnvkit/output_gainloss}
   cnvkit_seg: {type: File, outputSource: cnvkit/output_seg}
+  cnvkit_scatter_plot: {type: File, outputSource: cnvkit/output_scatter}
+  cnvkit_diagram: {type: File, outputSource: cnvkit/output_diagram}
 
 steps:
 
