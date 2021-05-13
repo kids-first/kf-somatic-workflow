@@ -4,9 +4,9 @@ id: expression_flatten_list
 requirements:
   - class: InlineJavascriptRequirement
 inputs:
-  input_list: 'Any[]?'
+  input_list: { type: 'Any[]?' }
 outputs:
-  output: 'Any[]?'
+  output: { type: 'Any[]?' }
 expression: |
   ${
     var flatten = function flatten(ary) {
