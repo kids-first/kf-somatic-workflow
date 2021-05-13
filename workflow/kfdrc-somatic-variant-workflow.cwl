@@ -370,6 +370,8 @@ outputs:
   cnvkit_metrics: {type: File, outputSource: run_cnvkit/cnvkit_metrics}
   cnvkit_gainloss: {type: File, outputSource: run_cnvkit/cnvkit_gainloss}
   cnvkit_seg: {type: File, outputSource: run_cnvkit/cnvkit_seg}
+  cnvkit_scatter_plot: {type: File, outputSource: run_cnvkit/cnvkit_scatter_plot}
+  cnvkit_diagram: {type: File, outputSource: run_cnvkit/cnvkit_diagram}
   theta2_calls: {type: File?, outputSource: run_theta2_purity/theta2_adjusted_cns}
   theta2_seg: {type: File?, outputSource: run_theta2_purity/theta2_adjusted_seg}
   theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclobal_results/output}
@@ -682,7 +684,7 @@ steps:
       output_basename: output_basename
       sex: cnvkit_sex
     out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss,
-      cnvkit_seg]
+      cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
 
   run_theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
@@ -748,5 +750,5 @@ sbg:categories:
 - VCF
 - VEP
 sbg:links:
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.3.4'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.4.0'
   label: github-release
