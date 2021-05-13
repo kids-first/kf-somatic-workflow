@@ -63,7 +63,7 @@ Secondary files needed for each reference file will be a sub-bullet point.
    - `300` or half window size used if exome+
    - `25` if pure WGS
 ### Worflow performance tuning
-Occassionally, default memory values may not suffice to process the inputs.
+Occasionally, default memory values may not suffice to process the inputs.
 Edit where needed to unblock these steps.
 All memory units are in whole GB
 ```yaml
