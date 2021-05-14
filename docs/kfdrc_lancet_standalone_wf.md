@@ -18,10 +18,16 @@ Lancet uses a graph model to refine INDEL calls, which can be a very time-consum
  - `window`: `600`
  - `padding` `300`
  - `lancet_calling_interval_bed`: `GRCh38.gencode.v31.CDS.merged.bed`
-
 ### Recommended WXS params
  - `exome_flag`: "Y"
  - `window`: `600`
  - `padding` `0`
  - `lancet_calling_interval_bed`: `GRCh38.gencode.v31.CDS.merged.bed`
  - `padded_capture_regions`: <bed file with capture regions, recommend padded 100bp>
+### Workflow performance tuning
+Occasionally, default memory values may not suffice to process the inputs.
+Edit where needed to unblock these steps.
+All memory units are in whole GB
+```yaml
+  lancet_ram: {type: int?} # memory used for each lancet scatter task
+```
