@@ -82,7 +82,7 @@ inputs:
 
 ### Recommended reference inputs - all file references can be obtained [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/)*
 Secondary files needed for each reference file will be a sub-bullet point.
-* For recommendations for inputs in the `#annotation` section, see the [annotation subworkflow docs.](../sub_workflows/kfdrc_strelka2_sub_wf.cwl)
+* For recommendations for inputs in the `#annotation` section, see the [annotation subworkflow docs.](../docs/kfdrc_annotation_subworkflow.md)
  - `indexed_reference_fasta`: `Homo_sapiens_assembly38.fasta`
    - `Homo_sapiens_assembly38.fasta.fai`
    - `Homo_sapiens_assembly38.dict`
