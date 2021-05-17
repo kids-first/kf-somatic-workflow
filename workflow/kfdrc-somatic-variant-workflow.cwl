@@ -250,7 +250,7 @@ inputs:
     doc: "normal BAM or CRAM"
   input_normal_name: string
   vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
-    sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051b5, name: homo_sapiens_vep_93_GRCh38_convert_cache.tar.gz}}
+    sbg:suggestedValue: {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
   cfree_chr_len: {type: File, doc: "file with chromosome lengths", sbg:suggestedValue: {
       class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
@@ -342,6 +342,24 @@ inputs:
   manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults\
       \ to 18"}
 
+  # annotation vars
+  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a423, name: tert.bed}] }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a426, name: protein_snv_cancer_hotspots_v2.tsv}] }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots",
+                      sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a424, name: protein_indel_cancer_hotspots_v2.tsv}] }
+  bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_vcf: {type: File, doc: "bgzipped annotation vcf file", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
+      name: af-only-gnomad.hg38.vcf.gz}}
+  bcftools_annot_vcf_index: {type: File, doc: "index of bcftools_annot_vcf", sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e5,
+      name: af-only-gnomad.hg38.vcf.gz.tbi}}
+  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
+  disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
+  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+
   # WGS only Fields
   wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed\
       \ file.  Recommend canocical chromosomes with N regions removed", sbg:suggestedValue: {
@@ -377,23 +395,19 @@ outputs:
   theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclobal_results/output}
   theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_cns}
   theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclone_seg}
-  strelka2_vep_vcf: {type: File, outputSource: run_strelka2/strelka2_vep_vcf}
-  strelka2_vep_tbi: {type: File, outputSource: run_strelka2/strelka2_vep_tbi}
+  strelka2_public_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_public_outputs}
+  strelka2_protected_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs}
   strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
-  strelka2_vep_maf: {type: File, outputSource: run_strelka2/strelka2_vep_maf}
   manta_pass_vcf: {type: File, outputSource: run_manta/manta_pass_vcf}
   manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
-  mutect2_vep_vcf: {type: File, outputSource: run_mutect2/mutect2_vep_vcf}
-  mutect2_vep_tbi: {type: File, outputSource: run_mutect2/mutect2_vep_tbi}
+  mutect2_public_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_public_outputs}
+  mutect2_protected_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_protected_outputs}
   mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
-  mutect2_vep_maf: {type: File, outputSource: run_mutect2/mutect2_vep_maf}
-  vardict_vep_somatic_only_vcf: {type: File, outputSource: run_vardict/vardict_vep_somatic_only_vcf}
-  vardict_vep_somatic_only_tbi: {type: File, outputSource: run_vardict/vardict_vep_somatic_only_tbi}
-  vardict_vep_somatic_only_maf: {type: File, outputSource: run_vardict/vardict_vep_somatic_only_maf}
+  vardict_public_outputs: {type: 'File[]', outputSource: run_vardict/vardict_public_outputs}
+  vardict_protected_outputs: {type: 'File[]', outputSource: run_vardict/vardict_protected_outputs}
   vardict_prepass_vcf: {type: File, outputSource: run_vardict/vardict_prepass_vcf}
-  lancet_vep_vcf: {type: File, outputSource: run_lancet/lancet_vep_vcf}
-  lancet_vep_tbi: {type: File, outputSource: run_lancet/lancet_vep_tbi}
-  lancet_vep_maf: {type: File, outputSource: run_lancet/lancet_vep_maf}
+  lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
+  lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
   lancet_prepass_vcf: {type: File, outputSource: run_lancet/lancet_prepass_vcf}
 
 steps:
@@ -444,6 +458,13 @@ steps:
     in:
       input_file: mutect2_exac_common_vcf
       input_index: mutect2_exac_common_tbi
+    out: [output]
+
+  index_bcftools_annot_vcf:
+    run: ../tools/tabix_index.cwl
+    in:
+      input_file: bcftools_annot_vcf
+      input_index: bcftools_annot_vcf_index
     out: [output]
 
   select_interval_list:
@@ -539,8 +560,17 @@ steps:
       ram: vardict_ram
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
-    out: [vardict_vep_somatic_only_vcf, vardict_vep_somatic_only_tbi, vardict_vep_somatic_only_maf,
-      vardict_prepass_vcf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
+    out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
 
   select_mutect_bed_interval:
     run: ../tools/mode_selector.cwl
@@ -573,8 +603,18 @@ steps:
       getpileup_memory: getpileup_memory
       filtermutectcalls_memory: filtermutectcalls_memory
       select_vars_mode: select_vars_mode
-    out: [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_vep_vcf, mutect2_vep_tbi,
-      mutect2_vep_maf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
+    out: [mutect2_filtered_stats, mutect2_filtered_vcf,
+    mutect2_protected_outputs, mutect2_public_outputs]
 
   run_strelka2:
     run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
@@ -593,13 +633,28 @@ steps:
       vep_ref_build: vep_ref_build
       output_basename: output_basename
       select_vars_mode: select_vars_mode
-    out: [strelka2_vep_vcf, strelka2_vep_tbi, strelka2_prepass_vcf, strelka2_vep_maf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
+    out: [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
 
   bedops_gen_lancet_intervals:
     run: ../tools/preprocess_lancet_intervals.cwl
     in:
-      strelka2_vcf: run_strelka2/strelka2_vep_vcf
-      mutect2_vcf: run_mutect2/mutect2_vep_vcf
+      strelka2_vcf:
+        source: run_strelka2/strelka2_protected_outputs
+        valueFrom: "${var str_vcf = self[1]; return str_vcf;}" # vcf is always item 2 from rename file glob in this context
+      mutect2_vcf:
+        source: run_mutect2/mutect2_protected_outputs
+        valueFrom: "${var mut_vcf = self[1]; return mut_vcf;}"
       ref_bed: lancet_calling_interval_bed
       output_basename: output_basename
     out: [run_bed]
@@ -645,7 +700,17 @@ steps:
       padding: choose_defaults/out_lancet_padding
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
-    out: [lancet_vep_vcf, lancet_vep_tbi, lancet_vep_maf, lancet_prepass_vcf]
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      bcftools_public_filter: bcftools_public_filter
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
+    out: [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
 
   run_controlfreec:
     run: ../sub_workflows/kfdrc_controlfreec_sub_wf.cwl
@@ -750,5 +815,5 @@ sbg:categories:
 - VCF
 - VEP
 sbg:links:
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v2.4.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v3.0.0'
   label: github-release
