@@ -214,9 +214,9 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
    As such the option for Manta memory allocation is described as soft cap. For more information on Manta resource
    usage see their [documentation](https://github.com/Illumina/manta/blob/master/docs/userGuide/README.md#runtime-hardware-requirements).
 
-1. The optional `b_allele` file can be generated using our [Joint Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-jointgenotyping-refinement-workflow/).
+1. The optional `b_allele` file can be generated using our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/).
 
 ## Other Resources
 - dockerfiles: https://github.com/d3b-center/bixtools
 
-![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.png)
+![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.cwl.png)
