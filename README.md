@@ -65,7 +65,7 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 - [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - It will also convert cram input to bam input, if applicable
-  - Intervals and bams are used as inputs to run the [VarDict Java subworkflow]()
+  - Intervals and bams are used as inputs to run the [VarDict Java subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_vardict_sub_wf.md)
 
 Each caller has a different approach to variant calling, and together one can glean confident results.
 **After running this overall workflow, we recommend running our [consensus calling workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc-consensus-calling.md) for a balance of sensitivity and specificity overall.**

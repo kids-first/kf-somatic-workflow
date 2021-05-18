@@ -637,7 +637,6 @@ steps:
       bcftools_annot_vcf: index_bcftools_annot_vcf/output
       bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
-      gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
