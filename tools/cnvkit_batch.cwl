@@ -110,10 +110,7 @@ inputs:
   threads:
     type: ['null', int]
     default: 16
-  sex:
-    type: string
-    doc: "Set sample sex.  CNVkit isn't always great at guessing it"
-
+  sex: {type: ['null', {type: enum, name: sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "x"}
 outputs:
   output_cnr: 
     type: File

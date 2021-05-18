@@ -53,16 +53,16 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 
 #### SNV Callers
 
-- [Strelka2](https://github.com/Illumina/strelka) `v2.9.3` calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
+- [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3` calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
   - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
 - [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0` from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
-- [Lancet](https://github.com/nygenome/lancet) `v1.0.7` from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL
+- [Lancet](https://github.com/nygenome/lancet/releases/tag/v1.0.7) `v1.0.7` from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - It will also convert cram input to bam input, if applicable
   - Intervals and bams are used as inputs to run the [Lancet subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_lancet_sub_wf.md)
-- [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more
+- [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava/tree/1.7.0) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - It will also convert cram input to bam input, if applicable
   - Intervals and bams are used as inputs to run the [VarDict Java subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_vardict_sub_wf.md)
@@ -76,14 +76,14 @@ Each caller has a different approach to variant calling, and together one can gl
 The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
 Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
 Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
-- [CNVkit](https://cnvkit.readthedocs.io/en/stable/) `v2.9.3` is a CNV second tool we currently use.
-- [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls from CNVkit with purity estimations.
+- [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
+- [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
 
 For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy.
 
 #### SV Callers
 
-- [Manta](https://github.com/Illumina/manta) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
+- [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
 Default settings are used at run time.
 
 #### Variant Annotation
