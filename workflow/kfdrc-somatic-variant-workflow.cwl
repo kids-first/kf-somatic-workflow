@@ -288,7 +288,7 @@ inputs:
   mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf",
     sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051af, name: small_exac_common_3.hg38.vcf.gz.tbi}}
   output_basename: {type: string, doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: sex, symbols: ["WGS", "WXS"]}, doc: "Select\
+  wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select\
       \ if this run is WGS or WXS"}
 
   # Optional with One Default
@@ -337,13 +337,12 @@ inputs:
       \ to set window size.  Default 0.05 recommended"}
   cfree_contamination_adjustment: {type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec\
       \ estimate normal contam"}
-  cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"]}], doc: "If\
-      \ known, XX for female, XY for male"}
-  cnvkit_sex: {type: 'string?', doc: "If known, choices are m,y,male,Male,f,x,female,Female"}
+  cfree_sex: {type: ['null', {type: enum, name: cfree_sex, symbols: ["XX", "XY"]}], doc: "If\
+      \ known, XX for female, XY for male", default: "XX"}
+  cnvkit_sex: {type: ['null', {type: enum, name: cnvkit_sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "y"}
   combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
-      \ expression if vcf has non-PASS combined calls, use as-needed, i.e. for VarDict:\
-      \ FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\"\
-      )"}
+      \ expression if vcf has non-PASS combined calls, use as-needed, default set for VarDict Java for VarDict", default: FILTER="PASS" && (INFO/STATUS="Germline" | INFO/STATUS="StrongSomatic")\
+      )}
   combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
       \ expression if vcf has non-PASS combined calls, use as-needed"}
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program\
