@@ -1,5 +1,5 @@
 # Kids First DRC VarDict Java Variant Calling Workflow
-This is a workflow that is the functional equivalent of running only the lancet variant calling portion of the [Kids First DRC Somatic Variant Workflow](../workflow/kfdrc-somatic-variant-workflow.cwl).
+This is a workflow that is the functional equivalent of running only the VarDict Java variant calling portion of the [Kids First DRC Somatic Variant Workflow](../workflow/kfdrc-somatic-variant-workflow.cwl).
 VarDict Java is a variant caller that calls single nucleotide variants, multi-nucleotide variants,  and small insertions and deletions.
 
 [This workflow](../workflow/kfdrc_production_vardict_wf.cwl) does the following things as described below:
