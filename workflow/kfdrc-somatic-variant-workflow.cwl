@@ -341,8 +341,7 @@ inputs:
       \ known, XX for female, XY for male", default: "XX"}
   cnvkit_sex: {type: ['null', {type: enum, name: cnvkit_sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "y"}
   combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
-      \ expression if vcf has non-PASS combined calls, use as-needed, default set for VarDict Java for VarDict", default: FILTER="PASS" && (INFO/STATUS="Germline" | INFO/STATUS="StrongSomatic")\
-      )}
+      \ expression if vcf has non-PASS combined calls, use as-needed, default set for VarDict Java for VarDict", default: FILTER="PASS" && (INFO/STATUS="Germline" | INFO/STATUS="StrongSomatic")}
   combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
       \ expression if vcf has non-PASS combined calls, use as-needed"}
   use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program\
