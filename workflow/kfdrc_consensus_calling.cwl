@@ -272,9 +272,9 @@ steps:
         valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
         source: [output_basename, tool_name]
-        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz';\
-          \ var pro_tbi=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz.tbi';\
-          \ var pro_maf=self[0] + '.' + self[1] + '.norm.annot.protected.maf'; return\
+        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.protected.vcf.gz';\
+          \ var pro_tbi=self[0] + '.' + self[1] + '.protected.vcf.gz.tbi';\
+          \ var pro_maf=self[0] + '.' + self[1] + '.protected.maf'; return\
           \ [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
 
@@ -286,9 +286,9 @@ steps:
         valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
       rename_to:
         source: [output_basename, tool_name]
-        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz';\
-          \ var pub_tbi=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz.tbi';\
-          \ var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; return\
+        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.public.vcf.gz';\
+          \ var pub_tbi=self[0] + '.' + self[1] + '.public.vcf.gz.tbi';\
+          \ var pub_maf=self[0] + '.' + self[1] + '.public.maf'; return\
           \ [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
 
