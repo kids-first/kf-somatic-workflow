@@ -340,7 +340,7 @@ inputs:
   cfree_sex: {type: ['null', {type: enum, name: cfree_sex, symbols: ["XX", "XY"]}],
     doc: "If known, XX for female, XY for male", default: "XX"}
   cnvkit_sex: {type: ['null', {type: enum, name: cnvkit_sex, symbols: ["x", "y"]}],
-    doc: "Sex, for simplicity x for female y for male", default: "y"}
+    doc: "Sex, for simplicity x for female y for male", default: "x"}
   combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
       \ expression if vcf has non-PASS combined calls, use as-needed, default set\
       \ for VarDict Java for VarDict", default: FILTER="PASS" && (INFO/STATUS="Germline"
