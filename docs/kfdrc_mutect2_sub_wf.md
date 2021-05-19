@@ -3,7 +3,7 @@ This is a subworkflow that is part of the Kids First DRC Somatic Variant Workflo
 Mutect2 is a variant caller that calls single nucleotide variants, multi-nucleotide variants,  and small insertions and deletions.
 
 ![Mutect2 workflow diagram](../docs/kfdrc_mutect2_sub_wf.png)
-In general, Mutect2 is run following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl).
+In general, Mutect2 is run following the Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl).
 [This subworkflow](../sub_workflows/kfdrc_mutect2_sub_wf.cwl) does the following things as described below:
 
 1. Run the Mutect2 variant caller tool, scattering on the input interval list for greater speed
