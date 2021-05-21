@@ -224,8 +224,6 @@ doc: |
   ## Other Resources
   - dockerfiles: https://github.com/d3b-center/bixtools
 
-  ![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.cwl.png)
-
 requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
