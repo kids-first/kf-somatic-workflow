@@ -53,16 +53,16 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 
 #### SNV Callers
 
-- [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3` calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
+- [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
   - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
-- [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0` from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
+- [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
-- [Lancet](https://github.com/nygenome/lancet/releases/tag/v1.0.7) `v1.0.7` from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL
+- [Lancet](https://github.com/nygenome/lancet/releases/tag/v1.0.7) `v1.0.7`, from the New York Genome Center (NYGC), calls SNV, MNV, and INDEL
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - It will also convert cram input to bam input, if applicable
   - Intervals and bams are used as inputs to run the [Lancet subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_lancet_sub_wf.md)
-- [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava/tree/1.7.0) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more
+- [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava/tree/1.7.0) `v1.7.0`, from AstraZeneca, calls SNV, MNV, INDEL and more
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
   - It will also convert cram input to bam input, if applicable
   - Intervals and bams are used as inputs to run the [VarDict Java subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_vardict_sub_wf.md)
