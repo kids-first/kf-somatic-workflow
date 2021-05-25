@@ -20,7 +20,7 @@ inputs:
   threads: {type: ['null', int], default: 16}
   tumor_sample_name: {type: string, doc: "For seg file output and theta2 input"}
   normal_sample_name:  {type: string, doc: "For theta2 input"}
-  sex: {type: string, doc: "Set sample sex.  CNVkit isn't always great at guessing it"}
+  sex: {type: ['null', {type: enum, name: sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "x"}
 
 outputs:
   cnvkit_cnr: {type: File, outputSource: cnvkit/output_cnr}

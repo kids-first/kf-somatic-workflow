@@ -2,7 +2,8 @@
 
 This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
-Somatic variant call results are annotated using Variant Effect Predictor, with the Memorial Sloane Kettering Cancer Center (MSKCC) vcf2maf wrapper.
+Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor, then added an additional MAF output using a modified version of MSKCCs vcf2maf.
+See [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for more details on annotation.
 
 If you would like to run this workflow using the cavatica public app, a basic primer on running public apps can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-Cavatica-af5ebb78c38a4f3190e32e67b4ce12bb).
 Alternatively, if you'd like to run it locally using `cwltool`, a basic primer on that can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-CWLtool-b8dbbde2dc7742e4aff290b0a878344d) and combined with app-specific info from the readme below.
@@ -12,7 +13,7 @@ This workflow is the current production workflow, equivalent to this [Cavatica p
 
 ## Running WGS or WXS
 
-The [combinded workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
+The [combined workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
 This functionality comes from usage of the `wgs_or_wxs` input enum. Depending on what is provided for this input, the tool will
 set the appropriate default values and check that the user has provided the correct inputs. For example, if the user sets the
 input to WGS the lancet_padding value will be defaulted to 300; alternatively, if the user sets the input to WXS the lancet_padding
@@ -52,14 +53,22 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 
 #### SNV Callers
 
-- [Strelka2](https://github.com/Illumina/strelka) `v2.9.3` calls single nucleotide variants (SNV) and insertions/deletions (INDEL).
-- [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0` from the Broad institute calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL.
-- [Lancet](https://github.com/nygenome/lancet) `v1.0.7` from the New York Genome Center (NYGC) calls SNV, MNV, and INDEL.
-- [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava) `v1.7.0` from AstraZeneca calls SNV, MNV, INDEL and more.
+- [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
+  - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
+- [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
+  - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
+  - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
+- [Lancet](https://github.com/nygenome/lancet/releases/tag/v1.0.7) `v1.0.7`, from the New York Genome Center (NYGC), calls SNV, MNV, and INDEL
+  - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
+  - It will also convert cram input to bam input, if applicable
+  - Intervals and bams are used as inputs to run the [Lancet subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_lancet_sub_wf.md)
+- [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava/tree/1.7.0) `v1.7.0`, from AstraZeneca, calls SNV, MNV, INDEL and more
+  - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
+  - It will also convert cram input to bam input, if applicable
+  - Intervals and bams are used as inputs to run the [VarDict Java subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_vardict_sub_wf.md)
 
-Each caller has a different approach to variant calling, and together one can glean confident results. Strelka2 is run with default settings, similarly Mutect2 following Broad Best Practices, as of this [workflow](https://github.com/broadinstitute/gatk/blob/4.1.1.0/scripts/mutect2_wdl/mutect2.wdl). Lancet is run in what I'd call an "Exome+" mode, based on the NYGC methods described [here](https://www.biorxiv.org/content/biorxiv/early/2019/04/30/623702.full.pdf). In short, regions from GENCODE gtf with feature annotations `exon`, `UTR`, and start/stop `codon` are used as intervals, as well as regions flanking hits from `strelka2` and `mutect2`. Lastly, VarDict Java run params follow the protocol that the [Blue Collar Bioinformatics](https://bcbio-nextgen.readthedocs.io/en/latest/index.html) uses, with the exception of using a min variant allele frequency (VAF) of 0.05 instead of 0.1, which we find to be relevant for rare cancer variant discovery. We also employ their false positive filtering methods.
-Furthermore, each tool's results, in variant call format (vcf), are filtered on the `PASS` flag, with VarDict Java results additionally filtered for the flag `StrongSomatic`. Their results also include germline hits and other categories by default.
-The pre-`PASS` filtered results can still be obtained from the workflow in the event the user wishes to keep some calls that failed `PASS` criteria.
+Each caller has a different approach to variant calling, and together one can glean confident results.
+**After running this overall workflow, we recommend running our [consensus calling workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc-consensus-calling.md) for a balance of sensitivity and specificity overall.**
 
 #### CNV Estimators
 
@@ -67,25 +76,25 @@ The pre-`PASS` filtered results can still be obtained from the workflow in the e
 The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
 Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
 Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
-- [CNVkit](https://cnvkit.readthedocs.io/en/stable/) `v2.9.3` is a CNV second tool we currently use.
-- [THeTa2](https://github.com/raphael-group/THetA) is used to inform and adjust copy number calls from CNVkit with purity estimations.
+- [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
+- [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
 
 For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy.
 
 #### SV Callers
 
-- [Manta](https://github.com/Illumina/manta) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
+- [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
 Default settings are used at run time.
 
 #### Variant Annotation
-
-- [Variant Effect Predictor](https://useast.ensembl.org/info/docs/tools/vep/index.html) `release 93`, wrapped by [vcf2maf](https://github.com/mskcc/vcf2maf) `v1.6.17` is used to annotate somatic variant and SV calls.
-
+Please see the [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md).
 Both the annotated vcf and maf file are made available.
 
 ### Tips to Run:
 
 1. For input cram files, be sure to have indexed them beforehand as well.
+
+1. When in doubt, all of our reference files can be obtained from here: https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/
 
 1. For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls, GATK Haplotype caller recommended.
 Please also make sure the index for this file is available.
@@ -98,18 +107,18 @@ For mate orientation, you will need to specify, the drop down and tool doc expla
 Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
 You can use the `include_expression` `Filter="PASS"` to achieve this.
 
-1. Suggested reference inputs are:
+1. Again, when in doubt our reference inputs can be obtained from [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/). Suggested reference inputs are:
 
     - `reference_fasta`: [Homo_sapiens_assembly38.fasta](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
     - `reference_dict`: [Homo_sapiens_assembly38.dict](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
     - `annotation_file`: [refFlat_HG38.txt](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refFlat.txt.gz) gunzip this file from UCSC.  Needed for gene annotation in `CNVkit`
     - `wgs_calling_interval_list`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M.M may need to be added.
-    - `lancet_calling_interval_bed`: `GRCh38.gencode.v31.CDS.merged.bed`.  As decribed at the beginning, for WGS, it's highly recommended to use CDS bed, and supplement with region calls from strelka2 & mutect2. Our reference was obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this gtf file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
+    - `lancet_calling_interval_bed`: `GRCh38.gencode.v31.CDS.merged.bed`.  As described at the beginning, for WGS, it's highly recommended to use CDS bed, and supplement with region calls from Strelka2 & Mutect2. Our reference was obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this gtf file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
     - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
      - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
-     Current production workflow uses this version, and is compatible with the release used in the vcf2maf tool.
+     Current production workflow uses this version.
      - `threads`: 16
      - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
       The first column must be chromosomes, optionally the second can be an alternate format of chromosomes.
@@ -117,38 +126,45 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
       Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
     - `coeff_var`: 0.05
     - `contamination_adjustment`: FALSE
+    - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
+    - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
+    `protein_indel_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspotsRecommend pulling the two relevant columns for SNVs only, and convert to tsv
+    bcftools_annot_columns: `"INFO/AF"`. csv string of columns from annotation to port into the input vcf
+    `bcftools_annot_vcf`: `af-only-gnomad.hg38.vcf.gz`. Yes, same as the Mutect2 reference listed above.
+    `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
+    `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression
+    `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
+    `disable_hotspot_annotation`: false
+    `maf_center`: `"."`. Sequencing center of variant called
+
 
 1. Output files (Note, all vcf files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
 
     - Simple variant callers
         - Strelka2:
-            - `strelka2_vep_vcf`: Variant effect predictor annotated vcf, filtered on `PASS`, somatic snv and indel call results from strelka2
-            - `strelka2_vep_tbi`: Index file of above bgzipped vcf
-            - `strelka2_prepass_vcf`: Somatic snv and indel call results with all `FILTER` categories for strelka2. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter.
-            - `strelka2_vep_maf`: Mutation annotation file (maf) format of `strelka2_vep_vcf`
+            - `strelka2_prepass_vcf`: Combined SNV + INDEL file with renamed Sample IDs. Has all soft `FILTER` values generated by variant caller
+            - `strelka2_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
+            - `strelka2_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
         - Mutect2:
-            - `mutect2_vep_vcf`: Variant effect predictor annotated vcf, filtered on `PASS`, somatic snv and indel call results from mutect2
-            - `mutect2_vep_tbi`: Index file of above bgzipped vcf
-            - `mutect2_prepass_vcf`: Somatic snv and indel call results with all `FILTER` categories for mutect2. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter.
-            - `mutect2_vep_maf`: maf of format of `mutect2_vep_vcf`
+            - `mutect2_filtered_vcf`: VCF with SNV, MNV, and INDEL variant calls. Contains all soft `FILTER` values generated by variant caller. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
+            - `mutect2_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
+            - `mutect2_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
         - VardictJava
-            - `vardict_vep_somatic_only_vcf`: Variant effect predictor annotated vcf, filtered on `PASS` and `StrongSomatic` call results from VardictJava
-            - `vardict_vep_somatic_only_tbi`: Index file of above bgzipped vcf
-            - `vardict_vep_somatic_only_maf`: maf format of `vardict_vep_somatic_only_vcf`
-            - `vardict_prepass_vcf`: All call results with all `FILTER` categories for VardictJava. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter and our `StrongSomatic` subset.
+            - `vardict_prepass_vcf`: VCF with SNV, MNV, and INDEL variant calls. Contains all soft `FILTER` values generated by variant caller. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
+            - `vardict_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
+            - `vardict_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
         - Lancet
-            - `lancet_vep_vcf`: Variant effect predictor annotated vcf, filtered on `PASS`, somatic snv and indel call results from lancet
-            - `lancet_vep_tbi`: Index file of above bgzipped vcf
-            - `lancet_vep_maf`: maf format of `lancet_vep_vcf`
-            - `lancet_prepass_vcf`: Somatic snv and indel call results with all `FILTER` categories for lancet. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter.
+            - `lancet_prepass_vcf`: VCF with SNV, MNV, and INDEL variant calls. Contains all soft `FILTER` values generated by variant caller, Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
+            - `lancet_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
+            - `lancet_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
     - Structural variant callers
         - Manta
             - `manta_vep_vcf`: SV call filtered on `PASS`, from manta
             - `manta_vep_tbi`: Index file of above bgzipped vcf
-            - `manta_prepass_vcf`: SV results with all `FILTER` categories for manta. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter.
+            - `manta_prepass_vcf`: SV results with all `FILTER` categories for manta. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
     - Copy number variation callers
         - ControlFREEC
-            - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualtitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
+            - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
             - `ctrlfreec_config`: Config file used to run ControlFreeC.  Has some useful information on what parameters were used to run the tool.
             - `ctrlfreec_pngs`: Plots of b allele frequency (baf) log2 ratio and ratio of tumor/normal copy number coverage.  Pink line in the middle of ratio plots is the median ratio.
             - `ctrlfreec_bam_ratio`: Bam ratio text file.  Contain ratio, median ratio (used to inform `ctrlfreec_pval`), cnv estimates, baf estimate, and genotype estimate.
@@ -170,14 +186,16 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
 
 1. Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
     - `Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/strelka
+    - `add common fields to Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/add-strelka2-fields:1.0.0
     - `Mutect2` and all `GATK` tools: pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
     - `Lancet`: pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7
     - `VarDict Java`: pgc-images.sbgenomics.com/d3b-bixu/vardict:1.7.0
     - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
     - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
-    - `THetA2`: pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7
+    - `THetA2`: pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1
     - `samtools`: pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
-    - `Variant Effect Predictor`: pgc-images.sbgenomics.com/d3b-bixu/vep:r93_v2
+    - `Variant Effect Predictor`: pgc-images.sbgenomics.com/d3b-bixu/vep:r93.7
+    - `Kids Fist VCF2MAF`: pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.3
     - `Manta`: pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
     - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
 
@@ -196,10 +214,9 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
    As such the option for Manta memory allocation is described as soft cap. For more information on Manta resource
    usage see their [documentation](https://github.com/Illumina/manta/blob/master/docs/userGuide/README.md#runtime-hardware-requirements).
 
-1. The optional `b_allele` file can be generated using our [Joint Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-jointgenotyping-refinement-workflow/).
+1. The optional `b_allele` file can be generated using our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/).
 
 ## Other Resources
-- tool images: https://hub.docker.com/r/kfdrc/
 - dockerfiles: https://github.com/d3b-center/bixtools
 
-![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.png)
+![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.cwl.png)

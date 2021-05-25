@@ -49,7 +49,7 @@ inputs:
   # Optional
   b_allele: { type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given" }
   b_allele_index: { type: 'File?', doc: "Tabix index for b_allele" }
-  cnvkit_sex: { type: 'string?', doc: "If known, choices are m,y,male,Male,f,x,female,Female" }
+  cnvkit_sex: {type: ['null', {type: enum, name: cnvkit_sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "x"}
 
   # WXS only Fields
   unpadded_capture_regions: { type: 'File?', doc: "Capture regions with NO padding for cnv calling" }
