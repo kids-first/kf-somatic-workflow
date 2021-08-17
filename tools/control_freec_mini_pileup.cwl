@@ -38,7 +38,7 @@ inputs:
     type: ['null', int]
     default: 16
   reference: {type: File, secondaryFiles: [.fai]}
-  snp_vcf: {type: File?, doc: "Germline vcf with sites to filter pileup on. Made optional to skip if needed during pipeline run"}
+  snp_vcf: {type: 'File?', doc: "Germline vcf with sites to filter pileup on. Made optional to skip if needed during pipeline run"}
 outputs:
   pileup:
     type: File?
