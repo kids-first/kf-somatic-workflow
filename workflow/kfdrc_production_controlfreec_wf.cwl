@@ -38,10 +38,10 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   
-  mate_copynumber_file_control: {type: File?, doc: "Normal cpn file from previous run. If used, will override bam use"}
-  mate_copynumber_file_sample: {type: File?, doc: "Tumor cpn file from previous run. If used, will override bam use"}
-  gem_mappability_file: {type: File?, doc: "GEM mappability file to make read count adjustments with"}
-  min_subclone_presence: {type: float?, doc: "Use if you want to detect sublones. Recommend 0.2 for WGS, 0.3 for WXS"}
+  mate_copynumber_file_control: {type: 'File?', doc: "Normal cpn file from previous run. If used, will override bam use"}
+  mate_copynumber_file_sample: {type: 'File?', doc: "Tumor cpn file from previous run. If used, will override bam use"}
+  gem_mappability_file: {type: 'File?', doc: "GEM mappability file to make read count adjustments with"}
+  min_subclone_presence: {type: 'float?', doc: "Use if you want to detect sublones. Recommend 0.2 for WGS, 0.3 for WXS"}
   cfree_chr_len: { type: File, doc: "file with chromosome lengths" }
   cfree_ploidy: { type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try" }
   output_basename: { type: string, doc: "String value to use as basename for outputs" }
