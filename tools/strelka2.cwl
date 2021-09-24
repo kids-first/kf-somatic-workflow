@@ -10,11 +10,22 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/strelka'
 
-baseCommand: [/strelka-2.9.3.centos6_x86_64/bin/configureStrelkaSomaticWorkflow.py]
+baseCommand: []
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      ${
+        if (inputs.extra_arg){
+          var cmd = "sed  -e 's/extraVariantCallerArguments.*/"
+          + inputs.extra_arg + "/' /strelka-2.9.3.centos6_x86_64/bin/configureStrelkaSomaticWorkflow.py.ini > config.ini && "
+          return cmd
+        }
+        else{
+          return "";
+        }
+      }
+      /strelka-2.9.3.centos6_x86_64/bin/configureStrelkaSomaticWorkflow.py
       --normalBam $(inputs.input_normal_aligned.path)
       --tumorBam $(inputs.input_tumor_aligned.path)
       --ref $(inputs.reference.path)
@@ -26,9 +37,18 @@ arguments:
           arg += " --exome"
         }
         return arg
+      }
+      ${
+        if (inputs.extra_arg){
+          return "--config config.ini"
+        }
+        else{
+          return ""
+        }
       } && ./runWorkflow.py
       -m local
       -j $(inputs.cores)
+
 
 inputs:
   reference: { type: File, secondaryFiles: [^.dict, .fai] }
@@ -63,6 +83,7 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   cores: {type: ['null', int], default: 18}
+  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
 outputs:
   output_snv:
     type: File

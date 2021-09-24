@@ -60,6 +60,7 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
 
 outputs:
   strelka2_prepass_vcf: {type: File, outputSource: rename_strelka_samples/reheadered_vcf}
@@ -78,6 +79,7 @@ steps:
       manta_small_indels: manta_small_indels
       use_manta_small_indels: use_manta_small_indels
       exome_flag: exome_flag
+      extra_arg: extra_arg
     out: [output_snv, output_indel]
 
   merge_strelka2_vcf:
