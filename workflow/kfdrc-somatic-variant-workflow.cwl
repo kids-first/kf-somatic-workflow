@@ -277,6 +277,7 @@ inputs:
       class: File, path: 5f500135e4b0370371c051ae, name: hg38_strelka.bed.gz}}
   hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", sbg:suggestedValue: {
       class: File, path: 5f500135e4b0370371c051aa, name: hg38_strelka.bed.gz.tbi}}
+  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
   mutect2_af_only_gnomad_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
       name: af-only-gnomad.hg38.vcf.gz}}
   mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf",
@@ -657,6 +658,7 @@ steps:
       manta_small_indels: run_manta/manta_small_indels
       use_manta_small_indels: use_manta_small_indels
       exome_flag: choose_defaults/out_exome_flag
+      extra_arg: extra_arg
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
       output_basename: output_basename
