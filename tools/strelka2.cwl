@@ -17,7 +17,7 @@ arguments:
     valueFrom: >-
       ${
         if (inputs.extra_arg){
-          var cmd = "sed  -e 's/extraVariantCallerArguments.*/"
+          var cmd = "sed  -e 's/extraVariantCallerArguments.*/extraVariantCallerArguments = "
           + inputs.extra_arg + "/' /strelka-2.9.3.centos6_x86_64/bin/configureStrelkaSomaticWorkflow.py.ini > config.ini && "
           return cmd
         }
