@@ -82,7 +82,7 @@ inputs:
         }
       }
     doc: "normal BAM or CRAM"
-  cores: {type: ['null', int], default: 18}
+  cores: {type: ['null', int], default: 16}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
 outputs:
   output_snv:
