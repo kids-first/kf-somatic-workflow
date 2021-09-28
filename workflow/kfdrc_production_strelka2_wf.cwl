@@ -48,6 +48,7 @@ inputs:
   output_basename: { type: string, doc: "String value to use as basename for outputs" }
   wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
+  strelka2_cores: {type: int?, doc: "Adjust number of cores used to run strelka2", default: 16}
 
   # Optional with One Default
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
@@ -122,6 +123,7 @@ steps:
       manta_small_indels: manta_small_indels
       use_manta_small_indels: use_manta_small_indels
       exome_flag: exome_flag
+      strelka2_cores: strelka2_cores
       extra_arg: extra_arg
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
