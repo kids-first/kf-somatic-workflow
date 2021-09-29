@@ -42,14 +42,14 @@ arguments:
           return cmd;
       }
       ${
-        if (inputs.cnv_kit_cnn == null){
+        if (inputs.cnvkit_cnn == null){
           var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn --fasta " + inputs.reference.path + " --annotate " + inputs.annotation_file.path;
           if (inputs.input_control != null) {
               arg += " --normal " + inputs.input_control.path;
           }
         }
         else{
-          var arg = "--reference " + inputs.cnv_kit_cnn.path;
+          var arg = "--reference " + inputs.cnvkit_cnn.path;
           var msex = ['m','y','male','Male']
           if (msex.indexOf(inputs.sex) >= 0){
             arg += " --male-reference";
