@@ -73,7 +73,7 @@ outputs:
   cnvkit_diagram: {type: File, outputSource: run_cnvkit/cnvkit_diagram}
   theta2_calls: { type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_cns }
   theta2_seg: { type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_seg }
-  theta2_subclonal_results: { type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_results }
+  theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclonal_results/output}
   theta2_subclonal_cns: { type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_cns }
   theta2_subclone_seg: { type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclone_seg }
 
@@ -161,18 +161,22 @@ steps:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
     in:
       tumor_cns: run_cnvkit/cnvkit_calls
-      reference_cnn: run_cnvkit/cnvkit_cnn_output
+      reference_cnn: cnvkit_cnn
       tumor_sample_name: input_tumor_name
       normal_sample_name: input_normal_name
       paired_vcf: vardict_prepass_vcf
       combined_include_expression: combined_include_expression
       combined_exclude_expression: combined_exclude_expression
       min_theta2_frac: min_theta2_frac
-      output_basename:
-        valueFrom: ${return inputs.tumor_cns.nameroot.split('.')[0]}
+      output_basename: output_basename
     out:
       [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
 
+  expression_flatten_subclonal_results:
+    run: ../tools/expression_flatten_list.cwl
+    in:
+      input_list: run_theta2_purity/theta2_subclonal_results
+    out: [output]
 
 $namespaces:
   sbg: https://sevenbridges.com
