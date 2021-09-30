@@ -54,6 +54,7 @@ doc: |
   | [kfdrc_production_mutect2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_mutect2_wf.cwl)           |     |  x  |    |
   | [kfdrc_production_strekla2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_strekla2_wf.cwl)         |     |  x  |    |
   | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |
+  | [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)             |   x |     |   |
   | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |
 
   #### SNV Callers
@@ -225,6 +226,8 @@ doc: |
 
   ## Other Resources
   - dockerfiles: https://github.com/d3b-center/bixtools
+
+  ![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.cwl.png)
 
 requirements:
 - class: ScatterFeatureRequirement
