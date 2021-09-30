@@ -122,10 +122,12 @@ doc: |
       - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
       - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
       - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
-       - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
+      - `extra_arg`: This can be used to add special params to strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 1000` can balance performance and consistency in results
+      - strelka2_cores: `18`. This default is already set, but can be changed if desired.
+      - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
        Current production workflow uses this version.
-       - `threads`: 16
-       - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
+      - `threads`: 16
+      - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
         The first column must be chromosomes, optionally the second can be an alternate format of chromosomes.
         Last column must be chromosome length.
         Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
@@ -277,8 +279,10 @@ inputs:
       class: File, path: 5f500135e4b0370371c051ae, name: hg38_strelka.bed.gz}}
   hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", sbg:suggestedValue: {
       class: File, path: 5f500135e4b0370371c051aa, name: hg38_strelka.bed.gz.tbi}}
-  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
-  strelka2_cores: {type: int?, doc: "Adjust number of cores used to run strelka2", default: 18}
+  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth\
+      \ 1000"}
+  strelka2_cores: {type: int?, doc: "Adjust number of cores used to run strelka2",
+    default: 18}
   mutect2_af_only_gnomad_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
       name: af-only-gnomad.hg38.vcf.gz}}
   mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf",
@@ -846,5 +850,5 @@ sbg:categories:
 - VCF
 - VEP
 sbg:links:
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v3.0.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v3.0.1'
   label: github-release
