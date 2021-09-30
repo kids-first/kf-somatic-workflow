@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_production_cnvkit_theta2_wf
 requirements:
@@ -161,7 +161,9 @@ steps:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
     in:
       tumor_cns: run_cnvkit/cnvkit_calls
-      reference_cnn: cnvkit_cnn
+      reference_cnn:
+        source: [cnvkit_cnn, run_cnvkit/cnvkit_cnn_output]
+        pickValue: first_non_null
       tumor_sample_name: input_tumor_name
       normal_sample_name: input_normal_name
       paired_vcf: vardict_prepass_vcf
