@@ -9,19 +9,19 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  tumor_cns: {type: File, doc: "CNVkit output cns file"}
-  reference_cnn: {type: File, doc: "CNVkit output cnn file"}
+  tumor_cns: {type: 'File', doc: "CNVkit output cns file"}
+  reference_cnn: {type: 'File', doc: "CNVkit output cnn file"}
   tumor_sample_name: string
   normal_sample_name: string
-  paired_vcf: {type: File, doc: "Combined somatic and germline call file. VarDict input recommended."}
+  paired_vcf: {type: 'File', doc: "Combined somatic and germline call file. VarDict input recommended."}
   combined_include_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}
   combined_exclude_expression: {type: ['null', string], doc: "Filter expression if vcf has non-PASS combined calls, use as-needed"}  
   min_theta2_frac: {type: ['null', float], doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01", default: 0.01}
   output_basename: string
 
 outputs:
-  theta2_adjusted_cns: {type: File?, outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
-  theta2_adjusted_seg: {type: File?, outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
+  theta2_adjusted_cns: {type: 'File?', outputSource: cnvkit_import_theta2/theta2_adjusted_cns}
+  theta2_adjusted_seg: {type: 'File?', outputSource: cnvkit_import_theta2/theta2_adjusted_seg}
   theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: [run_theta2/n3_graph, run_theta2/n2_results, run_theta2/best_results]}
   theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: cnvkit_import_theta2/theta2_subclone_cns}
   theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: cnvkit_import_theta2/theta2_subclone_seg}

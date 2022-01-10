@@ -28,7 +28,7 @@ inputs:
       position: 1
       prefix: '--strelka2_vcf'
     secondaryFiles: ['.tbi']
-  run_tool_flag: {type: boolean?, doc: "When run as part of a workflow, can skip", default: false}
+  run_tool_flag: {type: 'boolean?', doc: "When run as part of a workflow, can skip", default: false}
   tumor_name:
     type: string
     inputBinding:

@@ -24,10 +24,10 @@ arguments:
       $(inputs.input_vcf.path)
       && tabix $(inputs.output_basename).$(inputs.tool_name).bcf_annotated.vcf.gz
 inputs:
-    input_vcf: {type: File, secondaryFiles: ['.tbi']}
-    annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
-    columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
-    threads: {type: int?, doc: "Number of compression/decompression threads", default: 4}
+    input_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+    annotation_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+    columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
+    threads: {type: 'int?', doc: "Number of compression/decompression threads", default: 4}
     output_basename: string
     tool_name: string
 

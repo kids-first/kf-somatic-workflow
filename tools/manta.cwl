@@ -35,12 +35,12 @@ arguments:
       }
 
 inputs:
-    reference: {type: File, secondaryFiles: [^.dict, .fai]}
-    hg38_strelka_bed: {type: File, secondaryFiles: [.tbi]}
+    reference: {type: 'File', secondaryFiles: [^.dict, .fai]}
+    hg38_strelka_bed: {type: 'File', secondaryFiles: [.tbi]}
     input_tumor_cram: {type: ["null", File], secondaryFiles: [.crai]}
     input_normal_cram: {type: ["null", File], secondaryFiles: [.crai]}
     cores: {type: ['null', int], default: 18}
-    ram: {type: int?, default: 10, doc: "GB of RAM an instance must have to run the task"}
+    ram: {type: 'int?', default: 10, doc: "GB of RAM an instance must have to run the task"}
     output_basename: string
 outputs:
   output_sv:

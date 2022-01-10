@@ -62,7 +62,7 @@ inputs:
   interval_list: {type: 'File?'}
   bands: int
   scatter_ct: int
-  reference_dict: {type: ['null', File], doc: "Provide only if input is bed file instead of gatk style .interval_list", sbg:suggestedValue: {name:  "Provide only if input is bed file instead of gatk style .interval_list"}}
+  reference_dict: {type: ['null', File], doc: "Provide only if input is bed file instead of gatk style .interval_list"}
   exome_flag: {type: ['null', string], doc: "If 'Y', will set bands to 0 to prevent breaking up of intervals", default: "N"}
   break_by_chr: {type: ['null', string], doc: "If Y, break up files by chr.  If creating smaler intervals, recommend scatter_ct=1", default: "N"}
 outputs:

@@ -235,11 +235,11 @@ requirements:
 - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: {type: File, sbg:suggestedValue: {class: File, path: 60639014357c3a53540ca7a3,
+  reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3,
       name: Homo_sapiens_assembly38.fasta}}
-  reference_fai: {type: 'File?', sbg:suggestedValue: {class: File, path: 60639016357c3a53540ca7af,
+  reference_fai: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639016357c3a53540ca7af,
       name: Homo_sapiens_assembly38.fasta.fai}}
-  reference_dict: {type: 'File?', sbg:suggestedValue: {class: File, path: 60639019357c3a53540ca7e7,
+  reference_dict: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639019357c3a53540ca7e7,
       name: Homo_sapiens_assembly38.dict}}
   input_tumor_aligned:
     type: File
@@ -269,32 +269,32 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
-    sbg:suggestedValue: {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
-  cfree_chr_len: {type: File, doc: "file with chromosome lengths", sbg:suggestedValue: {
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
+    "sbg:suggestedValue": {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
+  cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
       \ to try"}
-  cnvkit_annotation_file: {type: File, doc: "refFlat.txt file", sbg:suggestedValue: {
+  cnvkit_annotation_file: {type: 'File', doc: "refFlat.txt file", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c1, name: refFlat_HG38.txt}}
-  hg38_strelka_bed: {type: File, doc: "Bgzipped interval bed file. Recommned padding\
-      \ 100bp for WXS; Recommend canonical chromosomes for WGS", sbg:suggestedValue: {
+  hg38_strelka_bed: {type: 'File', doc: "Bgzipped interval bed file. Recommned padding\
+      \ 100bp for WXS; Recommend canonical chromosomes for WGS", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051ae, name: hg38_strelka.bed.gz}}
-  hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", sbg:suggestedValue: {
+  hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051aa, name: hg38_strelka.bed.gz.tbi}}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth\
       \ 10000"}
   strelka2_cores: {type: int?, doc: "Adjust number of cores used to run strelka2",
     default: 18}
-  mutect2_af_only_gnomad_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3,
+  mutect2_af_only_gnomad_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3,
       name: af-only-gnomad.hg38.vcf.gz}}
   mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf",
-    sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
-  mutect2_exac_common_vcf: {type: File, sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051ad,
+    "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
+  mutect2_exac_common_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051ad,
       name: small_exac_common_3.hg38.vcf.gz}}
   mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf",
-    sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051af, name: small_exac_common_3.hg38.vcf.gz.tbi}}
-  output_basename: {type: string, doc: "String value to use as basename for outputs"}
+    "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051af, name: small_exac_common_3.hg38.vcf.gz.tbi}}
+  output_basename: {type: 'string', doc: "String value to use as basename for outputs"}
   wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select\
       \ if this run is WGS or WXS"}
 
@@ -323,7 +323,7 @@ inputs:
       \ should line up with cache"}
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  exome_flag: {type: string?, doc: "Whether to run in exome mode for callers. Y for\
+  exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y for\
       \ WXS, N for WGS"}
   lancet_window: {type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS;\
       \ 600 for exome+"}
@@ -369,23 +369,23 @@ inputs:
 
   # annotation vars
   genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing\
-      \ hg38 genomic positions corresponding to hotspots", sbg:suggestedValue: [{
+      \ hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [{
         class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid positions corresponding to\
-      \ hotspots", sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a426,
+      \ hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a426,
         name: protein_snv_cancer_hotspots_v2.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid position ranges corresponding\
-      \ to hotspots", sbg:suggestedValue: [{class: File, path: 607713829360f10e3982a424,
+      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
         name: protein_indel_cancer_hotspots_v2.tsv}]}
-  bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation\
+  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
-  bcftools_annot_vcf: {type: File, doc: "bgzipped annotation vcf file", sbg:suggestedValue: {
+  bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
-  bcftools_annot_vcf_index: {type: File, doc: "index of bcftools_annot_vcf", sbg:suggestedValue: {
+  bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {
       class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
-  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create\
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create\
       \ a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
       \ add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
@@ -395,16 +395,16 @@ inputs:
       \ <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation\
       \ and skip this task.", default: false}
-  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+  maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
 
   # WGS only Fields
-  wgs_calling_interval_list: {type: File?, doc: "GATK intervals list-style, or bed\
-      \ file.  Recommend canocical chromosomes with N regions removed", sbg:suggestedValue: {
+  wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed\
+      \ file.  Recommend canocical chromosomes with N regions removed", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
-  lancet_calling_interval_bed: {type: File?, doc: "For WGS, highly recommended to\
+  lancet_calling_interval_bed: {type: 'File?', doc: "For WGS, highly recommended to\
       \ use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can\
       \ still give calling list as bed if true WGS calling desired instead of exome+",
-    sbg:suggestedValue: {class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed}}
+    "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed}}
 
   # WXS only Fields
   padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
@@ -412,40 +412,40 @@ inputs:
       \ for cnv calling"}
 
 outputs:
-  ctrlfreec_pval: {type: File, outputSource: run_controlfreec/ctrlfreec_pval}
-  ctrlfreec_config: {type: File, outputSource: run_controlfreec/ctrlfreec_config}
+  ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
+  ctrlfreec_config: {type: 'File', outputSource: run_controlfreec/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
-  ctrlfreec_bam_ratio: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_ratio}
-  ctrlfreec_bam_seg: {type: File, outputSource: run_controlfreec/ctrlfreec_bam_seg}
-  ctrlfreec_baf: {type: File, outputSource: run_controlfreec/ctrlfreec_baf}
-  ctrlfreec_info: {type: File, outputSource: run_controlfreec/ctrlfreec_info}
-  cnvkit_cnr: {type: File, outputSource: run_cnvkit/cnvkit_cnr}
+  ctrlfreec_bam_ratio: {type: 'File', outputSource: run_controlfreec/ctrlfreec_bam_ratio}
+  ctrlfreec_bam_seg: {type: 'File', outputSource: run_controlfreec/ctrlfreec_bam_seg}
+  ctrlfreec_baf: {type: 'File', outputSource: run_controlfreec/ctrlfreec_baf}
+  ctrlfreec_info: {type: 'File', outputSource: run_controlfreec/ctrlfreec_info}
+  cnvkit_cnr: {type: 'File', outputSource: run_cnvkit/cnvkit_cnr}
   cnvkit_cnn_output: {type: ['null', File], outputSource: run_cnvkit/cnvkit_cnn_output}
-  cnvkit_calls: {type: File, outputSource: run_cnvkit/cnvkit_calls}
-  cnvkit_metrics: {type: File, outputSource: run_cnvkit/cnvkit_metrics}
-  cnvkit_gainloss: {type: File, outputSource: run_cnvkit/cnvkit_gainloss}
-  cnvkit_seg: {type: File, outputSource: run_cnvkit/cnvkit_seg}
-  cnvkit_scatter_plot: {type: File, outputSource: run_cnvkit/cnvkit_scatter_plot}
-  cnvkit_diagram: {type: File, outputSource: run_cnvkit/cnvkit_diagram}
-  theta2_calls: {type: File?, outputSource: run_theta2_purity/theta2_adjusted_cns}
-  theta2_seg: {type: File?, outputSource: run_theta2_purity/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclonal_results/output}
+  cnvkit_calls: {type: 'File', outputSource: run_cnvkit/cnvkit_calls}
+  cnvkit_metrics: {type: 'File', outputSource: run_cnvkit/cnvkit_metrics}
+  cnvkit_gainloss: {type: 'File', outputSource: run_cnvkit/cnvkit_gainloss}
+  cnvkit_seg: {type: 'File', outputSource: run_cnvkit/cnvkit_seg}
+  cnvkit_scatter_plot: {type: 'File', outputSource: run_cnvkit/cnvkit_scatter_plot}
+  cnvkit_diagram: {type: 'File', outputSource: run_cnvkit/cnvkit_diagram}
+  theta2_calls: {type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_cns}
+  theta2_seg: {type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_seg}
+  theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclobal_results/output}
   theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_cns}
   theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclone_seg}
   strelka2_public_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_public_outputs}
   strelka2_protected_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs}
-  strelka2_prepass_vcf: {type: File, outputSource: run_strelka2/strelka2_prepass_vcf}
-  manta_pass_vcf: {type: File, outputSource: run_manta/manta_pass_vcf}
-  manta_prepass_vcf: {type: File, outputSource: run_manta/manta_prepass_vcf}
+  strelka2_prepass_vcf: {type: 'File', outputSource: run_strelka2/strelka2_prepass_vcf}
+  manta_pass_vcf: {type: 'File', outputSource: run_manta/manta_pass_vcf}
+  manta_prepass_vcf: {type: 'File', outputSource: run_manta/manta_prepass_vcf}
   mutect2_public_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_public_outputs}
   mutect2_protected_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_protected_outputs}
-  mutect2_prepass_vcf: {type: File, outputSource: run_mutect2/mutect2_filtered_vcf}
+  mutect2_prepass_vcf: {type: 'File', outputSource: run_mutect2/mutect2_filtered_vcf}
   vardict_public_outputs: {type: 'File[]', outputSource: run_vardict/vardict_public_outputs}
   vardict_protected_outputs: {type: 'File[]', outputSource: run_vardict/vardict_protected_outputs}
-  vardict_prepass_vcf: {type: File, outputSource: run_vardict/vardict_prepass_vcf}
+  vardict_prepass_vcf: {type: 'File', outputSource: run_vardict/vardict_prepass_vcf}
   lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
   lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
-  lancet_prepass_vcf: {type: File, outputSource: run_lancet/lancet_prepass_vcf}
+  lancet_prepass_vcf: {type: 'File', outputSource: run_lancet/lancet_prepass_vcf}
 
 steps:
   choose_defaults:
@@ -569,7 +569,7 @@ steps:
     out: [bam_file]
 
   select_vardict_bed_interval:
-    run: ../tools/mode_selector.cwl
+    run: ../tools/mode_list_selector.cwl
     in:
       input_mode: wgs_or_wxs
       wgs_input: python_vardict_interval_split/split_intervals_bed
@@ -610,7 +610,7 @@ steps:
     out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
 
   select_mutect_bed_interval:
-    run: ../tools/mode_selector.cwl
+    run: ../tools/mode_list_selector.cwl
     in:
       input_mode: wgs_or_wxs
       wgs_input: gatk_intervallisttools/output
@@ -711,7 +711,7 @@ steps:
     out: [output]
 
   select_lancet_bed_inteval:
-    run: ../tools/mode_selector.cwl
+    run: ../tools/mode_list_selector.cwl
     in:
       input_mode: wgs_or_wxs
       wgs_input: gatk_intervallisttools_exome_plus/output
@@ -804,8 +804,8 @@ steps:
     out: [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns,
       theta2_subclone_seg]
 
-  expression_flatten_subclonal_results:
-    run: ../tools/expression_flatten_list.cwl
+  expression_flatten_subclobal_results:
+    run: ../tools/expression_flatten_file_list.cwl
     in:
       input_list: run_theta2_purity/theta2_subclonal_results
     out: [output]
@@ -832,9 +832,9 @@ $namespaces:
 hints:
 - class: 'sbg:maxNumberOfParallelInstances'
   value: 6
-sbg:license: Apache License 2.0
-sbg:publisher: KFDRC
-sbg:categories:
+"sbg:license": Apache License 2.0
+"sbg:publisher": KFDRC
+"sbg:categories":
 - BAM
 - CNV
 - CNVKIT

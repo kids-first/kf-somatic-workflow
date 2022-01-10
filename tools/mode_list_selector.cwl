@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: mode_selector
+id: mode_list_selector
 doc: "Selects the appropriate input to serve as the output given the mode"
 requirements:
   - class: DockerRequirement
@@ -25,12 +25,12 @@ arguments:
 
 inputs:
   input_mode: {type: {type: enum, name: "input_mode", symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS"}
-  wgs_input: {type: 'File?', doc: "Input that should be passed when mode is WGS"}
-  wxs_input: {type: 'File?', doc: "Input that should be passed when mode is WXS"}
+  wgs_input: {type: 'File[]?', doc: "Input that should be passed when mode is WGS"}
+  wxs_input: {type: 'File[]?', doc: "Input that should be passed when mode is WXS"}
 
 outputs:
   output:
-    type: File
+    type: 'File[]'
     outputBinding:
       outputEval: >-
         ${

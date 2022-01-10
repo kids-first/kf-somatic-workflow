@@ -172,7 +172,7 @@ steps:
     out: [output]
 
   select_lancet_bed_inteval:
-    run: ../tools/mode_selector.cwl
+    run: ../tools/mode_list_selector.cwl
     in:
       input_mode: wgs_or_wxs
       wgs_input: gatk_intervallisttools_exome_plus/output
