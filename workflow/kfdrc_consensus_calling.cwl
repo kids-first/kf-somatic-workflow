@@ -45,38 +45,38 @@ doc: |
   ### General workflow inputs:
   ```yaml
   inputs:
-    indexed_reference_fasta: {type: File, secondaryFiles: ['.fai', '^.dict'], 
-                              sbg:suggestedValue: {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
+    indexed_reference_fasta: {type: 'File', secondaryFiles: ['.fai', '^.dict'], 
+                              "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
                               secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta},
                               {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]
                               }}
-    strelka2_vcf: {type: File, secondaryFiles: ['.tbi']}
-    mutect2_vcf: {type: File, secondaryFiles: ['.tbi']}
-    lancet_vcf: {type: File, secondaryFiles: ['.tbi']}
-    vardict_vcf: {type: File, secondaryFiles: ['.tbi']}
-    cram: {type: File, secondaryFiles: ['.crai'], doc: "Tumor cram recommended for MQ score calculation"}
+    strelka2_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+    mutect2_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+    lancet_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+    vardict_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+    cram: {type: 'File', secondaryFiles: ['.crai'], doc: "Tumor cram recommended for MQ score calculation"}
     input_tumor_name: string
     input_normal_name: string
     output_basename: string
-    tool_name: {type: string?, default: "consensus_somatic", doc: "A helpful file name building component"}
-    ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
+    tool_name: {type: 'string?', default: "consensus_somatic", doc: "A helpful file name building component"}
+    ncallers: {type: 'int?', doc: "Optional number of callers required for consensus [2]",
       default: 2}
-    consensus_ram: {type: int, doc: "Set min memory in GB for consensus merge step", default: 3}
-    annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations to add to consensus variants, e.g. gnomAD allele frequency",
-                     sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
+    consensus_ram: {type: 'int', doc: "Set min memory in GB for consensus merge step", default: 3}
+    annotation_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "VCF of annotations to add to consensus variants, e.g. gnomAD allele frequency",
+                     "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
                      secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]
                      }}
-    vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
-      sbg:suggestedValue: {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
-    annot_columns: {type: string?, default: 'INFO/AF', doc: "column from annotation_vcf to add to consensus VCF; defaults to 'INFO/AF'"}
+    vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
+      "sbg:suggestedValue": {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
+    annot_columns: {type: 'string?', default: 'INFO/AF', doc: "column from annotation_vcf to add to consensus VCF; defaults to 'INFO/AF'"}
     filter_names: {type: 'string[]?', default: [ "NORM_DP_LOW", "GNOMAD_AF_HIGH" ], doc: "Names of filters to be added to consensus VCF;\
        \ default values set"}
-    depth_lowerbound: {type: int?, default: 7, doc: "Normal-sample read depth at which to apply depth filter; default set"}
-    frequency_upperbound: {type: float?, default: 0.001, doc: "Population allele frequency above which to apply frequency filter; default set"}
-    bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/HotSpotAllele=1; default set', default: 'FILTER="PASS"|INFO/HotSpotAllele=1'}
-    retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
-    retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-    maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+    depth_lowerbound: {type: 'int?', default: 7, doc: "Normal-sample read depth at which to apply depth filter; default set"}
+    frequency_upperbound: {type: 'float?', default: 0.001, doc: "Population allele frequency above which to apply frequency filter; default set"}
+    bcftools_public_filter: {type: 'string?', doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/HotSpotAllele=1; default set', default: 'FILTER="PASS"|INFO/HotSpotAllele=1'}
+    retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
+    retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
+    maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   ```
 
   ### Recommended reference inputs - all file references can be obtained [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/)
@@ -113,48 +113,48 @@ requirements:
 - class: InlineJavascriptRequirement
 
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: ['.fai', '^.dict'], sbg:suggestedValue: {
+  indexed_reference_fasta: {type: 'File', secondaryFiles: ['.fai', '^.dict'], "sbg:suggestedValue": {
       class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
       secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta},
         {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]}}
-  strelka2_vcf: {type: File, secondaryFiles: ['.tbi']}
-  mutect2_vcf: {type: File, secondaryFiles: ['.tbi']}
-  lancet_vcf: {type: File, secondaryFiles: ['.tbi']}
-  vardict_vcf: {type: File, secondaryFiles: ['.tbi']}
-  cram: {type: File, secondaryFiles: ['.crai'], doc: "Tumor cram recommended for MQ\
+  strelka2_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+  mutect2_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+  lancet_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+  vardict_vcf: {type: 'File', secondaryFiles: ['.tbi']}
+  cram: {type: 'File', secondaryFiles: ['.crai'], doc: "Tumor cram recommended for MQ\
       \ score calculation"}
   input_tumor_name: string
   input_normal_name: string
   output_basename: string
-  tool_name: {type: string?, default: "consensus_somatic", doc: "A helpful file name\
+  tool_name: {type: 'string?', default: "consensus_somatic", doc: "A helpful file name\
       \ building component"}
-  ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
+  ncallers: {type: 'int?', doc: "Optional number of callers required for consensus [2]",
     default: 2}
-  hotspot_source: {type: string?, doc: "Optional description of hotspot definition source"}
-  contig_bed: {type: File?, doc: "Optional BED file containing names of target contigs / chromosomes"}
-  consensus_ram: {type: int?, doc: "Set min memory in GB for consensus merge step",
+  hotspot_source: {type: 'string?', doc: "Optional description of hotspot definition source"}
+  contig_bed: {type: 'File?', doc: "Optional BED file containing names of target contigs / chromosomes"}
+  consensus_ram: {type: 'int?', doc: "Set min memory in GB for consensus merge step",
     default: 3}
-  annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations\
-      \ to add to consensus variants, e.g. gnomAD allele frequency", sbg:suggestedValue: {
+  annotation_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "VCF of annotations\
+      \ to add to consensus variants, e.g. gnomAD allele frequency", "sbg:suggestedValue": {
       class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
       secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]}}
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
-    sbg:suggestedValue: {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
-  annot_columns: {type: string?, default: 'INFO/AF', doc: "column from annotation_vcf\
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
+    "sbg:suggestedValue": {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
+  annot_columns: {type: 'string?', default: 'INFO/AF', doc: "column from annotation_vcf\
       \ to add to consensus VCF; defaults to 'INFO/AF'"}
   filter_names: {type: 'string[]?', default: ["NORM_DP_LOW", "GNOMAD_AF_HIGH"], doc: "Names\
       \ of filters to be added to consensus VCF; default values set"}
-  depth_lowerbound: {type: int?, default: 7, doc: "Normal-sample read depth at which\
+  depth_lowerbound: {type: 'int?', default: 7, doc: "Normal-sample read depth at which\
       \ to apply depth filter; default set"}
-  frequency_upperbound: {type: float?, default: 0.001, doc: "Population allele frequency\
+  frequency_upperbound: {type: 'float?', default: 0.001, doc: "Population allele frequency\
       \ above which to apply frequency filter; default set"}
-  bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create
+  bcftools_public_filter: {type: 'string?', doc: 'Will hard filter final result to create
       a public version, e.g. FILTER="PASS"|INFO/HotSpotAllele=1; default set', default: 'FILTER="PASS"|INFO/HotSpotAllele=1'}
-  retain_info: {type: string?, doc: "csv string with INFO fields that you want to\
+  retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to\
       \ keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
-  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to\
+  retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to\
       \ keep"}
-  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+  maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
 
 outputs:
   annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
@@ -294,5 +294,5 @@ steps:
 
 $namespaces:
   sbg: https://sevenbridges.com
-sbg:license: Apache License 2.0
-sbg:publisher: KFDRC
+"sbg:license": Apache License 2.0
+"sbg:publisher": KFDRC
