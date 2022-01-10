@@ -29,7 +29,7 @@ inputs:
       position: 1
   tool_name: string
   output_basename: string
-  max_memory: {type: int?, default: 4, doc: "Maximum memory in GB for GATK LearnReadOrientationModel"}
+  max_memory: {type: 'int?', default: 4, doc: "Maximum memory in GB for GATK LearnReadOrientationModel"}
 outputs:
   f1r2_bias:
     type: File

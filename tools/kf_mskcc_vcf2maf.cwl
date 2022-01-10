@@ -56,17 +56,17 @@ arguments:
       }
 
 inputs:
-  reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
-  input_vcf: {type: File, secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
+  reference: {type: 'File',  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
+  input_vcf: {type: 'File', secondaryFiles: [.tbi], doc: "VEP annotated vcf file."}
   output_basename: string
   tumor_id: string
   normal_id: string
   tool_name: string
-  ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
-  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
-  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  custom_enst: {type: File?, doc: "Use a file with ens tx IDs for each gene to override VEP PICK"}
-  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+  ref_build: {type: 'string?', doc: "Genome ref build used, should line up with cache.", default: "GRCh38"}
+  retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
+  retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
+  custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK"}
+  maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
 
 outputs:
   output_maf:

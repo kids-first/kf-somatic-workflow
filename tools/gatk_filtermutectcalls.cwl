@@ -26,14 +26,14 @@ arguments:
       --stats $(inputs.mutect_stats.path)
 
 inputs:
-  mutect_vcf: {type: File, secondaryFiles: [.tbi]}
+  mutect_vcf: {type: 'File', secondaryFiles: [.tbi]}
   mutect_stats: File
   reference: File
   output_basename: string
   contamination_table: File
   segmentation_table: File
   ob_priors: File
-  max_memory: {type: int?, default: 4, doc: "GB of memory to allocate to the task"}
+  max_memory: {type: 'int?', default: 4, doc: "GB of memory to allocate to the task"}
 
 outputs:
   stats_table:

@@ -6,7 +6,7 @@ requirements:
   - class: MultipleInputFeatureRequirement
 
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
+  indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
   wgs_calling_interval_list: "File[]"
   input_tumor_aligned:
@@ -37,16 +37,16 @@ inputs:
       }
     doc: "normal BAM or CRAM"
 
-  exac_common_vcf: {type: File, secondaryFiles: [.tbi]}
-  getpileup_memory: {type: int?}
-  learnorientation_memory: {type: int?}
+  exac_common_vcf: {type: 'File', secondaryFiles: [.tbi]}
+  getpileup_memory: {type: 'int?'}
+  learnorientation_memory: {type: 'int?'}
   output_basename: string
   f1r2_counts: {type: "File[]", doc: "orientation counts from mutect2 outputs"}
 
 outputs:
-  contamination_table: {type: File, outputSource: gatk_calculate_contamination/contamination_table}
-  segmentation_table: {type: File, outputSource: gatk_calculate_contamination/segmentation_table}
-  f1r2_bias: {type: File, outputSource: gatk_learn_orientation_bias/f1r2_bias}
+  contamination_table: {type: 'File', outputSource: gatk_calculate_contamination/contamination_table}
+  segmentation_table: {type: 'File', outputSource: gatk_calculate_contamination/segmentation_table}
+  f1r2_bias: {type: 'File', outputSource: gatk_learn_orientation_bias/f1r2_bias}
   
 steps:
 

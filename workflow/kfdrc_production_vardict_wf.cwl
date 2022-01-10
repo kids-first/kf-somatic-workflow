@@ -152,7 +152,7 @@ steps:
     out: [bam_file]
 
   select_vardict_bed_interval:
-    run: ../tools/mode_selector.cwl
+    run: ../tools/mode_list_selector.cwl
     in:
       input_mode: wgs_or_wxs
       wgs_input: python_vardict_interval_split/split_intervals_bed

@@ -51,11 +51,11 @@ arguments:
 
 
 inputs:
-  reference: { type: File, secondaryFiles: [^.dict, .fai] }
-  hg38_strelka_bed: { type: File, secondaryFiles: [.tbi], label: gzipped bed file }
+  reference: { type: 'File', secondaryFiles: [^.dict, .fai] }
+  hg38_strelka_bed: { type: 'File', secondaryFiles: [.tbi], label: gzipped bed file }
   exome_flag: { type: ['null', string], doc: "Y if exome/capture, defaults to WGS"}
-  manta_small_indels: { type: File?, secondaryFiles: [.tbi], doc: "Small indels file from a Manta run" }
-  use_manta_small_indels: { type: boolean?, default: false, doc: "Should the program use the small indels file? Defaults to false" }
+  manta_small_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "Small indels file from a Manta run" }
+  use_manta_small_indels: { type: 'boolean?', default: false, doc: "Should the program use the small indels file? Defaults to false" }
   input_tumor_aligned:
     type: File
     secondaryFiles: |

@@ -7,17 +7,17 @@ requirements:
   - class: MultipleInputFeatureRequirement
 
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
-  input_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "Input vcf to annotate and soft filter"}
+  indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
+  input_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "Input vcf to annotate and soft filter"}
   input_tumor_name: string
   input_normal_name: string
-  add_common_fields: {type: boolean, doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
-  bcftools_annot_columns: {type: string, doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
-  bcftools_public_filter: {type: string?, doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  add_common_fields: {type: 'boolean', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
+  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
+  bcftools_annot_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for clues"}
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task." }
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
@@ -25,15 +25,15 @@ inputs:
   protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
   output_basename: string
   tool_name: string
-  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
-  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
+  retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
+  retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
+  maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
 
 outputs:
-  annotated_protected_vcf: {type: File, outputSource: hotspots_annotation/hotspots_vcf}
-  annotated_protected_maf: {type: File, outputSource: kfdrc_vcf2maf_protected/output_maf}
-  annotated_public_vcf: {type: File, outputSource: hard_filter_vcf/filtered_vcf}
-  annotated_public_maf: {type: File, outputSource: kfdrc_vcf2maf_public/output_maf}
+  annotated_protected_vcf: {type: 'File', outputSource: hotspots_annotation/hotspots_vcf}
+  annotated_protected_maf: {type: 'File', outputSource: kfdrc_vcf2maf_protected/output_maf}
+  annotated_public_vcf: {type: 'File', outputSource: hard_filter_vcf/filtered_vcf}
+  annotated_public_maf: {type: 'File', outputSource: kfdrc_vcf2maf_public/output_maf}
 
 steps:
   normalize_vcf:

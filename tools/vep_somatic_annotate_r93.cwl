@@ -80,16 +80,16 @@ arguments:
       && /ensembl-vep-release-93.7/htslib/tabix $(inputs.output_basename).$(inputs.tool_name).PASS.vep.vcf.gz
 
 inputs:
-  reference: {type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
-  input_vcf: {type: File, secondaryFiles: [.tbi]}
-  species: {type: string?, default: "homo_sapiens", doc: "Refer to the cache dir structure to set this"}
-  merged: {type: boolean?, default: false, doc: "Set to true if a merged VEP cache is being used"}
-  use_reg: {type: boolean?, default: true, doc: "Not all caches have the regulatory feature. Set to false for dog especially"}
+  reference: {type: 'File',  secondaryFiles: [.fai], doc: "Fasta genome assembly with index"}
+  input_vcf: {type: 'File', secondaryFiles: [.tbi]}
+  species: {type: 'string?', default: "homo_sapiens", doc: "Refer to the cache dir structure to set this"}
+  merged: {type: 'boolean?', default: false, doc: "Set to true if a merged VEP cache is being used"}
+  use_reg: {type: 'boolean?', default: true, doc: "Not all caches have the regulatory feature. Set to false for dog especially"}
   output_basename: string
   tool_name: string
-  cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache"}
-  cache_version: {type: int?, doc: "Version being used, should match build version", default: 93}
-  ref_build: {type: string?, doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
+  cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
+  cache_version: {type: 'int?', doc: "Version being used, should match build version", default: 93}
+  ref_build: {type: 'string?', doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
 
 outputs:
   output_vcf:

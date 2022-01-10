@@ -7,9 +7,9 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict]}
+  indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
   reference_dict: File
-  hg38_strelka_bed: {type: File, secondaryFiles: ['.tbi']}
+  hg38_strelka_bed: {type: 'File', secondaryFiles: ['.tbi']}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -38,16 +38,16 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: File, label: tar gzipped cache from ensembl/local converted cache}
+  vep_cache: {type: 'File', label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
-  manta_memory: {type: int?}
-  manta_cores: {type: int?}
+  manta_memory: {type: 'int?'}
+  manta_cores: {type: 'int?'}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
 
 outputs:
-  manta_prepass_vcf: {type: File, outputSource: rename_manta_samples/reheadered_vcf}
-  manta_pass_vcf: {type: File, outputSource: gatk_selectvariants_manta/pass_vcf}
-  manta_small_indels: {type: File, outputSource: manta/small_indels}
+  manta_prepass_vcf: {type: 'File', outputSource: rename_manta_samples/reheadered_vcf}
+  manta_pass_vcf: {type: 'File', outputSource: gatk_selectvariants_manta/pass_vcf}
+  manta_small_indels: {type: 'File', outputSource: manta/small_indels}
 
 steps:
   manta:
