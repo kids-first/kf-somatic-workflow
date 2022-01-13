@@ -908,10 +908,6 @@ steps:
         source: wgs_or_wxs
         valueFrom: |
           $(self == "WGS" ? 1000 : 0)
-      padding:
-        source: wgs_or_wxs
-        valueFrom: |
-          $(self == "WGS" ? 250 : 0)
       common_sites: index_b_allele/output
       count_panel_of_normals: count_panel_of_normals
       output_basename: output_basename
