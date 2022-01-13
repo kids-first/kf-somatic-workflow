@@ -233,6 +233,7 @@ requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
 - class: SubworkflowFeatureRequirement
+- class: InlineJavascriptRequirement
 inputs:
   # Required
   reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3,
@@ -297,6 +298,22 @@ inputs:
   output_basename: {type: 'string', doc: "String value to use as basename for outputs"}
   wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select\
       \ if this run is WGS or WXS"}
+
+  # GATK CNV Inputs
+  count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
+      \ the panel workflow. Significantly reduces quality of calling if not provided!",
+    'sbg:fileTypes': "HDF5"}
+  run_funcotatesegments: {type: 'boolean', doc: "If true, run Funcotator on the called\
+      \ copy-ratio segments. This will generate both a simple TSV and a gene list."}
+  funcotator_data_sources_tgz: {type: 'File?', doc: "Path to tar.gz containing the\
+      \ data sources for Funcotator to create annotations.", 'sbg:fileTypes': "TAR,\
+      \ TAR.GZ, TGZ", 'sbg:suggestedValue': {class: File, path: 60e5f8636a504e4e0c6408d8,
+      name: funcotator_dataSources.v1.6.20190124s.tar.gz}}
+  funcotator_minimum_segment_size: {type: 'int?', doc: "The minimum number of bases\
+      \ for a variant to be annotated as a segment. Recommended to be changed only\
+      \ for use with FuncotateSegments. If you encounter 'Variant context does not\
+      \ represent a copy number segment' error, set this value lower than the length\
+      \ of the failed segment."}
 
   # Optional with One Default
   cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16\
@@ -826,6 +843,30 @@ steps:
       manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
+
+  run_gatk_cnv:
+    run: ../sub_workflows/kf_cnv_somatic_pair_wf.cwl
+    in:
+      input_aligned_reads_tumor: input_tumor_aligned
+      input_aligned_reads_normal: input_normal_aligned
+      reference_fasta: prepare_reference/indexed_fasta
+      reference_dict: prepare_reference/reference_dict
+      input_interval_list: select_interval_list/output
+      bin_length:
+        source: wgs_or_wxs
+        valueFrom: |
+          $(self == "WGS" ? 1000 : 0)
+      padding:
+        source: wgs_or_wxs
+        valueFrom: |
+          $(self == "WGS" ? 250 : 0)
+      common_sites: index_b_allele/output
+      count_panel_of_normals: count_panel_of_normals
+      output_basename: output_basename
+      run_funcotatesegments: run_funcotatesegments
+      funcotator_data_sources_tgz: funcotator_data_sources_tgz
+      funcotator_minimum_segment_size: funcotator_minimum_segment_size
+    out: [tumor_file_archive, modeled_segments_tumor, modeled_segments_tumor_plot, called_copy_ratio_segments_tumor, denoised_tumor_plot, normal_file_archive, modeled_segments_normal, modeled_segments_normal_plot, called_copy_ratio_segments_normal, denoised_normal_plot, funcotated_called_file_tumor, funcotated_called_gene_list_file_tumor]
 
 $namespaces:
   sbg: https://sevenbridges.com
