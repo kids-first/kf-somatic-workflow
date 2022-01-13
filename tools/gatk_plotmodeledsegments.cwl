@@ -53,7 +53,7 @@ inputs:
       position: 2
       prefix: "--segments"
   sequence_dictionary:
-    type: File
+    type: 'File'
     doc: "Use the given sequence dictionary as the master/canonical sequence dictionary. Must be a .dict file."
     inputBinding:
       position: 2
