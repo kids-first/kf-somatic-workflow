@@ -300,6 +300,9 @@ inputs:
       \ if this run is WGS or WXS"}
 
   # GATK CNV Inputs
+  input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
+        required: false}], doc: "Picard or GATK-style interval list file of regions\
+      \ to ignore.", 'sbg:fileTypes': "INTERVALS, INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
       \ the panel workflow. Significantly reduces quality of calling if not provided!",
     'sbg:fileTypes': "HDF5"}
@@ -900,6 +903,7 @@ steps:
       reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
       input_interval_list: select_interval_list/output
+      input_exclude_interval_list: input_exclude_interval_list
       bin_length:
         source: wgs_or_wxs
         valueFrom: |
