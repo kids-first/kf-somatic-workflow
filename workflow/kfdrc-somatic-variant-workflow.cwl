@@ -60,7 +60,7 @@ doc: |
   #### SNV Callers
 
   - [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
-    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
+    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information
   - [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
     - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
     - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
@@ -902,7 +902,7 @@ steps:
       input_aligned_reads_normal: input_normal_aligned
       reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      input_interval_list: select_interval_list/output
+      input_interval_list: unpadded_capture_regions
       input_exclude_interval_list: input_exclude_interval_list
       bin_length:
         source: wgs_or_wxs
