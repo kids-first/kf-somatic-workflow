@@ -19,13 +19,13 @@ inputs:
     type: 'string?'
     doc: "String to use as the prefix for the outputs."
   reference:
-    type: File
+    type: 'File'
     doc: "Reference fasta"
     secondaryFiles: ['.fai']
     inputBinding:
       prefix: "-R"
   sequence_dictionary:
-    type: File?
+    type: 'File?'
     doc: "Use the given sequence dictionary as the master/canonical sequence dictionary. Must be a .dict file."
     inputBinding:
       prefix: "--sequence-dictionary"
@@ -72,12 +72,12 @@ inputs:
     inputBinding:
       prefix: "-ixp"
   padding:
-    type: int?
+    type: 'int?'
     doc: "Length (in bp) of the padding regions on each side of the intervals."
     inputBinding:
       prefix: "--padding"
   bin_length:
-    type: int?
+    type: 'int?'
     inputBinding:
       prefix: "--bin-length"
   interval_merging_rule:
@@ -99,4 +99,4 @@ inputs:
     inputBinding:
       prefix: "-isr"
 outputs:
-  output: { type: File, outputBinding: { glob: '*interval_list' } }
+  output: { type: 'File', outputBinding: { glob: '*interval_list' } }

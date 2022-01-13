@@ -25,17 +25,17 @@ arguments:
       ${var prefix = inputs.output_prefix ? inputs.output_prefix : 'intervals'; return prefix + '.annotated.tsv';}
 inputs:
   do_explicit_gc_correction:
-    type: boolean
+    type: 'boolean'
     doc: "Choose whether to execute this app. This argument is GATK CNV Best Practice requirement."
   reference:
-    type: File
+    type: 'File'
     doc: "Reference fasta"
     secondaryFiles: ['.fai']
     inputBinding:
       position: 2
       prefix: "-R"
   sequence_dictionary:
-    type: File?
+    type: 'File?'
     doc: "Use the given sequence dictionary as the master/canonical sequence dictionary. Must be a .dict file."
     inputBinding:
       position: 2
@@ -111,7 +111,7 @@ inputs:
       position: 2
       prefix: "--segmental-duplication-track"
   feature_query_lookahead:
-    type: int?
+    type: 'int?'
     doc: "Number of bases to cache when querying feature tracks"
     inputBinding:
       position: 2
