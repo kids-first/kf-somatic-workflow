@@ -284,7 +284,7 @@ inputs:
       class: File, path: 5f500135e4b0370371c051aa, name: hg38_strelka.bed.gz.tbi}}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth\
       \ 10000"}
-  strelka2_cores: {type: int?, doc: "Adjust number of cores used to run strelka2",
+  strelka2_cores: {type: 'int?', doc: "Adjust number of cores used to run strelka2",
     default: 18}
   mutect2_af_only_gnomad_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3,
       name: af-only-gnomad.hg38.vcf.gz}}
