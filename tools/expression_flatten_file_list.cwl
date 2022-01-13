@@ -1,10 +1,6 @@
 cwlVersion: v1.0
 class: ExpressionTool
-<<<<<<< HEAD
-id: expression_flatten_list
-=======
 id: expression_flatten_file_list
->>>>>>> 2c3856f... :sparkles: add flatten file list cwl
 requirements:
   - class: InlineJavascriptRequirement
 inputs:
