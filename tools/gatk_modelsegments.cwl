@@ -8,7 +8,7 @@ requirements:
   - class: ResourceRequirement
     ramMin: $(inputs.max_memory*1000)
   - class: DockerRequirement
-    dockerPull: 'broadinstitute/gatk:4.2.1.0'
+    dockerPull: 'broadinstitute/gatk:4.2.4.1'
 baseCommand: []
 arguments:
   - position: 0
