@@ -244,12 +244,12 @@ inputs:
       name: Homo_sapiens_assembly38.dict}}
   input_tumor_aligned:
     type: File
-    secondaryFiles: [{pattern: ".bam", required: false}, {pattern: "^.crai", required: false}]
+    secondaryFiles: [{ pattern: ".bai", required: false },{ pattern: "^.bai", required: false },{ pattern: ".crai", required: false },{ pattern: "^.crai", required: false }]
     doc: "tumor BAM or CRAM"
   input_tumor_name: string
   input_normal_aligned:
     type: File
-    secondaryFiles: [{pattern: ".bam", required: false}, {pattern: "^.crai", required: false}]
+    secondaryFiles: [{ pattern: ".bai", required: false },{ pattern: "^.bai", required: false },{ pattern: ".crai", required: false },{ pattern: "^.crai", required: false }]
     doc: "normal BAM or CRAM"
   input_normal_name: string
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
