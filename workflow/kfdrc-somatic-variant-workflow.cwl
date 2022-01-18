@@ -6,7 +6,7 @@ doc: |
   # Kids First DRC Somatic Variant Workflow
 
   This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
-  This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
+  This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC, CNVkit, and GATK, and SV calls using Manta.
   Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor, then added an additional MAF output using a modified version of MSKCCs vcf2maf.
   See [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for more details on annotation.
 
@@ -56,11 +56,12 @@ doc: |
   | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |
   | [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)             |   x |     |   |
   | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |
+  | [kf_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kf_cnv_somatic_pair_wf.cwl)                    |  x  |     |    |
 
   #### SNV Callers
 
   - [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
-    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information
+    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
   - [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
     - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
     - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
@@ -84,6 +85,7 @@ doc: |
   Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
   - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
   - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
+  - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl).
 
   For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy.
 
@@ -191,11 +193,26 @@ doc: |
               - `theta2_subclonal_results`: Theta2 Subclone purity results
               - `theta2_subclonal_cns`: Theta2 sublone cns
               - `theta2_subclone_seg`: Theta subclone seg file
+          - GATK CNV
+              - `gatk_cnv_tumor_file_archive`: Tar archive containing all files generated from the tumor sample aligned reads.
+              - `gatk_cnv_modeled_segments_tumor`: modelFinal.seg files. These are tab-separated values (TSV) files with a SAM-style header containing a read group sample name, a sequence dictionary
+              - `gatk_cnv_modeled_segments_tumor_plot`: Modeled-segments-plot file. This shows the input denoised copy ratios and/or alternate-allele fractions as points, as well as box plots for the available posteriors in each segment. The colors of the points alternate with the segmentation. Copy ratios are only plotted up to the maximum value specified by the argument maximum-copy-ratio. Point sizes can be specified by the arguments point-size-copy-ratio and point-size-allele-fraction.
+              - `gatk_cnv_called_copy_ratio_segments_tumor`:
+              - `gatk_cnv_denoised_tumor_plot`: Denoised-plot file that covers the entire range of the copy ratios
+              - `gatk_cnv_normal_file_archive`: Tar archive containing all files generated from the normal sample aligned reads.
+              - `gatk_cnv_modeled_segments_normal`: modelFinal.seg files. These are tab-separated values (TSV) files with a SAM-style header containing a read group sample name, a sequence dictionary, a row specifying the column headers contained in ModeledSegmentCollection.ModeledSegmentTableColumn, and the corresponding entry rows.
+              - `gatk_cnv_modeled_segments_normal_plot`: Modeled-segments-plot file. This shows the input denoised copy ratios and/or alternate-allele fractions as points, as well as box plots for the available posteriors in each segment. The colors of the points alternate with the segmentation. Copy ratios are only plotted up to the maximum value specified by the argument maximum-copy-ratio. Point sizes can be specified by the arguments point-size-copy-ratio and point-size-allele-fraction.
+              - `gatk_cnv_called_copy_ratio_segments_normal`: Called copy-ratio-segments file. This is a tab-separated values (TSV) file with a SAM-style header containing a read group sample name, a sequence dictionary, a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn, and the corresponding entry rows.
+              - `gatk_cnv_denoised_normal_plot`: Denoised-plot file that covers the entire range of the copy ratios
+              - `gatk_cnv_funcotated_called_file_tumor`: TSV where each row is a segment and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
+              - `gatk_cnv_funcotated_called_gene_list_file_tumor`: TSV where each row is a gene and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
+
 
   1. Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
       - `Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/strelka
       - `add common fields to Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/add-strelka2-fields:1.0.0
-      - `Mutect2` and all `GATK` tools: pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
+      - `Mutect2` and `GATK SNV` tools: pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
+      - `GATK CNV`: broadinstitute/gatk:4.2.4.1
       - `Lancet`: pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7
       - `VarDict Java`: pgc-images.sbgenomics.com/d3b-bixu/vardict:1.7.0
       - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
@@ -325,8 +342,8 @@ inputs:
       \ should line up with cache"}
 
   # Optional with Multiple Defaults (handled in choose_defaults)
-  exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y for\
-      \ WXS, N for WGS"}
+  exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y\
+      \ for WXS, N for WGS"}
   lancet_window: {type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS;\
       \ 600 for exome+"}
   lancet_padding: {type: 'int?', doc: "Recommend 0 if interval file padded already,\
@@ -371,8 +388,8 @@ inputs:
 
   # annotation vars
   genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing\
-      \ hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [{
-        class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
+      \ hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [
+      {class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid positions corresponding to\
       \ hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a426,
@@ -387,8 +404,8 @@ inputs:
       class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
   bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {
       class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
-  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create\
-      \ a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
+      \ create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
       \ add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to\
@@ -448,8 +465,9 @@ outputs:
   lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
   lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
   lancet_prepass_vcf: {type: 'File', outputSource: run_lancet/lancet_prepass_vcf}
-  gatk_cnv_tumor_file_archive: {type: File, outputSource: run_gatk_cnv/tumor_file_archive, doc: "Tar\
-      \ archive containing all files generated from the tumor sample aligned reads."}
+  gatk_cnv_tumor_file_archive: {type: File, outputSource: run_gatk_cnv/tumor_file_archive,
+    doc: "Tar archive containing all files generated from the tumor sample aligned\
+      \ reads."}
   gatk_cnv_modeled_segments_tumor: {type: File, outputSource: run_gatk_cnv/modeled_segments_tumor,
     doc: "modelFinal.seg files. These are tab-separated values (TSV) files with a\
       \ SAM-style header containing a read group sample name, a sequence dictionary,\
@@ -469,8 +487,9 @@ outputs:
       \ and the corresponding entry rows."}
   gatk_cnv_denoised_tumor_plot: {type: File, outputSource: run_gatk_cnv/denoised_tumor_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
-  gatk_cnv_normal_file_archive: {type: 'File?', outputSource: run_gatk_cnv/normal_file_archive, doc: "Tar\
-      \ archive containing all files generated from the normal sample aligned reads."}
+  gatk_cnv_normal_file_archive: {type: 'File?', outputSource: run_gatk_cnv/normal_file_archive,
+    doc: "Tar archive containing all files generated from the normal sample aligned\
+      \ reads."}
   gatk_cnv_modeled_segments_normal: {type: 'File?', outputSource: run_gatk_cnv/modeled_segments_normal,
     doc: "modelFinal.seg files. These are tab-separated values (TSV) files with a\
       \ SAM-style header containing a read group sample name, a sequence dictionary,\
@@ -896,7 +915,10 @@ steps:
       run_funcotatesegments: run_funcotatesegments
       funcotator_data_sources_tgz: funcotator_data_sources_tgz
       funcotator_minimum_segment_size: funcotator_minimum_segment_size
-    out: [tumor_file_archive, modeled_segments_tumor, modeled_segments_tumor_plot, called_copy_ratio_segments_tumor, denoised_tumor_plot, normal_file_archive, modeled_segments_normal, modeled_segments_normal_plot, called_copy_ratio_segments_normal, denoised_normal_plot, funcotated_called_file_tumor, funcotated_called_gene_list_file_tumor]
+    out: [tumor_file_archive, modeled_segments_tumor, modeled_segments_tumor_plot,
+      called_copy_ratio_segments_tumor, denoised_tumor_plot, normal_file_archive,
+      modeled_segments_normal, modeled_segments_normal_plot, called_copy_ratio_segments_normal,
+      denoised_normal_plot, funcotated_called_file_tumor, funcotated_called_gene_list_file_tumor]
 
 $namespaces:
   sbg: https://sevenbridges.com

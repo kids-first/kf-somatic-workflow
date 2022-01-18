@@ -1,7 +1,7 @@
 # Kids First DRC Somatic Variant Workflow
 
 This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
-This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC and CNVkit, and SV calls using Manta.
+This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC, CNVkit, and GATK, and SV calls using Manta.
 Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor, then added an additional MAF output using a modified version of MSKCCs vcf2maf.
 See [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for more details on annotation.
 
@@ -51,6 +51,7 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |
 | [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)             |   x |     |   |
 | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |
+| [kf_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kf_cnv_somatic_pair_wf.cwl)                    |  x  |     |    |
 
 #### SNV Callers
 
@@ -79,6 +80,7 @@ Also, the workflow wrapper limits what inputs and outputs are used based on our 
 Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
 - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
 - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
+- [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl).
 
 For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy.
 
@@ -186,11 +188,26 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
             - `theta2_subclonal_results`: Theta2 Subclone purity results
             - `theta2_subclonal_cns`: Theta2 sublone cns
             - `theta2_subclone_seg`: Theta subclone seg file
+        - GATK CNV
+            - `gatk_cnv_tumor_file_archive`: Tar archive containing all files generated from the tumor sample aligned reads.
+            - `gatk_cnv_modeled_segments_tumor`: modelFinal.seg files. These are tab-separated values (TSV) files with a SAM-style header containing a read group sample name, a sequence dictionary
+            - `gatk_cnv_modeled_segments_tumor_plot`: Modeled-segments-plot file. This shows the input denoised copy ratios and/or alternate-allele fractions as points, as well as box plots for the available posteriors in each segment. The colors of the points alternate with the segmentation. Copy ratios are only plotted up to the maximum value specified by the argument maximum-copy-ratio. Point sizes can be specified by the arguments point-size-copy-ratio and point-size-allele-fraction.
+            - `gatk_cnv_called_copy_ratio_segments_tumor`:
+            - `gatk_cnv_denoised_tumor_plot`: Denoised-plot file that covers the entire range of the copy ratios
+            - `gatk_cnv_normal_file_archive`: Tar archive containing all files generated from the normal sample aligned reads.
+            - `gatk_cnv_modeled_segments_normal`: modelFinal.seg files. These are tab-separated values (TSV) files with a SAM-style header containing a read group sample name, a sequence dictionary, a row specifying the column headers contained in ModeledSegmentCollection.ModeledSegmentTableColumn, and the corresponding entry rows.
+            - `gatk_cnv_modeled_segments_normal_plot`: Modeled-segments-plot file. This shows the input denoised copy ratios and/or alternate-allele fractions as points, as well as box plots for the available posteriors in each segment. The colors of the points alternate with the segmentation. Copy ratios are only plotted up to the maximum value specified by the argument maximum-copy-ratio. Point sizes can be specified by the arguments point-size-copy-ratio and point-size-allele-fraction.
+            - `gatk_cnv_called_copy_ratio_segments_normal`: Called copy-ratio-segments file. This is a tab-separated values (TSV) file with a SAM-style header containing a read group sample name, a sequence dictionary, a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn, and the corresponding entry rows.
+            - `gatk_cnv_denoised_normal_plot`: Denoised-plot file that covers the entire range of the copy ratios
+            - `gatk_cnv_funcotated_called_file_tumor`: TSV where each row is a segment and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
+            - `gatk_cnv_funcotated_called_gene_list_file_tumor`: TSV where each row is a gene and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
+
 
 1. Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
     - `Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/strelka
     - `add common fields to Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/add-strelka2-fields:1.0.0
-    - `Mutect2` and all `GATK` tools: pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
+    - `Mutect2` and `GATK SNV` tools: pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
+    - `GATK CNV`: broadinstitute/gatk:4.2.4.1
     - `Lancet`: pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7
     - `VarDict Java`: pgc-images.sbgenomics.com/d3b-bixu/vardict:1.7.0
     - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
