@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.1
 class: Workflow
 id: kfdrc-somatic-variant-workflow
 label: Kids First DRC Somatic Variant Workflow
@@ -244,30 +244,12 @@ inputs:
       name: Homo_sapiens_assembly38.dict}}
   input_tumor_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{pattern: ".bam", required: false}, {pattern: "^.crai", required: false}]
     doc: "tumor BAM or CRAM"
   input_tumor_name: string
   input_normal_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{pattern: ".bam", required: false}, {pattern: "^.crai", required: false}]
     doc: "normal BAM or CRAM"
   input_normal_name: string
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
@@ -302,15 +284,15 @@ inputs:
   # GATK CNV Inputs
   input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
         required: false}], doc: "Picard or GATK-style interval list file of regions\
-      \ to ignore.", 'sbg:fileTypes': "INTERVALS, INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
+      \ to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
       \ the panel workflow. Significantly reduces quality of calling if not provided!",
-    'sbg:fileTypes': "HDF5"}
+    "sbg:fileTypes": "HDF5"}
   run_funcotatesegments: {type: 'boolean', doc: "If true, run Funcotator on the called\
       \ copy-ratio segments. This will generate both a simple TSV and a gene list."}
   funcotator_data_sources_tgz: {type: 'File?', doc: "Path to tar.gz containing the\
-      \ data sources for Funcotator to create annotations.", 'sbg:fileTypes': "TAR,\
-      \ TAR.GZ, TGZ", 'sbg:suggestedValue': {class: File, path: 60e5f8636a504e4e0c6408d8,
+      \ data sources for Funcotator to create annotations.", "sbg:fileTypes": "TAR,\
+      \ TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 60e5f8636a504e4e0c6408d8,
       name: funcotator_dataSources.v1.6.20190124s.tar.gz}}
   funcotator_minimum_segment_size: {type: 'int?', doc: "The minimum number of bases\
       \ for a variant to be annotated as a segment. Recommended to be changed only\
@@ -646,7 +628,7 @@ steps:
 
   run_vardict:
     hints:
-    - class: 'sbg:AWSInstanceType'
+    - class: "sbg:AWSInstanceType"
       value: c5.9xlarge
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
@@ -687,7 +669,7 @@ steps:
 
   run_mutect2:
     hints:
-    - class: 'sbg:AWSInstanceType'
+    - class: "sbg:AWSInstanceType"
       value: c5.9xlarge
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
@@ -788,7 +770,7 @@ steps:
 
   run_lancet:
     hints:
-    - class: 'sbg:AWSInstanceType'
+    - class: "sbg:AWSInstanceType"
       value: c5.9xlarge
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
@@ -919,7 +901,7 @@ steps:
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
-- class: 'sbg:maxNumberOfParallelInstances'
+- class: "sbg:maxNumberOfParallelInstances"
   value: 6
 "sbg:license": Apache License 2.0
 "sbg:publisher": KFDRC
@@ -941,6 +923,6 @@ hints:
 - VARDICT
 - VCF
 - VEP
-sbg:links:
+"sbg:links":
 - id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v3.0.1'
   label: github-release
