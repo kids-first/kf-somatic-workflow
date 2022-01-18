@@ -49,9 +49,9 @@ Each tool used in the [combined workflow](https://github.com/kids-first/kf-somat
 | [kfdrc_production_mutect2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_mutect2_wf.cwl)           |     |  x  |    |
 | [kfdrc_production_strekla2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_strekla2_wf.cwl)         |     |  x  |    |
 | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |
-| [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)             |   x |     |   |
+| [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)|  x |     |    |
 | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |
-| [kf_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kf_cnv_somatic_pair_wf.cwl)                    |  x  |     |    |
+| [kfdrc_gatk_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl)|  x  |     |    |
 
 #### SNV Callers
 
@@ -141,6 +141,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
     `disable_hotspot_annotation`: false
     `maf_center`: `"."`. Sequencing center of variant called
+    `funcotator_data_sources_tgz`: [funcotator_dataSources.v1.6.20190124s.tar.gz](https://console.cloud.google.com/storage/browser/broad-public-datasets/funcotator) - need a valid google account, this is a link to pre-packaged datasources from the Broad Institute. Any of the tar.gz files will do.
 
 
 1. Output files (Note, all vcf files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
