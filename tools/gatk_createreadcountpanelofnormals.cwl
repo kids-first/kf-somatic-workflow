@@ -9,7 +9,7 @@ requirements:
     ramMin: $(inputs.max_memory * 1000)
     coresMin: $(inputs.cpus)
   - class: DockerRequirement
-    dockerPull: 'broadinstitute/gatk:4.2.1.0'
+    dockerPull: 'broadinstitute/gatk:4.2.4.1'
 baseCommand: [gatk]
 arguments:
   - position: 0
