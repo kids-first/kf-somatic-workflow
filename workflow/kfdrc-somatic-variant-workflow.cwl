@@ -878,7 +878,7 @@ steps:
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
 
   run_gatk_cnv:
-    run: ../sub_workflows/kf_cnv_somatic_pair_wf.cwl
+    run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
     in:
       input_aligned_reads_tumor: input_tumor_aligned
       input_aligned_reads_normal: input_normal_aligned

@@ -1,6 +1,6 @@
 cwlVersion: v1.1
 class: Workflow
-id: kf_cnv_somatic_pair_wf
+id: kfdrc_gatk_cnv_somatic_pair_wf
 label: KFDRC GATK CNV Somatic Pair Workflow
 doc: |
   # KFDRC GATK CNV Somatic Pair Workflow
