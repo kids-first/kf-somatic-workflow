@@ -133,7 +133,7 @@ inputs:
       prefix: "-overwrite"
       position: 1
     doc: "To overwrite existing output results"
-  promoter_size: { type: 'int?', default: 2000, inputBinding: { prefix: "-promoterSize", position: 1 }, doc: "Number of bases upstream from the transcription start site" }
+  promoter_size: { type: 'int?', inputBinding: { prefix: "-promoterSize", position: 1 }, doc: "Number of bases upstream from the transcription start site" }
   rank_filtering: { type: 'string?', inputBinding: { prefix: "-rankFiltering", position: 1 }, doc: "To select the SV of a user-defined specific class (from 1 to 5). Values: use comma separated class values, or use a dash to denote a range of values (e.g.: '3,4,5' or '3-5')." }
   reciprocal:
     type:
@@ -199,7 +199,7 @@ inputs:
       prefix: "-SVinputInfo"
       position: 1
     doc: "To extract the additional SV input fields and insert the data in the outputfile"
-  sv_min_size: { type: 'int?', default: 200, inputBinding: { prefix: "-SVminSize", position: 1 }, doc: "SV minimum size (in bp)" }
+  sv_min_size: { type: 'int?', inputBinding: { prefix: "-SVminSize", position: 1 }, doc: "SV minimum size (in bp)" }
   svt_bed_col: { type: 'int?', inputBinding: { prefix: "-svtBEDcol", position: 1 }, doc: "Number of the column describing the SV type (DEL, DUP) if the input SV file is a BED" }
   tx:
     type:
