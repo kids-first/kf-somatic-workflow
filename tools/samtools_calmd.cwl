@@ -11,7 +11,7 @@ requirements:
     ramMin: 12000
     coresMin: $(inputs.threads)
 
-baseCommand: ["/bin/bash -c"]
+baseCommand: []
 arguments:
   - position: 1
     shellQuote: false
