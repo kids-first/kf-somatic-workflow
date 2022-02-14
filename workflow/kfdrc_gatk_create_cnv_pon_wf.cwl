@@ -206,5 +206,5 @@ hints:
 - HDF5
 - PON
 'sbg:links':
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v0.2.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.0.0'
   label: github-release
