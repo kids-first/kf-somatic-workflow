@@ -1,5 +1,5 @@
 class: Workflow
-cwlVersion: v1.1
+cwlVersion: v1.2
 id: sb_multicnv_wf
 label: SB MultiCNV 1.0.0 Workflow
 doc: |-
@@ -84,18 +84,20 @@ requirements:
 inputs:
   input_files:
     type: File[]
+  output_basename:
+    type: string
 
 outputs:
   benchmark_metrics:
     type: File?
-    outputSource: sb_multicnv_1_0_0/benchmark_metrics
+    outputSource: add_basename_benchmark_metrics/output
     label: Benchmark metrics
     doc: |-
       When MultiCNV is used for benchmark of callers, this outputs gives overview of the performance of callers used.
     sbg:fileTypes: CSV
   combine_heatmaps:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/combine_heatmaps
+    type: File[]?
+    outputSource: add_basename_combine_heatmaps/output
     label: Heatmaps
     doc: |-
       Two types of heatmaps:
@@ -103,46 +105,46 @@ outputs:
       2. The comparison between copy ratio values between callers. Note: in order to make a uniform matrix, all relative copy ratios higher than 6 are set to 6. Range which represents ‘neutral’ states can be considered to be from 0.8 to 1.2.
     sbg:fileTypes: PNG
   combine_stats_per_file:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/combine_stats_per_file
+    type: File[]?
+    outputSource: add_basename_combine_stats_per_file/output
     label: Statistics per file
     doc: |-
       Statistics about each status of genome length ('gain', 'neutral', 'loss') for each file
     sbg:fileTypes: CSV
   combine_stats_total:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/combine_stats_total
+    type: File[]?
+    outputSource: add_basename_combine_stats_total/output
     label: Total statistics
     doc: |-
       Total length of genome per each combination of statuses / status ('gain', 'neutral', 'loss').
     sbg:fileTypes: CSV
   combine_status_CN_table_overview:
     type: File?
-    outputSource: sb_multicnv_1_0_0/combine_status_CN_table_overview
+    outputSource: add_basename_combine_status_CN_table_overview/output
     label: Combined regions - CN table
     doc: Resulted .CSV file which present combined regions with copy number values
     sbg:fileTypes: CSV
   combine_status_CR_table_overview:
     type: File?
-    outputSource: sb_multicnv_1_0_0/combine_status_CR_table_overview
+    outputSource: add_basename_combine_status_CR_table_overview/output
     label: Combined regions - CR table
     doc: Resulted .CSV file which present combined regions with copy ratio values
     sbg:fileTypes: CSV
   combine_status_table_overview:
     type: File?
-    outputSource: sb_multicnv_1_0_0/combine_status_table_overview
+    outputSource: add_basename_combine_status_table_overview/output
     label: Combine regions - status table
     doc: Resulted .CSV file which present combined regions with status values
     sbg:fileTypes: CSV
   combine_uniformed_view:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/combine_uniformed_view
+    type: File[]?
+    outputSource: add_basename_combine_uniformed_view/output
     label: Uniformed view per file
     doc: Uniformed view per file with combined regions.
     sbg:fileTypes: CSV
   html_visualisations:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/html_visualisations
+    type: File[]?
+    outputSource: add_basename_html_visualisations/output
     label: Interactive visualisations
     doc: |-
       Interactive visualisations presenting:
@@ -152,34 +154,34 @@ outputs:
     sbg:fileTypes: HTML
   interpret_majority:
     type: File?
-    outputSource: sb_multicnv_1_0_0/interpret_majority
+    outputSource: add_basename_interpret_majority/output
     label: Result for 'majority' interpretation
     doc: |-
       Resulting .CSV file produced after 'majority' interpretation method is used to combine regions.
     sbg:fileTypes: CSV
   interpret_precise:
     type: File?
-    outputSource: sb_multicnv_1_0_0/interpret_precise
+    outputSource: add_basename_interpret_precise/output
     label: Result for 'precise' interpretation
     doc: |-
       Resulting .CSV file produced after 'precise' interpretation method is used to combine regions.
     sbg:fileTypes: CSV
   ploidy_information:
     type: File?
-    outputSource: sb_multicnv_1_0_0/ploidy_information
+    outputSource: add_basename_ploidy_information/output
     label: Ploidy Information
     doc: Information about the ploidy of different callers / tumors.
     sbg:fileTypes: JSON
   segment_result_final:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/segment_result_final
+    type: File[]?
+    outputSource: add_basename_segment_result_final/output
     label: Result after segmentation
     doc: |-
       Resulted file after merging the regions with the same final status excluding 'ambiguous' regions'
     sbg:fileTypes: CSV
   segment_results_with_ambiguous:
-    type: File?
-    outputSource: sb_multicnv_1_0_0/segment_results_with_ambiguous
+    type: File[]?
+    outputSource: add_basename_segment_results_with_ambiguous/output
     label: Result after segmentation with ambiguous
     doc: Resulted file after merging the regions with the same final status
     sbg:fileTypes: CSV
@@ -205,6 +207,111 @@ steps:
     in:
       files: sb_multicnv_rename_files/output_file
     out: [ploidy_information, combine_uniformed_view, combine_stats_total, combine_stats_per_file, combine_heatmaps, segment_results_with_ambiguous, combine_status_table_overview, combine_status_CR_table_overview, combine_status_CN_table_overview, interpret_precise, interpret_majority, segment_result_final, html_visualisations, benchmark_metrics]
+  add_basename_benchmark_metrics:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/benchmark_metrics
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_heatmaps:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/combine_heatmaps
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_status_CN_table_overview:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/combine_status_CN_table_overview
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_status_CR_table_overview:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/combine_status_CR_table_overview
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_stats_per_file:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/combine_stats_per_file
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_stats_total:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/combine_stats_total
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_status_table_overview:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/combine_status_table_overview
+      output_basename: output_basename
+    out: [output]
+  add_basename_combine_uniformed_view:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/combine_uniformed_view
+      output_basename: output_basename
+    out: [output]
+  add_basename_html_visualisations:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/html_visualisations
+      output_basename: output_basename
+    out: [output]
+  add_basename_interpret_majority:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/interpret_majority
+      output_basename: output_basename
+    out: [output]
+  add_basename_interpret_precise:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/interpret_precise
+      output_basename: output_basename
+    out: [output]
+  add_basename_ploidy_information:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    in:
+      input_file: sb_multicnv_1_0_0/ploidy_information
+      output_basename: output_basename
+    out: [output]
+  add_basename_segment_result_final:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/segment_result_final
+      output_basename: output_basename
+    out: [output]
+  add_basename_segment_results_with_ambiguous:
+    run: ../tools/add_basename.cwl
+    when: $(inputs.input_file != null)
+    scatter: [input_file]
+    in:
+      input_file: sb_multicnv_1_0_0/segment_results_with_ambiguous
+      output_basename: output_basename
+    out: [output]
 
 $namespaces:
   sbg: https://sevenbridges.com
