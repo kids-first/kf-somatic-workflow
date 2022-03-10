@@ -95,7 +95,7 @@ outputs:
       When MultiCNV is used for benchmark of callers, this outputs gives overview of the performance of callers used.
     sbg:fileTypes: CSV
   combine_heatmaps:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.heatmap.png'
     label: Heatmaps
@@ -119,7 +119,7 @@ outputs:
     doc: Resulted .CSV file which present combined regions with copy ratio values
     sbg:fileTypes: CSV
   combine_stats_per_file:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.STATS_per_file.csv'
     label: Statistics per file
@@ -127,7 +127,7 @@ outputs:
       Statistics about each status of genome length ('gain', 'neutral', 'loss') for each file
     sbg:fileTypes: CSV
   combine_stats_total:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.STATS.csv'
     label: Total statistics
@@ -142,14 +142,14 @@ outputs:
     doc: Resulted .CSV file which present combined regions with status values
     sbg:fileTypes: CSV
   combine_uniformed_view:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.uniformed.csv'
     label: Uniformed view per file
     doc: Uniformed view per file with combined regions.
     sbg:fileTypes: CSV
   html_visualisations:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.html'
     label: Interactive visualisations
@@ -183,7 +183,7 @@ outputs:
     doc: Information about the ploidy of different callers / tumors.
     sbg:fileTypes: JSON
   segment_result_final:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.FINAL_result.csv'
     label: Result after segmentation
@@ -191,7 +191,7 @@ outputs:
       Resulted file after merging the regions with the same final status excluding 'ambiguous' regions'
     sbg:fileTypes: CSV
   segment_results_with_ambiguous:
-    type: File?
+    type: File[]?
     outputBinding:
       glob: '*.seg_with_ambiguous.csv'
     label: Result after segmentation with ambiguous
