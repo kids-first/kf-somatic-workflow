@@ -86,6 +86,18 @@ inputs:
     type: File[]
   output_basename:
     type: string
+  override_case_id:
+    type: string?
+    doc: |
+      Standard MultiCNV behavior will use the file metadata to obtain the
+      case_id. Provide a value here to override the metadata or if metadata
+      does not exist.
+  override_sample_type:
+    type: string?
+    doc: |
+      Standard MultiCNV behavior will use the file metadata to obtain the
+      sample_type. Provide a value here to override the metadata or if metadata
+      does not exist.
 
 outputs:
   benchmark_metrics:
@@ -192,6 +204,8 @@ steps:
     label: SB MultiCNV Prepare Files For Scatter
     in:
       input_files: input_files
+      override_case_id: override_case_id
+      override_sample_type: override_sample_type
     out: [output_files]
   sb_multicnv_rename_files:
     run: ../tools/sb_multicnv_rename_files.cwl

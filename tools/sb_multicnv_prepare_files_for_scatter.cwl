@@ -17,6 +17,10 @@ baseCommand: []
 inputs:
   input_files:
     type: File[]
+  override_case_id:
+    type: string?
+  override_sample_type:
+    type: string?
 
 outputs:
   output_files:
@@ -28,9 +32,17 @@ outputs:
             var first=Array();
                 for (var i=0;i<inp.length;i++){
                     first.push(inp[i]);
-                    if(inp[i]) first[i].metadata=inp[i].metadata;
+                    if(inp[i]) {
+                        first[i].metadata=inp[i].metadata;
+                        if (inputs.override_case_id != null) {
+                            first[i].metadata["case_id"] = inputs.override_case_id
                         }
-             return first;
+                        if (inputs.override_sample_type != null) {
+                            first[i].metadata["sample_type"] = inputs.override_sample_type
+                        }
+                    }
+                }
+            return first;
         }
 
 $namespaces:
