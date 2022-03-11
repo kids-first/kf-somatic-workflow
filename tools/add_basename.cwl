@@ -4,7 +4,7 @@ id: add_basename
 requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: 1 
+    ramMin: 1000
     coresMin: 1
   - class: ShellCommandRequirement
 baseCommand: []
