@@ -101,7 +101,7 @@ arguments:
                       var ploidy = 'ploidy'
                   }
                   // Control FREEC
-                  if (path.endsWith('.bam_info.txt')){
+                  if (path.endsWith('.bam_info.txt') || path.endsWith('.info.txt')){
                       var caller = 'controlfreec'
                       var ext = '.bam_info.txt'
                       var ploidy = '.ploidy'
@@ -259,7 +259,7 @@ outputs:
                         var ploidy = 'ploidy'
                     }
                     // Control FREEC
-                    if (path.endsWith('.bam_info.txt')){
+                    if (path.endsWith('.bam_info.txt') || path.endsWith('.info.txt')){
                         var caller = 'controlfreec'
                         var ext = '.bam_info.txt'
                         var ploidy = '.ploidy'
