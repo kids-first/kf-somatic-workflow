@@ -51,7 +51,7 @@ doc: |-
   Files with information about the ploidy value can be used only for specific callers:  
     
   - **PURPLE** ('.purple.purity.tsv')
-  - **ControlFREEC** ('.bam_info.txt')
+  - **ControlFREEC** ('.bam_info.txt' or '.info.txt')
   - **Facets** ('.purity_ploidy.tsv')
   - **Sclust** ('.out_cn_summary.txt'). 
 
