@@ -464,32 +464,18 @@ outputs:
   lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
   lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
   lancet_prepass_vcf: {type: 'File', outputSource: run_lancet/lancet_prepass_vcf}
-  gatk_cnv_modeled_segments_tumor: {type: File, outputSource: run_gatk_cnv/modeled_segments_tumor,
-    doc: "modelFinal.seg files. These are tab-separated values (TSV) files with a\
-      \ SAM-style header containing a read group sample name, a sequence dictionary,\
-      \ a row specifying the column headers contained in ModeledSegmentCollection.ModeledSegmentTableColumn,\
+  gatk_copy_ratio_segments_tumor: {type: File, outputSource: run_gatk_cnv/called_copy_ratio_segments_tumor,
+    doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file\
+      \ with a SAM-style header containing a read group sample name, a sequence dictionary,\
+      \ a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,\
       \ and the corresponding entry rows."}
-  gatk_cnv_modeled_segments_tumor_plot: {type: File, outputSource: run_gatk_cnv/modeled_segments_tumor_plot,
-    doc: "Modeled-segments-plot file. This shows the input denoised copy ratios and/or\
-      \ alternate-allele fractions as points, as well as box plots for the available\
-      \ posteriors in each segment. The colors of the points alternate with the segmentation.\
-      \ Copy ratios are only plotted up to the maximum value specified by the argument\
-      \ maximum-copy-ratio. Point sizes can be specified by the arguments point-size-copy-ratio\
-      \ and point-size-allele-fraction."}
+  gatk_copy_ratio_segments_normal: {type: 'File?', outputSource: run_gatk_cnv/called_copy_ratio_segments_normal,
+    doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file\
+      \ with a SAM-style header containing a read group sample name, a sequence dictionary,\
+      \ a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,\
+      \ and the corresponding entry rows."}
   gatk_cnv_denoised_tumor_plot: {type: File, outputSource: run_gatk_cnv/denoised_tumor_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
-  gatk_cnv_modeled_segments_normal: {type: 'File?', outputSource: run_gatk_cnv/modeled_segments_normal,
-    doc: "modelFinal.seg files. These are tab-separated values (TSV) files with a\
-      \ SAM-style header containing a read group sample name, a sequence dictionary,\
-      \ a row specifying the column headers contained in ModeledSegmentCollection.ModeledSegmentTableColumn,\
-      \ and the corresponding entry rows."}
-  gatk_cnv_modeled_segments_normal_plot: {type: 'File?', outputSource: run_gatk_cnv/modeled_segments_normal_plot,
-    doc: "Modeled-segments-plot file. This shows the input denoised copy ratios and/or\
-      \ alternate-allele fractions as points, as well as box plots for the available\
-      \ posteriors in each segment. The colors of the points alternate with the segmentation.\
-      \ Copy ratios are only plotted up to the maximum value specified by the argument\
-      \ maximum-copy-ratio. Point sizes can be specified by the arguments point-size-copy-ratio\
-      \ and point-size-allele-fraction."}
   gatk_cnv_denoised_normal_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_normal_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
   gatk_cnv_funcotated_called_file_tumor: {type: 'File?', outputSource: run_gatk_cnv/funcotated_called_file_tumor,
