@@ -1,10 +1,10 @@
 class: CommandLineTool
-cwlVersion: v1.1
+cwlVersion: v1.2
 id: annotsv
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: dmiller15/annotsv:3.1.1
+  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
 - class: InlineJavascriptRequirement
   expressionLib:
   - |2-
@@ -214,10 +214,15 @@ inputs:
   tx_file: { type: 'File?', inputBinding: { prefix: "-txFile", position: 1 }, doc: "file containing a list of preferred genes transcripts to be used in priority during the annotation (Preferred genes transcripts names should be tab or space separated)", "sbg:fileTypes": "BED, CSV, TSV, TXT" }
 
 outputs:
-  output:
+  annotated_calls:
     type: 'File?'
     outputBinding:
-      glob: '*.tsv'
+      glob: '*annotated.tsv'
+      outputEval: $(inheritMetadata(self, inputs.sv_input_file))
+  unannotated_calls:
+    type: 'File?'
+    outputBinding:
+      glob: '*unannotated.tsv'
       outputEval: $(inheritMetadata(self, inputs.sv_input_file))
 
 $namespaces:
