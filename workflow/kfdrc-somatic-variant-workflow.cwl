@@ -31,14 +31,14 @@ doc: |
   the pipeline will pass on the file provided as the wgs_input and vice versa. If the wgs_input is missing and the mode is WGS, then
   the pipeline will fail.
 
-  ### WGS-only Fields
+  ### WGS Run Fields
 
-  There are two WGS only fields `wgs_calling_interval_list` and `lancet_calling_interval_bed`. If these are not provided in a WGS run,
+  There are two WGS fields `wgs_calling_interval_list` and `lancet_calling_interval_bed`. If these are not provided in a WGS run,
   the pipeline will fail.
 
-  ### WXS-only Fields
+  ### WXS Run Fields
 
-  There are two WXS only fields `padded_capture_regions` and `unpadded_capture_regions`. If these are not provided in a WXS run,
+  There are two WXS fields `padded_capture_regions` and `unpadded_capture_regions`. If these are not provided in a WXS run,
   the pipeline will fail.
 
   ### Standalone Somatic Workflows
@@ -87,12 +87,13 @@ doc: |
   - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
   - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl).
 
-  For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy.
+  For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
 
-  #### SV Callers
+  #### SV Callers and Annotators
 
   - [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
   Default settings are used at run time.
+  - [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta Prepass VCF.
 
   #### Variant Annotation
   Please see the [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md).
@@ -147,6 +148,7 @@ doc: |
       `disable_hotspot_annotation`: false
       `maf_center`: `"."`. Sequencing center of variant called
       `funcotator_data_sources_tgz`: [funcotator_dataSources.v1.6.20190124s.tar.gz](https://console.cloud.google.com/storage/browser/broad-public-datasets/funcotator) - need a valid google account, this is a link to pre-packaged datasources from the Broad Institute. Any of the tar.gz files will do.
+      `annotsv_annotations_dir_tgz`: [annotsv_311_annotations_dir.tgz] - These annotations are simply those from the install-human-annotation installation process run during AnnotSV installation. Specifically these are the annotations installed with v3.1.1 of the software. Newer or older annotations can be slotted in here as needed.
 
 
   1. Output files (Note, all vcf files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
@@ -173,6 +175,9 @@ doc: |
               - `manta_vep_vcf`: SV call filtered on `PASS`, from manta
               - `manta_vep_tbi`: Index file of above bgzipped vcf
               - `manta_prepass_vcf`: SV results with all `FILTER` categories for manta. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
+          - AnnotSV
+              - `annotsv_annotated_calls`: This file contains all records from the `manta_prepass_vcf` that AnnotSV could annotate.
+              - `annotsv_unannotated_calls`: This file contains all records from the `manta_prepass_vcf` that AnnotSV could not annotate.
       - Copy number variation callers
           - ControlFREEC
               - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
@@ -218,6 +223,7 @@ doc: |
       - `Kids Fist VCF2MAF`: pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.3
       - `Manta`: pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
       - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
+      - `annotsv`: pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
 
   1. For highly complex samples, some tools have shown themselves to require memory allocation adjustments:
      Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, GATK FilterMutectCalls and Vardict.
@@ -313,6 +319,11 @@ inputs:
       \ for use with FuncotateSegments. If you encounter 'Variant context does not\
       \ represent a copy number segment' error, set this value lower than the length\
       \ of the failed segment."}
+
+  # AnnotSV Inputs
+  annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing\
+      \ annotations for AnnotSV", "sbg:fileTypes": "TAR, TAR.GZ, TGZ", "sbg:suggestedValue": {
+      class: File, path: 6245fde8274f85577d646da0, name: annotsv_311_annotations_dir.tgz}}
 
   # Optional with One Default
   cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16\
@@ -453,6 +464,8 @@ outputs:
   strelka2_prepass_vcf: {type: 'File', outputSource: run_strelka2/strelka2_prepass_vcf}
   manta_pass_vcf: {type: 'File', outputSource: run_manta/manta_pass_vcf}
   manta_prepass_vcf: {type: 'File', outputSource: run_manta/manta_prepass_vcf}
+  annotsv_annotated_calls: {type: 'File?', outputSource: run_annotsv/annotated_calls}
+  annotsv_unannotated_calls: {type: 'File?', outputSource: run_annotsv/unannotated_calls}
   mutect2_public_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_public_outputs}
   mutect2_protected_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_protected_outputs}
   mutect2_prepass_vcf: {type: 'File', outputSource: run_mutect2/mutect2_filtered_vcf}
@@ -862,6 +875,13 @@ steps:
       manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
+
+  run_annotsv:
+    run: ../tools/annotsv.cwl
+    in:
+      annotations_dir_tgz: annotsv_annotations_dir_tgz
+      sv_input_file: run_manta/manta_prepass_vcf
+    out: [annotated_calls, unannotated_calls]
 
   run_gatk_cnv:
     run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
