@@ -217,12 +217,12 @@ outputs:
   annotated_calls:
     type: 'File?'
     outputBinding:
-      glob: '*annotated.tsv'
+      glob: '*.annotated.tsv'
       outputEval: $(inheritMetadata(self, inputs.sv_input_file))
   unannotated_calls:
     type: 'File?'
     outputBinding:
-      glob: '*unannotated.tsv'
+      glob: '*.unannotated.tsv'
       outputEval: $(inheritMetadata(self, inputs.sv_input_file))
 
 $namespaces:
