@@ -72,8 +72,6 @@ inputs:
       prefix: "-annotationMode"
       position: 1
     doc: "Description of the types of lines produced by AnnotSV"
-#  bcftools: { type: 'string?', inputBinding: { prefix: "-bcftools", position: 1 }, doc: "Path of the bcftools local installation" }
-#  bedtools: { type: 'string?', inputBinding: { prefix: "-bedtools", position: 1 }, doc: "Path of the bedtools local installation" }
   benign_af: { type: 'float?', inputBinding: { prefix: "-benignAF", position: 1 }, doc: "Allele frequency threshold to select the benign SV in the data sources" }
   candidate_genes_file: { type: 'File?', inputBinding: { prefix: "-candidateGenesFile", position: 1 }, doc: "Path of a file containing the candidate genes of the user (gene names can be space-separated, tabulation-separated, or line-break-separated)",  "sbg:fileTypes": "BED, CSV, TSV, TXT"}
   candidate_genes_filtering:

@@ -167,12 +167,12 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
             - `lancet_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
     - Structural variant callers
         - Manta
-            - `manta_vep_vcf`: SV call filtered on `PASS`, from manta
-            - `manta_vep_tbi`: Index file of above bgzipped vcf
+            - `manta_pass_vcf`: SV call filtered on `PASS`, from manta
+            - `manta_pass_tbi`: Index file of above bgzipped vcf
             - `manta_prepass_vcf`: SV results with all `FILTER` categories for manta. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
         - AnnotSV
-            - `annotsv_annotated_calls`: This file contains all records from the `manta_prepass_vcf` that AnnotSV could annotate.
-            - `annotsv_unannotated_calls`: This file contains all records from the `manta_prepass_vcf` that AnnotSV could not annotate.
+            - `annotsv_annotated_calls`: This file contains all records from the `manta_pass_vcf` that AnnotSV could annotate.
+            - `annotsv_unannotated_calls`: This file contains all records from the `manta_pass_vcf` that AnnotSV could not annotate.
     - Copy number variation callers
         - ControlFREEC
             - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
