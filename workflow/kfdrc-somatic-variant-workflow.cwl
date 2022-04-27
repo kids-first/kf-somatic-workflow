@@ -61,7 +61,7 @@ doc: |
   #### SNV Callers
 
   - [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
-    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
+    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information
   - [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
     - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
     - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
@@ -296,8 +296,12 @@ inputs:
       \ if this run is WGS or WXS"}
 
   # GATK CNV Inputs
-  input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
-        required: false}], doc: "Picard or GATK-style interval list file of regions\
+  gatk_cnv_input_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi", required: false}],
+    doc: "For GATK CNV Calling: Picard or GATK-style interval list file of regions to analyze. For WGS,\
+      \ this should typically only include the autosomal chromosomes.", 'sbg:fileTypes': "INTERVALS,\
+      \ INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
+  gatk_cnv_input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
+        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval list file of regions\
       \ to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
       \ the panel workflow. Significantly reduces quality of calling if not provided!",
@@ -425,7 +429,7 @@ inputs:
   # WXS only Fields
   padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
   unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding\
-      \ for cnv calling"}
+      \ for ControlFreeC exome mode CNV calling."}
 
 outputs:
   ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
@@ -870,8 +874,8 @@ steps:
       input_aligned_reads_normal: input_normal_aligned
       reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      input_interval_list: unpadded_capture_regions
-      input_exclude_interval_list: input_exclude_interval_list
+      input_interval_list: gatk_cnv_input_interval_list
+      input_exclude_interval_list: gatk_cnv_input_exclude_interval_list
       bin_length:
         source: wgs_or_wxs
         valueFrom: |
