@@ -1,0 +1,2 @@
+# main cmd to work off of:
+# /home/programs/PrepareAA-master/PrepareAA.py -s BS_922YMFYK -t 8 --cnv_bed a1266520-a0a7-489e-a9c0-0596563ef178_ESTIMATED_PLOIDY_CORRECTED_CN.bed --sorted_bam a1266520-a0a7-489e-a9c0-0596563ef178.bam --downsample 10 --ref GRCh38 2> errs.log > out.log  &
