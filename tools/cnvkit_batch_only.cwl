@@ -19,31 +19,26 @@ arguments:
       cnvkit.py batch
       ${
         if (inputs.cnvkit_cnn == null){
-          var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn --fasta " + inputs.reference.path + " --annotate " + inputs.annotation_file.path;
-          if (inputs.input_control != null) {
-              arg += " --normal " + inputs.input_control.path;
-          }
+          return "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn";
         }
         else{
-          var arg = "--reference " + inputs.cnvkit_cnn.path;
-
+            return "";
         }
-        return arg;
       }
       --diagram
       --scatter
 
 inputs:
-  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position 1}}
-  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
-  reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
-  cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
-  capture_regions: {type: ['null', File], doc: "target regions for WES", inputBinding: { prefix: '--targets', position: 2 }}
-  annotation_file: {type: ['null', File], doc: "refFlat.txt file, needed if cnv kit cnn not already built"}
+  input_sample: { type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position: 1}}
+  input_control: { type: 'File?', doc: "normal bam file - can skip in .cnn file supplied", secondaryFiles: [^.bai], inputBinding: { position: 2, prefix: "--normal"} }
+  reference: { type: 'File?', doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai], inputBinding: { position: 2, prefix: "--fasta"} }
+  cnvkit_cnn: { type: 'File?', doc: "If running using an existing .cnn, supply here", inputBinding: { position: 2, prefix: "--reference" } }
+  capture_regions: { type: 'File?', doc: "target regions for WES", inputBinding: { prefix: '--targets', position: 2 } }
+  annotation_file: { type: 'File?', doc: "refFlat.txt file, needed if cnv kit cnn not already built", inputBinding: { position: 2, prefix: "--annotate"} }
   output_basename: string
-  wgs_mode: { type: 'boolean?', doc: "for WGS mode, set to true.", default: true, inputBinding: { position: 2, prefix: '-m wgs', shellQuote: false } }
+  run_mode: {type: ['null', {type: enum, name: wgs_mode, symbols: ["wgs", "hybrid", "amplicon"]}], doc: "Choose rum method", default: "wgs", inputBinding: { position: 2, prefix: "-m"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 16, inputBinding: { position: 2, prefix: "-p"} }
-  sex: {type: 'boolean?', doc: "Is the input male?", default: false, inputBinding: { position: 2,  prefix: "--male-reference"}}
+  male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false, inputBinding: { position: 2,  prefix: "--male-reference"} }
 outputs:
   output_cnr: 
     type: File
@@ -61,20 +56,9 @@ outputs:
     type: File
     outputBinding:
       glob: '*.diagram.pdf'
-  output_metrics: 
-    type: File
-    outputBinding:
-      glob: '*.metrics.txt'
-  output_gainloss: 
-    type: File
-    outputBinding:
-      glob: '*.gainloss.txt'
   output_cnn:
-    type: ['null', File]
+    type: 'File?'
     outputBinding:
       glob: '*_reference.cnn'
     doc: "Output if starting from cnn scratch.  Should not appear if an existing .cnn was given as input."
-  output_seg:
-    type: File
-    outputBinding:
-      glob: '*.seg'
+
