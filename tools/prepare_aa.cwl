@@ -1,5 +1,3 @@
-# main cmd to work off of:
-# /home/programs/PrepareAA-master/PrepareAA.py -s BS_922YMFYK -t 8 --cnv_bed a1266520-a0a7-489e-a9c0-0596563ef178_ESTIMATED_PLOIDY_CORRECTED_CN.bed --sorted_bam a1266520-a0a7-489e-a9c0-0596563ef178.bam --downsample 10 --ref GRCh38 2> errs.log > out.log  &
 cwlVersion: v1.2
 class: CommandLineTool
 id: prepare-aa
@@ -12,24 +10,28 @@ requirements:
   - class: ResourceRequirement
     ramMin: 16000
     coresMin: $(inputs.threads)
-baseCommand: [tar, -xzf]
+baseCommand: [mkdir, data_repo]
 arguments: 
+  - position: 1
+    shellQuote: false
+    valueFrom: >- 
+      && tar -xzf -C data_repo
   - position: 2
     shellQuote: false
     valueFrom: >-
-      export AA_DATA_REPO=$PWD/$(inputs.data_untar_name)
+      && export AA_DATA_REPO=$PWD/data_repo
       && touch $AA_DATA_REPO/coverage.stats
-arguments: 
   - position: 3
     shellQuote: false
     valueFrom: >-
-      /home/programs/PrepareAA-master/PrepareAA.py
+      && /home/programs/PrepareAA-master/PrepareAA.py
 
 inputs:
   data_repo: { type: File, doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/", inputBinding: { position: 1} }
-  data_untar_name: { type: 'string?', doc: "Name of dir created when data repo un-tarred", default: "GRCh38", inputBinding: { position: 3, prefix: "--ref"} }
+  data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 3, prefix: "--ref"} }
   sorted_bam: { type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position: 3, prefix: "--sorted_bam" } }
   sample: { type: 'string', doc: "Sample name", inputBinding: { position: 3, prefix: "-s"} }
+  threads: { type: 'int?', doc: 'Num threads to use', default: 8, inputBinding: { position: 3, prefix: "-t"} }
   cnv_bed: { type: File, doc: "Converted CNVkit cns-to-bed file", inputBinding: { position: 3, prefix: "--cnv_bed"} }
 outputs:
   aa_cnv_seeds: 

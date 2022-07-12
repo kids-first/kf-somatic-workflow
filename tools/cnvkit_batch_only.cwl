@@ -36,7 +36,7 @@ inputs:
   capture_regions: { type: 'File?', doc: "target regions for WES", inputBinding: { prefix: '--targets', position: 2 } }
   annotation_file: { type: 'File?', doc: "refFlat.txt file, needed if cnv kit cnn not already built", inputBinding: { position: 2, prefix: "--annotate"} }
   output_basename: string
-  run_mode: {type: ['null', {type: enum, name: wgs_mode, symbols: ["wgs", "hybrid", "amplicon"]}], doc: "Choose rum method", default: "wgs", inputBinding: { position: 2, prefix: "-m"} }
+  run_mode: { type: ['null', {type: enum, name: wgs_mode, symbols: ["wgs", "hybrid", "amplicon"]}], doc: "Choose rum method", default: "wgs", inputBinding: { position: 2, prefix: "-m"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 16, inputBinding: { position: 2, prefix: "-p"} }
   male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false, inputBinding: { position: 2,  prefix: "--male-reference"} }
 outputs:
