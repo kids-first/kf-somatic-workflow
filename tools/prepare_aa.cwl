@@ -15,11 +15,12 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >- 
-      && tar -xzf -C data_repo
+      && tar -C data_repo -xzf
   - position: 2
     shellQuote: false
     valueFrom: >-
       && export AA_DATA_REPO=$PWD/data_repo
+      && export AA_SRC=/home/programs/AmpliconArchitect-master/src
       && touch $AA_DATA_REPO/coverage.stats
   - position: 3
     shellQuote: false
@@ -38,3 +39,7 @@ outputs:
     type: File
     outputBinding:
       glob: '*_AA_CNV_SEEDS.bed'
+  coverage_stats:
+    type: File
+    outputBinding:
+      glob: 'data_repo/coverage.stats'
