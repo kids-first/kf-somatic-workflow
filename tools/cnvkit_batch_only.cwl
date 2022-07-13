@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
   - class: DockerRequirement
-    dockerPull: 'images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3'
+    dockerPull: 'etal/cnvkit:0.9.8'
   - class: ResourceRequirement
     ramMin: 32000
     coresMin: $(inputs.threads)
@@ -16,6 +16,16 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
+      ${
+        if (inputs.ref_cache){
+            var cmd = "tar -xzf " + inputs.ref_cache.path
+            + " && export REF_CACHE=\"$PWD/ref/cache/%2s/%2s/%s\" &&";
+            return cmd;
+        }
+        else{
+            return "";
+        }
+      }
       cnvkit.py batch
       ${
         if (inputs.cnvkit_cnn == null){
@@ -27,10 +37,9 @@ arguments:
       }
       --diagram
       --scatter
-
 inputs:
   input_sample: { type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position: 1}}
-  input_control: { type: 'File?', doc: "normal bam file - can skip in .cnn file supplied", secondaryFiles: [^.bai], inputBinding: { position: 2, prefix: "--normal"} }
+  input_control: { type: 'File?', doc: "normal bam file - can skip in .cnn file supplied", secondaryFiles: ['^.bai?', '.crai?'], inputBinding: { position: 2, prefix: "--normal"} }
   reference: { type: 'File?', doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai], inputBinding: { position: 2, prefix: "--fasta"} }
   cnvkit_cnn: { type: 'File?', doc: "If running using an existing .cnn, supply here", inputBinding: { position: 2, prefix: "--reference" } }
   capture_regions: { type: 'File?', doc: "target regions for WES", inputBinding: { prefix: '--targets', position: 2 } }
@@ -39,6 +48,7 @@ inputs:
   run_mode: { type: ['null', {type: enum, name: wgs_mode, symbols: ["wgs", "hybrid", "amplicon"]}], doc: "Choose rum method", default: "wgs", inputBinding: { position: 2, prefix: "-m"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 16, inputBinding: { position: 2, prefix: "-p"} }
   male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false, inputBinding: { position: 2,  prefix: "--male-reference"} }
+  ref_cache: { type: 'File?', doc: "For cram input, provide tar ball of output of running misc/seq_cache_populate.pl from samtools on the reference fasta" }
 outputs:
   output_cnr: 
     type: File

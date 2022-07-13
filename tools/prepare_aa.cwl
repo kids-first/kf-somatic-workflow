@@ -40,7 +40,7 @@ arguments:
 inputs:
   data_repo: { type: File, doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/", inputBinding: { position: 1} }
   data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 3, prefix: "--ref"} }
-  sorted_bam: { type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position: 3, prefix: "--sorted_bam" } }
+  sorted_bam: { type: File, doc: "tumor bam file", secondaryFiles: ['^.bai?', '.crai?'], inputBinding: { position: 3, prefix: "--sorted_bam" } }
   sample: { type: 'string', doc: "Sample name", inputBinding: { position: 3, prefix: "-s"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 8, inputBinding: { position: 3, prefix: "-t"} }
   cnv_bed: { type: File, doc: "Converted CNVkit cns-to-bed file", inputBinding: { position: 3, prefix: "--cnv_bed"} }
