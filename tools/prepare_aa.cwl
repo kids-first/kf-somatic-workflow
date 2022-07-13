@@ -22,6 +22,16 @@ arguments:
       && export AA_DATA_REPO=$PWD/data_repo
       && export AA_SRC=/home/programs/AmpliconArchitect-master/src
       && touch $AA_DATA_REPO/coverage.stats
+      ${
+        if (inputs.ref_cache){
+            var cmd = " && tar -xzf " + inputs.ref_cache.path
+            + " && export REF_CACHE=\"$PWD/ref/cache/%2s/%2s/%s\"";
+            return cmd;
+        }
+        else{
+            return "";
+        }
+      }
   - position: 3
     shellQuote: false
     valueFrom: >-
@@ -34,6 +44,7 @@ inputs:
   sample: { type: 'string', doc: "Sample name", inputBinding: { position: 3, prefix: "-s"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 8, inputBinding: { position: 3, prefix: "-t"} }
   cnv_bed: { type: File, doc: "Converted CNVkit cns-to-bed file", inputBinding: { position: 3, prefix: "--cnv_bed"} }
+  ref_cache: { type: 'File?', doc: "For cram input, provide tar ball of output of running misc/seq_cache_populate.pl from samtools on the reference fasta" }
 outputs:
   aa_cnv_seeds: 
     type: File
