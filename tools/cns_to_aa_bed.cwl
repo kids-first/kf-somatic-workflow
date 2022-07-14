@@ -15,6 +15,6 @@ inputs:
   input_cns: { type: File, doc: "CNVkit raw cns file to convert", inputBinding: { position: 1, prefix: "--cns_file"} }
 outputs:
   aa_cns_bed: 
-    type: File
+    type: 'File[]'
     outputBinding:
       glob: '*.bed'
