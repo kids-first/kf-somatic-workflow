@@ -42,7 +42,7 @@ inputs:
   data_repo: { type: File, doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/", inputBinding: { position: 1} }
   data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 3, prefix: "--ref"} }
   bam: { type: File, doc: "tumor bam file", secondaryFiles: ['^.bai?', '.crai?'], inputBinding: { position: 3, prefix: "--bam" } }
-  downsample: { type: 'int?', doc: "Recommended for downstream anaylsis", default: 10, inputBinding: { position: 3, prefix: "--downsample" } }
+  downsample: { type: 'int?', doc: "Recommended for anaylsis", default: 10, inputBinding: { position: 3, prefix: "--downsample" } }
   output_basename: { type: 'string', inputBinding: { position: 3, prefix: "--out"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 8 }
   aa_bed: { type: File, doc: "Bed file from prepare-aa", inputBinding: { position: 3, prefix: "--bed"} }
@@ -61,7 +61,7 @@ outputs:
   cycles:
     type: 'File[]'
     outputBinding:
-      glob: '*_cycle.txt'
+      glob: '*_cycles.txt'
   sv_png:
     type: 'File[]'
     outputBinding:

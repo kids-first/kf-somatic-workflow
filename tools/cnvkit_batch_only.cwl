@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
   - class: DockerRequirement
-    dockerPull: 'etal/cnvkit:0.9.8'
+    dockerPull: 'images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3'
   - class: ResourceRequirement
     ramMin: 32000
     coresMin: $(inputs.threads)
@@ -16,16 +16,6 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      ${
-        if (inputs.ref_cache){
-            var cmd = "tar -xzf " + inputs.ref_cache.path
-            + " && export REF_CACHE=\"$PWD/ref/cache/%2s/%2s/%s\" &&";
-            return cmd;
-        }
-        else{
-            return "";
-        }
-      }
       cnvkit.py batch
       ${
         if (inputs.cnvkit_cnn == null){
@@ -35,8 +25,6 @@ arguments:
             return "";
         }
       }
-      --diagram
-      --scatter
 inputs:
   input_sample: { type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position: 1}}
   input_control: { type: 'File?', doc: "normal bam file - can skip in .cnn file supplied", secondaryFiles: ['^.bai?', '.crai?'], inputBinding: { position: 2, prefix: "--normal"} }
@@ -47,28 +35,29 @@ inputs:
   output_basename: string
   run_mode: { type: ['null', {type: enum, name: wgs_mode, symbols: ["wgs", "hybrid", "amplicon"]}], doc: "Choose rum method", default: "wgs", inputBinding: { position: 2, prefix: "-m"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 16, inputBinding: { position: 2, prefix: "-p"} }
+  scatter_plot: { type: 'boolean?', inputBinding: { prefix: "--scatter", position: 2 }, doc: "Create a whole-genome copy ratio profile as a PDF scatter plot." }
+  diagram_plot: { type: 'boolean?', inputBinding: { prefix: "--diagram", position: 2 }, doc: "Create an ideogram of copy ratios on chromosomes as a PDF." }
   male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false, inputBinding: { position: 2,  prefix: "--male-reference"} }
-  ref_cache: { type: 'File?', doc: "For cram input, provide tar ball of output of running misc/seq_cache_populate.pl from samtools on the reference fasta" }
 outputs:
   output_cnr: 
     type: File
     outputBinding:
       glob: '*.cnr'
   output_cns:
-    type: 'File[]'
+    type: 'File'
     outputBinding:
       glob: '*.cns'
   output_scatter:
-    type: File
+    type: 'File?'
     outputBinding:
-      glob: '*.scatter.pdf'
+      glob: '*-scatter.pdf'
   output_diagram:
-    type: File
+    type: 'File?'
     outputBinding:
-      glob: '*.diagram.pdf'
+      glob: '*-diagram.pdf'
   output_cnn:
     type: 'File?'
     outputBinding:
       glob: '*_reference.cnn'
-    doc: "Output if starting from cnn scratch.  Should not appear if an existing .cnn was given as input."
+    doc: "Output if starting from cnn scratch. Should not appear if an existing .cnn was given as input."
 
