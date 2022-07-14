@@ -29,6 +29,12 @@ Other CN callers can be used, but since KF uses this natively, but does not outp
 ### `tools/cns_to_aa_bed.cwl`
 Converts `.cns` file to bed, adding "crude ploidy estimates".
 Again, it is recommended that `.cns` be used, not `.call.cns`
+#### Inputs:
+ - `input_cns`: Raw `.cns` output
+#### Outputs:
+ - `aa_cns_bed`: Outputs two bed files. May restrict to one later once I understand better
+   - `_ESTIMATED_PLOIDY_CORRECTED_CN.bed`: currently used for subsequent steps
+   - `_uncorr_CN.bed`: currently not used, keep until I understand better
 
 **Note, while the tools below can use cram input, processing is slower by about 16%**
 ### `tools/prepare_aa.cwl`
