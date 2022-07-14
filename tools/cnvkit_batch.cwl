@@ -116,10 +116,10 @@ outputs:
     type: File
     outputBinding:
       glob: '*.cnr'
-  output_cns:
-    type: 'File[]'
+  output_calls:
+    type: File
     outputBinding:
-      glob: '*.cns'
+      glob: '*.call.cns'
   output_scatter:
     type: File
     outputBinding:
