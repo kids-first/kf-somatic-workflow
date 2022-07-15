@@ -1,6 +1,6 @@
 # Kids First DRC Amplicon Architect(AA) Workflow (WIP)
 This is an extra-chromosomal DNA (ecDNA) pipeline designed to detect ecDNA candidates.
-Briefly, chromosomal fragments in tumor cells make break off to form circular DNA.
+Briefly, chromosomal fragments in tumor cells break off to form circular DNA.
 This DNA acts sort of like a plasmid/mtDNA in that it is not beholden to the usual rules of cell division and can have massive copy numbers in each cell.
 The tools for this pipeline were derived from https://github.com/jluebeck/AmpliconArchitect, related publication: https://www.nature.com/articles/s41467-018-08200-y
 

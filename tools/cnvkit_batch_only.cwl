@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: cnvkit-batch-only
 doc: "This tools is a bit more restrictive than the cnvkit_batch.cwl, meant to be run to get needed .cns file when needed"
