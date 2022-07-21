@@ -8,7 +8,7 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'jluebeck/prepareaa:latest'
   - class: ResourceRequirement
-    ramMin: 16000
+    ramMin: 8000
     coresMin: 4
 baseCommand: [/home/programs/PrepareAA-master/scripts/convert_cns_to_bed.py]
 inputs:

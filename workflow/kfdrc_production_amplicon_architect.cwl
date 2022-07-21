@@ -52,6 +52,15 @@ steps:
       reference: reference
     out: [bam_file]
 
+  untar_data_repo:
+    run: ../tools/untar_gzip.cwl
+    in:
+      input_tar: data_repo
+      out_dir_name:
+        valueFrom: $(return "data_repo")
+    out: [output]
+
+
   cnvkit_batch:
     run: ../tools/cnvkit_batch_only.cwl
     when: $(inputs.cnvkit_cnn != null || inputs.input_control != null)
@@ -62,7 +71,17 @@ steps:
       input_control:
         source: [samtools_normal_cram_to_bam/bam_file, normal_align_file]
         pickValue: first_non_null
-      reference: reference
+      reference:
+        # samtools needs fasta, can't use fasta if cnn file provided
+        source: [cnvkit_cnn, reference]
+        valueFrom: "${
+          if (self[0] == null){
+            return self[1];
+          }
+          else{
+            return null;
+          }
+        }"
       cnvkit_cnn: cnvkit_cnn
       annotation_file: annotation_file
       male_input_flag: male_input_flag
@@ -80,7 +99,7 @@ steps:
   prepare_aa:
     run: ../tools/prepare_aa.cwl
     in:
-      data_repo: aa_data_repo
+      data_repo: untar_data_repo/output
       data_ref_version: aa_data_ref_version
       sample: output_basename
       sorted_bam:
