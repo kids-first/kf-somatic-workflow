@@ -7,6 +7,7 @@ doc: "ecDNA"
 requirements:
 - class: MultipleInputFeatureRequirement
 - class: InlineJavascriptRequirement
+- class: ScatterFeatureRequirement
 
 inputs:
   # Required
@@ -28,12 +29,15 @@ inputs:
   male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false }
 
 outputs:
-  aa_cnv_seeds: { type: File, outputSource: prepare_aa/aa_cnv_seeds, doc: "Bed file with candidate regions to search" }
-  aa_summary: { type: File, outputSource: amplicon_architect/summary, doc: "summary for all amplicons detected by AA" }
-  aa_cycles: { type: 'File[]', outputSource: amplicon_architect/cycles, doc: "A text file for each amplicon listing the simple cycles and their copy counts" }
-  graph: { type: 'File[]', outputSource: amplicon_architect/graph, doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts" }
-  sv_pdf: { type: 'File[]', outputSource: amplicon_architect/sv_pdf, doc: "PDF image file displaying the SV view of AA" }
-  sv_png: { type: 'File[]', outputSource: amplicon_architect/sv_png, doc: "PNG image file displaying the SV view of AA" }
+  aa_cnv_seeds: { type: File,  doc: "Bed file with candidate regions to search", outputSource: prepare_aa/aa_cnv_seeds }
+  aa_summary: { type: File, doc: "summary for all amplicons detected by AA", outputSource: amplicon_architect/summary }
+  aa_cycles: { type: 'File[]', doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts", outputSource: amplicon_architect/cycles }
+  graph: { type: 'File[]', doc: 'A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts', outputSource: amplicon_architect/graph }
+  sv_pdf: { type: 'File[]', doc: "PDF image file displaying the SV view of AA", outputSource: amplicon_architect/sv_pdf }
+  sv_png: { type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: amplicon_architect/sv_png }
+  amplicon_classification_profiles: { type: 'File[]?', doc: "abstract classification of the amplicon", outputSource: amplicon_classifier/amplicon_classification_profiles }
+  gene_list: { type: 'File[]?', doc: "genes present on amplicons with each classification", outputSource: amplicon_classifier/gene_list }
+  ecDNA_cts: { type: 'File[]?', doc: "not yet defined", outputSource:  amplicon_classifier/ecDNA_cts }
 
 steps:
   samtools_tumor_cram_to_bam:
@@ -55,9 +59,9 @@ steps:
   untar_data_repo:
     run: ../tools/untar_gzip.cwl
     in:
-      input_tar: data_repo
+      input_tar: aa_data_repo
       out_dir_name:
-        valueFrom: $(return "data_repo")
+        valueFrom: ${return "data_repo"}
     out: [output]
 
 
@@ -112,7 +116,7 @@ steps:
   amplicon_architect:
     run: ../tools/amplicon_architect.cwl
     in:
-      data_repo: aa_data_repo
+      data_repo: untar_data_repo/output
       data_ref_version: aa_data_ref_version
       bam:
         source: [samtools_tumor_cram_to_bam/bam_file, tumor_align_file]
@@ -123,6 +127,17 @@ steps:
       ref_cache: ref_cache
       mosek_license_file: mosek_license_file
     out: [summary, cycles, graph, sv_pdf, sv_png]
+
+  amplicon_classifier:
+    run: ../tools/aa_classifier.cwl
+    in:
+      data_repo: untar_data_repo/output
+      data_ref_version: aa_data_ref_version
+      cycles: amplicon_architect/cycles
+      graph: amplicon_architect/graph
+    scatter: [cycles, graph]
+    scatterMethod: dotproduct
+    out: [amplicon_classification_profiles, gene_list, ecDNA_cts]
 
 $namespaces:
   sbg: https://sevenbridges.com
