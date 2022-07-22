@@ -12,12 +12,12 @@ requirements:
     coresMin: $(inputs.threads)
   - class: InitialWorkDirRequirement
     listing: [$(inputs.data_repo)]
-baseCommand: []
+baseCommand: [export]
 arguments: 
   - position: 0
     shellQuote: false
     valueFrom: >-
-      && export AA_DATA_REPO=$(inputs.data_repo.path)
+      AA_DATA_REPO=$(inputs.data_repo.path)
       && export AA_SRC=/home/programs/AmpliconArchitect-master/src
       && mkdir licenses && cp $(inputs.mosek_license_file.path) licenses
       && export MOSEKLM_LICENSE_FILE=$PWD/licenses
