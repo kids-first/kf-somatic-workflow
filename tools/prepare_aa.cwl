@@ -25,6 +25,16 @@ arguments:
         if (inputs.mosek_license_file){
         var cmd = "&& mkdir licenses && cp " + inputs.mosek_license_file.path + " licenses\
         && export MOSEKLM_LICENSE_FILE=$PWD/licenses";
+        return cmd;
+        }
+        else{
+          return ""
+        }
+      }
+      ${
+        if (inputs.run_ac){
+        var cmd = "&& export AC_SRC=/home/programs/AmpliconClassifier-main";
+        return cmd;
         }
         else{
           return ""
@@ -68,34 +78,32 @@ outputs:
   summary: 
     type: 'File?'
     outputBinding:
-      glob: '*_summary.txt'
+      glob: '*_AA_results/*_summary.txt'
   graph:
     type: 'File[]'
     outputBinding:
-      glob: '*_graph.txt'
+      glob: '*_AA_results/*_graph.txt'
   cycles:
     type: 'File[]'
     outputBinding:
-      glob: '*_cycles.txt'
+      glob: '*_AA_results/*_cycles.txt'
   sv_png:
     type: 'File[]'
     outputBinding:
-      glob: '*.png'
+      glob: '*_AA_results/*.png'
   sv_pdf:
     type: 'File[]'
     outputBinding:
-      glob: '*.pdf'
+      glob: '*_AA_results/*.pdf'
   amplicon_classification_profiles: 
     type: 'File?'
     outputBinding:
-      glob: '*_amplicon_classification_profiles.tsv'
+      glob: '*_classification/*_amplicon_classification_profiles.tsv'
   gene_list:
     type: 'File?'
     outputBinding:
-      glob: '*_gene_list.tsv'
+      glob: '*_classification/*_gene_list.tsv'
   ecDNA_cts:
     type: 'File?'
     outputBinding:
-      glob: '*_ecDNA_counts.tsv'
-
-
+      glob: '*_classification/*_ecDNA_counts.tsv'
