@@ -12,14 +12,16 @@ requirements:
     coresMin: $(inputs.threads)
   - class: InitialWorkDirRequirement
     listing: [$(inputs.data_repo)]
-baseCommand: [export]
+  - class: EnvVarRequirement
+    envDef:
+      AA_DATA_REPO: $(inputs.data_repo.path)
+      AA_SRC: '/home/programs/AmpliconArchitect-master/src'
+baseCommand: []
 arguments: 
   - position: 0
     shellQuote: false
     valueFrom: >-
-      AA_DATA_REPO=$(inputs.data_repo.path)
-      && export AA_SRC=/home/programs/AmpliconArchitect-master/src
-      && mkdir licenses && cp $(inputs.mosek_license_file.path) licenses
+      mkdir licenses && cp $(inputs.mosek_license_file.path) licenses
       && export MOSEKLM_LICENSE_FILE=$PWD/licenses
       && cp $(inputs.coverage_stats.path) $AA_DATA_REPO/coverage.stats
       ${
@@ -39,7 +41,8 @@ arguments:
 inputs:
   data_repo: { type: Directory, doc: "Un-tarred reference obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
   data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 1, prefix: "--ref"} }
-  bam: { type: File, doc: "tumor bam file", secondaryFiles: ['^.bai?', '.crai?'], inputBinding: { position: 1, prefix: "--bam" } }
+  bam: { type: File, doc: "tumor bam file", secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.crai',
+    required: false}], inputBinding: { position: 1, prefix: "--bam" } }
   downsample: { type: 'int?', doc: "Recommended for anaylsis", default: 10, inputBinding: { position: 1, prefix: "--downsample" } }
   output_basename: { type: 'string', inputBinding: { position: 1, prefix: "--out"} }
   threads: { type: 'int?', doc: 'Num threads to use', default: 8 }
