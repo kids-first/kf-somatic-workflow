@@ -144,11 +144,12 @@ requirements:
 inputs:
   # Required
   aa_data_repo: {type: File, doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/"}
-  aa_data_ref_version: {type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38",
+  aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: ["GRCh38",
           "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo\
       \ to use", default: "GRCh38"}
   tumor_align_file: {type: File, doc: "Tumor read alignment file. Can be cram or bam",
-    secondaryFiles: ['^.bai?', '.crai?']}
+    secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.crai',
+        required: false}]}
   output_basename: {type: string, doc: "File name prefix for steps that require it"}
   mosek_license_file: {type: File, doc: "This tool uses some software that requires\
       \ a license file. You can get a personal or institutional one from https://www.mosek.com/license/request/."}
@@ -186,7 +187,7 @@ outputs:
   ecDNA_cts: {type: 'File[]?', doc: "not yet defined", outputSource: amplicon_classifier/ecDNA_cts}
 
 steps:
-  samtools_tumor_cram_to_bam:
+  samtools_calmd_tumor_cram_to_bam:
     run: ../tools/samtools_calmd.cwl
     when: $(inputs.input_reads.nameext == ".cram")
     in:
@@ -194,7 +195,7 @@ steps:
       reference: reference
     out: [bam_file]
 
-  samtools_normal_cram_to_bam:
+  samtools_calmd_normal_cram_to_bam:
     run: ../tools/samtools_calmd.cwl
     when: $(inputs.input_reads != null && inputs.input_reads.nameext == ".cram")
     in:
@@ -210,22 +211,20 @@ steps:
         valueFrom: ${return "data_repo"}
     out: [output]
 
-
   cnvkit_batch:
     run: ../tools/cnvkit_batch_only.cwl
     when: $(inputs.cnvkit_cnn != null || inputs.input_control != null)
     in:
       input_sample:
-        source: [samtools_tumor_cram_to_bam/bam_file, tumor_align_file]
+        source: [samtools_calmd_tumor_cram_to_bam/bam_file, tumor_align_file]
         pickValue: first_non_null
       input_control:
-        source: [samtools_normal_cram_to_bam/bam_file, normal_align_file]
+        source: [samtools_calmd_normal_cram_to_bam/bam_file, normal_align_file]
         pickValue: first_non_null
       reference:
         # samtools needs fasta, can't use fasta if cnn file provided
-        source: [cnvkit_cnn, reference]
-        valueFrom: "${ if (self[0] == null){ return self[1]; } else{ return null;\
-          \ } }"
+        source: reference
+        valueFrom: "$(inputs.cnvkit_cnn == null ? self : null)"
       cnvkit_cnn: cnvkit_cnn
       annotation_file: annotation_file
       male_input_flag: male_input_flag
@@ -247,7 +246,7 @@ steps:
       data_ref_version: aa_data_ref_version
       sample: output_basename
       sorted_bam:
-        source: [samtools_tumor_cram_to_bam/bam_file, tumor_align_file]
+        source: [samtools_calmd_tumor_cram_to_bam/bam_file, tumor_align_file]
         pickValue: first_non_null
       cnv_bed: cns_to_aa_bed/aa_cns_bed
     out: [aa_cnv_seeds, coverage_stats]
@@ -258,7 +257,7 @@ steps:
       data_repo: untar_data_repo/output
       data_ref_version: aa_data_ref_version
       bam:
-        source: [samtools_tumor_cram_to_bam/bam_file, tumor_align_file]
+        source: [samtools_calmd_tumor_cram_to_bam/bam_file, tumor_align_file]
         pickValue: first_non_null
       output_basename: output_basename
       coverage_stats: prepare_aa/coverage_stats
