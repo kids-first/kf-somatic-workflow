@@ -11,17 +11,21 @@ requirements:
     ramMin: 4000
     coresMin: $(inputs.threads)
   - class: InitialWorkDirRequirement
-    listing: [$(inputs.data_repo)]
+    listing:
+      - $(inputs.data_repo)
+      - entryname: setup_vars.sh
+        entry: |-
+          export AA_DATA_REPO=$(inputs.data_repo.path)
   - class: EnvVarRequirement
     envDef:
-      AA_DATA_REPO: $(inputs.data_repo.path)
       AA_SRC: '/home/programs/AmpliconArchitect-master/src'
 baseCommand: []
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      /home/programs/AmpliconClassifier-main/amplicon_classifier.py
+      . ./setup_vars.sh
+      && /home/programs/AmpliconClassifier-main/amplicon_classifier.py
 inputs:
   data_repo: { type: Directory, doc: "Un-tarred reference obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
   data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 1, prefix: "--ref"} }
