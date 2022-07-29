@@ -11,29 +11,30 @@ requirements:
     ramMin: 16000
     coresMin: $(inputs.threads)
   - class: InitialWorkDirRequirement
-    listing: [$(inputs.data_repo)]
+    listing:
+      - $(inputs.data_repo)
+      - entryname: setup_vars.sh
+        entry: |-
+          export AA_DATA_REPO=$(inputs.data_repo.path)
+          if [ -e $(inputs.mosek_license_file.path) ]
+          then 
+          mkdir licenses && cp $(inputs.mosek_license_file.path) licenses \
+          && export MOSEKLM_LICENSE_FILE=$PWD/licenses
+          fi
+          if [ -e $(inputs.ref_cache.path) ]
+          then
+          tar -xzf $(inputs.ref_cache.path) && export REF_CACHE="$PWD/ref/cache/%2s/%2s/%s"
+          fi
   - class: EnvVarRequirement
     envDef:
-      AA_DATA_REPO: $(inputs.data_repo.path)
       AA_SRC: '/home/programs/AmpliconArchitect-master/src'
 baseCommand: []
 arguments: 
   - position: 0
     shellQuote: false
     valueFrom: >-
-      mkdir licenses && cp $(inputs.mosek_license_file.path) licenses
-      && export MOSEKLM_LICENSE_FILE=$PWD/licenses
+      . ./setup_vars.sh
       && cp $(inputs.coverage_stats.path) $AA_DATA_REPO/coverage.stats
-      ${
-        if (inputs.ref_cache){
-            var cmd = " && tar -xzf " + inputs.ref_cache.path
-            + " && export REF_CACHE=\"$PWD/ref/cache/%2s/%2s/%s\"";
-            return cmd;
-        }
-        else{
-            return "";
-        }
-      }
   - position: 1
     shellQuote: false
     valueFrom: >-
