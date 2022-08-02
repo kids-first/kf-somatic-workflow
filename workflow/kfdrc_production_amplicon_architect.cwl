@@ -184,7 +184,6 @@ outputs:
       \ of the amplicon", outputSource: amplicon_classifier/amplicon_classification_profiles}
   gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
     outputSource: amplicon_classifier/gene_list}
-  ecDNA_cts: {type: 'File[]?', doc: "not yet defined", outputSource: amplicon_classifier/ecDNA_cts}
 
 steps:
   samtools_calmd_tumor_cram_to_bam:
@@ -274,7 +273,7 @@ steps:
       graph: amplicon_architect/graph
     scatter: [cycles, graph]
     scatterMethod: dotproduct
-    out: [amplicon_classification_profiles, gene_list, ecDNA_cts]
+    out: [amplicon_classification_profiles, gene_list]
 
 $namespaces:
   sbg: https://sevenbridges.com
