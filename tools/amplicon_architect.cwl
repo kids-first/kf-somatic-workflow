@@ -15,15 +15,12 @@ requirements:
       - $(inputs.data_repo)
       - entryname: setup_vars.sh
         entry: |-
-          export AA_DATA_REPO=$(inputs.data_repo.path)
-          if [ -e $(inputs.mosek_license_file.path) ]
-          then 
-          mkdir licenses && cp $(inputs.mosek_license_file.path) licenses \
-          && export MOSEKLM_LICENSE_FILE=$PWD/licenses
-          fi
-          if [ -e $(inputs.ref_cache.path) ]
+          export AA_DATA_REPO=$(inputs.data_repo.path) \
+          && mkdir licenses && cp $(inputs.mosek_license_file.path) licenses \
+          && export MOSEKLM_LICENSE_FILE=$PWD/licenses;
+          if [ ${ return inputs.ref_cache ? "REF_CACHE_YES" : null; } != null ];
           then
-          tar -xzf $(inputs.ref_cache.path) && export REF_CACHE="$PWD/ref/cache/%2s/%2s/%s"
+          tar -xzf ${ return inputs.ref_cache ? inputs.ref_cache.path : ''; } && export REF_CACHE="$PWD/ref/cache/%2s/%2s/%s"
           fi
   - class: EnvVarRequirement
     envDef:

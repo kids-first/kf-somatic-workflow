@@ -40,9 +40,3 @@ outputs:
     type: File
     outputBinding:
       glob: '*_gene_list.tsv'
-  ecDNA_cts:
-    type: File
-    outputBinding:
-      glob: '*_ecDNA_counts.tsv'
-
-
