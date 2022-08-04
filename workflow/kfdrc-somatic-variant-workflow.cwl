@@ -323,6 +323,13 @@ inputs:
       \ for use with FuncotateSegments. If you encounter 'Variant context does not\
       \ represent a copy number segment' error, set this value lower than the length\
       \ of the failed segment."}
+  # Amplicon Architect
+  aa_data_repo: {type: File, doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/"}
+  aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: ["GRCh38",
+          "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo\
+      \ to use", default: "GRCh38"}
+  mosek_license_file: {type: File, doc: "This tool uses some software that requires\
+      \ a license file. You can get a personal or institutional one from https://www.mosek.com/license/request/."}
 
   # AnnotSV Inputs
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing\
@@ -443,6 +450,20 @@ inputs:
       \ for ControlFreeC exome mode CNV calling."}
 
 outputs:
+  aa_cnv_seeds: {type: File, doc: "Bed file with candidate regions to search", outputSource: run_amplicon_architect/aa_cnv_seeds}
+  aa_summary: {type: File, doc: "summary for all amplicons detected by AA", outputSource: run_amplicon_architect/aa_summary}
+  aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges\
+      \ in the breakpoint graph, their categorization (sequence, discordant, concordant,\
+      \ source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
+  aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges in
+      the breakpoint graph, their categorization (sequence, discordant, concordant,
+      source) and their copy counts', outputSource: run_amplicon_architect/graph}
+  aa_sv_pdf: {type: 'File[]', doc: "PDF image file displaying the SV view of AA", outputSource: run_amplicon_architect/sv_pdf}
+  aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: run_amplicon_architect/sv_png}
+  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification\
+      \ of the amplicon", outputSource: run_amplicon_architect/amplicon_classification_profiles}
+  aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
+    outputSource: run_amplicon_architect/gene_list}
   ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
   ctrlfreec_config: {type: 'File', outputSource: run_controlfreec/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
@@ -838,9 +859,24 @@ steps:
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
-      sex: cnvkit_sex
-    out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss,
+      sex: run_amplicon_architect
+    out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_cns,  cnvkit_calls, cnvkit_metrics, cnvkit_gainloss,
       cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
+
+  run_amplicon_architect:
+    run: ../workflow/kfdrc_production_amplicon_architect.cwl
+    in:
+      aa_data_repo: aa_data_repo
+      aa_data_ref_version: aa_data_ref_version
+      tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
+      output_basename: output_basename
+      mosek_license_file: mosek_license_file
+      reference: prepare_reference/indexed_fasta
+      cnvkit_cns: run_cnvkit/cnvkit_cns
+      male_input_flag:
+        source: cnvkit_sex
+        valueFrom: "$(self == 'y' ? true : null)"
+    out: [ aa_cnv_seeds, aa_summary, aa_cycles, graph, sv_pdf, sv_png, amplicon_classification_profiles, gene_list ]
 
   run_theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl

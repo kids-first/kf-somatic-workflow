@@ -25,6 +25,7 @@ inputs:
 outputs:
   cnvkit_cnr: {type: File, outputSource: cnvkit/output_cnr}
   cnvkit_cnn_output: {type: ['null', File], outputSource: cnvkit/output_cnn}
+  cnvkit_cns: { type: File, outputSource: cnvkit/output_cns }
   cnvkit_calls: {type: File, outputSource: cnvkit/output_calls}
   cnvkit_metrics: {type: File, outputSource: cnvkit/output_metrics}
   cnvkit_gainloss: {type: File, outputSource: cnvkit/output_gainloss}
@@ -49,4 +50,4 @@ steps:
       sex: sex
       tumor_sample_name: tumor_sample_name
       cnvkit_cnn: cnvkit_cnn_input
-    out: [output_cnr, output_calls, output_scatter, output_diagram, output_metrics, output_gainloss, output_seg, output_cnn]
+    out: [output_cnr, output_calls, output_cns, output_scatter, output_diagram, output_metrics, output_gainloss, output_seg, output_cnn]
