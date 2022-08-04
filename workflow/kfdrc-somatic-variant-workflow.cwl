@@ -859,7 +859,7 @@ steps:
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
-      sex: run_amplicon_architect
+      sex: cnvkit_sex
     out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_cns,  cnvkit_calls, cnvkit_metrics, cnvkit_gainloss,
       cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
 
