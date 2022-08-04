@@ -116,6 +116,10 @@ outputs:
     type: File
     outputBinding:
       glob: '*.cnr'
+  output_cns:
+    type: File
+    outputBinding:
+      glob: '$(inputs.input_sample.nameroot).cns'
   output_calls:
     type: File
     outputBinding:
