@@ -41,7 +41,7 @@ mosek_license_file: { type: File, doc: "This tool uses some software that requir
 ## Tools
 ### Dockerfiles:
  - `images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3`: Optional, to create a "raw" (not .call.cns) .cns file.
- - `jluebeck/prepareaa:latest`: Contains all software required to run pre-processing and processing steps
+ - `jluebeck/prepareaa:v0.1203.10`: Contains all software required to run pre-processing and processing steps
 
 ### `tools/cnvkit_batch_only.cwl`
 Modified version of somatic workflow `tools/cnvkit_batch.cwl` to truly run the batch step in a limited capacity.

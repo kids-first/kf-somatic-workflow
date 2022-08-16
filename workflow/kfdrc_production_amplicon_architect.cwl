@@ -46,7 +46,7 @@ doc: |
   ## Tools
   ### Dockerfiles:
    - `images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3`: Optional, to create a "raw" (not .call.cns) .cns file.
-   - `jluebeck/prepareaa:latest`: Contains all software required to run pre-processing and processing steps
+   - `jluebeck/prepareaa:v0.1203.10`: Contains all software required to run pre-processing and processing steps
 
   ### `tools/cnvkit_batch_only.cwl`
   Modified version of somatic workflow `tools/cnvkit_batch.cwl` to truly run the batch step in a limited capacity.
@@ -167,7 +167,7 @@ inputs:
         required: false}]}
   annotation_file: {type: 'File?', doc: "refFlat.txt file, needed if cnv kit cnn not\
       \ already built"}
-  male_input_flag: {type: 'boolean?', doc: "Is the input male?", default: false}
+  male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false }
 
 outputs:
   aa_cnv_seeds: {type: File, doc: "Bed file with candidate regions to search", outputSource: prepare_aa/aa_cnv_seeds}
