@@ -178,7 +178,6 @@ outputs:
   graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges in
       the breakpoint graph, their categorization (sequence, discordant, concordant,
       source) and their copy counts', outputSource: amplicon_architect/graph}
-  sv_pdf: {type: 'File[]', doc: "PDF image file displaying the SV view of AA", outputSource: amplicon_architect/sv_pdf}
   sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: amplicon_architect/sv_png}
   amplicon_classification_profiles: {type: 'File[]?', doc: "abstract classification\
       \ of the amplicon", outputSource: amplicon_classifier/amplicon_classification_profiles}

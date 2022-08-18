@@ -2,11 +2,12 @@ cwlVersion: v1.2
 class: Workflow
 id: kfdrc-somatic-variant-workflow
 label: Kids First DRC Somatic Variant Workflow
-doc: |
+doc: |+
   # Kids First DRC Somatic Variant Workflow
 
   This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
   This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC, CNVkit, and GATK, and SV calls using Manta.
+  For whole genome sequencing (WGS) data, the workflow will also predict extra chromosomal DNA (ecDNA) usiong AmpliconArchitect
   Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor, then added an additional MAF output using a modified version of MSKCCs vcf2maf.
   See [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for more details on annotation.
 
@@ -44,24 +45,24 @@ doc: |
   ### Standalone Somatic Workflows
   Each tool used in the [combined workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) can be run on its own. While the combined workflow calls all types of variant, each standalone caller only specializes in one class of variant.
 
-  | Workflow                                                                                                                                            | CNV | SNV | SV |
-  |-----------------------------------------------------------------------------------------------------------------------------------------------------|-----|-----|----|
-  | [kfdrc-somatic-variant-workflow.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl)     |  x  |  x  |  x |
-  | [kfdrc_production_cnvkit_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_wf.cwl)             |  x  |     |    |
-  | [kfdrc_production_controlfreec_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_controlfreec_wf.cwl) |  x  |     |    |
-  | [kfdrc_production_lancet_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_lancet_wf.cwl)             |     |  x  |    |
-  | [kfdrc_production_manta_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_manta_wf.cwl)               |     |     |  x |
-  | [kfdrc_production_mutect2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_mutect2_wf.cwl)           |     |  x  |    |
-  | [kfdrc_production_strekla2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_strekla2_wf.cwl)         |     |  x  |    |
-  | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |
-  | [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)|  x |     |    |
-  | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |
-  | [kfdrc_gatk_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl)|  x  |     |    |
-
+  | Workflow                                                                                                                                            | CNV | SNV | SV | ecDNA |
+  |-----------------------------------------------------------------------------------------------------------------------------------------------------|-----|-----|----|-------|
+  | [kfdrc-somatic-variant-workflow.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl)     |  x  |  x  |  x |       |
+  | [kfdrc_production_cnvkit_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_wf.cwl)             |  x  |     |    |       |
+  | [kfdrc_production_controlfreec_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_controlfreec_wf.cwl) |  x  |     |    |       |
+  | [kfdrc_production_lancet_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_lancet_wf.cwl)             |     |  x  |    |       |
+  | [kfdrc_production_manta_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_manta_wf.cwl)               |     |     |  x |       |
+  | [kfdrc_production_mutect2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_mutect2_wf.cwl)           |     |  x  |    |       |
+  | [kfdrc_production_strekla2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_strekla2_wf.cwl)         |     |  x  |    |       |
+  | [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |       |
+  | [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)|  x |     |    |       |
+  | [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |       |
+  | [kfdrc_gatk_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl)|  x  |     |    |       |
+  | [kfdrc_production_amplicon_architect.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_amplicon_architect.cwl)|     |     |      |   x  |
   #### SNV Callers
 
   - [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
-    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information
+    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
   - [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
     - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
     - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
@@ -89,6 +90,10 @@ doc: |
 
   For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
 
+  #### ecDNA Prediction
+   - [AmpliconArchitect](https://github.com/jluebeck/PrepareAA/blob/master/GUIDE.md) is used to predict ecDNAs
+   - Workflfow documentation available [here](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_amplicon_architect.md)
+
   #### SV Callers and Annotators
 
   - [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
@@ -101,7 +106,7 @@ doc: |
 
   ### Tips to Run:
 
-  1. For input cram files, be sure to have indexed them beforehand as well.
+  1. For input cram files, be sure to have indexed them beforehand
 
   1. When in doubt, all of our reference files can be obtained from here: https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/
 
@@ -139,17 +144,19 @@ doc: |
       - `contamination_adjustment`: FALSE
       - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
       - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
-      `protein_indel_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspotsRecommend pulling the two relevant columns for SNVs only, and convert to tsv
+      - `protein_indel_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspotsRecommend pulling the two relevant columns for SNVs only, and convert to tsv
       bcftools_annot_columns: `"INFO/AF"`. csv string of columns from annotation to port into the input vcf
-      `bcftools_annot_vcf`: `af-only-gnomad.hg38.vcf.gz`. Yes, same as the Mutect2 reference listed above.
-      `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
-      `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression
-      `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
-      `disable_hotspot_annotation`: false
-      `maf_center`: `"."`. Sequencing center of variant called
-      `funcotator_data_sources_tgz`: [funcotator_dataSources.v1.6.20190124s.tar.gz](https://console.cloud.google.com/storage/browser/broad-public-datasets/funcotator) - need a valid google account, this is a link to pre-packaged datasources from the Broad Institute. Any of the tar.gz files will do.
-      `annotsv_annotations_dir_tgz`: [annotsv_311_annotations_dir.tgz] - These annotations are simply those from the install-human-annotation installation process run during AnnotSV installation. Specifically these are the annotations installed with v3.1.1 of the software. Newer or older annotations can be slotted in here as needed.
-
+      - `bcftools_annot_vcf`: `af-only-gnomad.hg38.vcf.gz`. Yes, same as the Mutect2 reference listed above.
+      - `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
+      - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression
+      - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
+      - `disable_hotspot_annotation`: false
+      - `maf_center`: `"."`. Sequencing center of variant called
+      - `funcotator_data_sources_tgz`: [funcotator_dataSources.v1.6.20190124s.tar.gz](https://console.cloud.google.com/storage/browser/broad-public-datasets/funcotator) - need a valid google account, this is a link to pre-packaged datasources from the Broad Institute. Any of the tar.gz files will do.
+      - `annotsv_annotations_dir_tgz`: [annotsv_311_annotations_dir.tgz] - These annotations are simply those from the install-human-annotation installation process run during AnnotSV installation. Specifically these are the annotations installed with v3.1.1 of the software. Newer or older annotations can be slotted in here as needed.
+      - `aa_data_repo`: [GRCh38_indexed.tar.gz](https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/) - amplicon architect reference tar ball. Only needed/used if input is WGS
+      - `mosek_license_file`: [mosek.lic](https://www.mosek.com/license/request/) - required if amplicon architect is run. License is good for one year and is renewable
+      - `aa_data_ref_version`: `"GRCh38"`. Genome reference version used
 
   1. Output files (Note, all vcf files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
 
@@ -206,7 +213,12 @@ doc: |
               - `gatk_cnv_denoised_normal_plot`: Denoised-plot file that covers the entire range of the copy ratios
               - `gatk_cnv_funcotated_called_file_tumor`: TSV where each row is a segment and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
               - `gatk_cnv_funcotated_called_gene_list_file_tumor`: TSV where each row is a gene and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
-
+      - ecDNA Prediction
+          - `aa_summary`: Summary for all amplicons detected by AA
+          - `aa_cycles`: Text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant source) and their copy counts
+          - `aa_graph`: A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
+          - `aa_sv_png`: PNG image file displaying the SV view of AA
+          - `aa_classification_profiles`: abstract classification of the amplicon
 
   1. Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
       - `Strelka2`: pgc-images.sbgenomics.com/d3b-bixu/strelka
@@ -224,6 +236,7 @@ doc: |
       - `Manta`: pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
       - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
       - `annotsv`: pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
+      - `AmpliconArchitect`: jluebeck/prepareaa:v0.1203.10
 
   1. For highly complex samples, some tools have shown themselves to require memory allocation adjustments:
      Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, GATK FilterMutectCalls and Vardict.
@@ -245,7 +258,6 @@ doc: |
   ## Other Resources
   - dockerfiles: https://github.com/d3b-center/bixtools
 
-  ![pipeline flowchart](./docs/kfdrc-somatic-variant-workflow.cwl.png)
 
 requirements:
 - class: ScatterFeatureRequirement
@@ -302,13 +314,15 @@ inputs:
       \ if this run is WGS or WXS"}
 
   # GATK CNV Inputs
-  gatk_cnv_input_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi", required: false}],
-    doc: "For GATK CNV Calling: Picard or GATK-style interval list file of regions to analyze. For WGS,\
-      \ this should typically only include the autosomal chromosomes.", 'sbg:fileTypes': "INTERVALS,\
-      \ INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
+  gatk_cnv_input_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
+        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval\
+      \ list file of regions to analyze. For WGS, this should typically only include\
+      \ the autosomal chromosomes.", 'sbg:fileTypes': "INTERVALS, INTERVAL_LIST, LIST,\
+      \ BED, VCF, VCF.GZ"}
   gatk_cnv_input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
-        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval list file of regions\
-      \ to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
+        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval\
+      \ list file of regions to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST,\
+      \ LIST, BED, VCF, VCF.GZ"}
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
       \ the panel workflow. Significantly reduces quality of calling if not provided!",
     "sbg:fileTypes": "HDF5"}
@@ -323,13 +337,17 @@ inputs:
       \ for use with FuncotateSegments. If you encounter 'Variant context does not\
       \ represent a copy number segment' error, set this value lower than the length\
       \ of the failed segment."}
+
   # Amplicon Architect
-  aa_data_repo: {type: 'File?', doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/"}
-  aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: ["GRCh38",
-          "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo\
-      \ to use", default: "GRCh38"}
+  aa_data_repo: {type: 'File?', doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/",
+    "sbg:suggestedValue": {class: File, path: 62fcf4d40d34597148589e14, name: GRCh38_indexed.tar.gz}}
+  aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: [
+          "GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in\
+      \ data repo to use", default: "GRCh38"}
   mosek_license_file: {type: 'File?', doc: "This tool uses some software that requires\
-      \ a license file. Only provide if input is WGS. You can get a personal or institutional one from https://www.mosek.com/license/request/."}
+      \ a license file. Only provide if input is WGS. You can get a personal or institutional\
+      \ one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {
+      class: File, path: 62fcf4d40d34597148589e15, name: mosek.lic}}
 
   # AnnotSV Inputs
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing\
@@ -450,18 +468,17 @@ inputs:
       \ for ControlFreeC exome mode CNV calling."}
 
 outputs:
-  aa_cnv_seeds: {type: 'File?', doc: "Bed file with candidate regions to search", outputSource: run_amplicon_architect/aa_cnv_seeds}
   aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: run_amplicon_architect/aa_summary}
   aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges\
       \ in the breakpoint graph, their categorization (sequence, discordant, concordant,\
       \ source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
-  aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges in
-      the breakpoint graph, their categorization (sequence, discordant, concordant,
+  aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges
+      in the breakpoint graph, their categorization (sequence, discordant, concordant,
       source) and their copy counts', outputSource: run_amplicon_architect/graph}
-  aa_sv_pdf: {type: 'File[]', doc: "PDF image file displaying the SV view of AA", outputSource: run_amplicon_architect/sv_pdf}
-  aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: run_amplicon_architect/sv_png}
-  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification\
-      \ of the amplicon", outputSource: run_amplicon_architect/amplicon_classification_profiles}
+  aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA",
+    outputSource: run_amplicon_architect/sv_png}
+  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the\
+      \ amplicon", outputSource: run_amplicon_architect/amplicon_classification_profiles}
   aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
     outputSource: run_amplicon_architect/gene_list}
   ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
@@ -860,8 +877,8 @@ steps:
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
       sex: cnvkit_sex
-    out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_cns,  cnvkit_calls, cnvkit_metrics, cnvkit_gainloss,
-      cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
+    out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_cns, cnvkit_calls, cnvkit_metrics,
+      cnvkit_gainloss, cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
 
   expression_run_aa_if_wgs:
     run: ../tools/expression_run_aa_if_wgs.cwl
@@ -869,6 +886,7 @@ steps:
       mosek_license_file: mosek_license_file
       wgs_or_wxs: wgs_or_wxs
     out: [aa_mosek_license_file]
+
   run_amplicon_architect:
     run: ../workflow/kfdrc_production_amplicon_architect.cwl
     when: $(inputs.mosek_license_file != null)
@@ -884,7 +902,8 @@ steps:
         source: cnvkit_sex
         valueFrom: "$(self == 'y' ? true : null)"
       wgs_or_wxs: wgs_or_wxs
-    out: [ aa_cnv_seeds, aa_summary, aa_cycles, graph, sv_pdf, sv_png, amplicon_classification_profiles, gene_list ]
+    out: [aa_cnv_seeds, aa_summary, aa_cycles, graph, sv_pdf, sv_png, amplicon_classification_profiles,
+      gene_list]
 
   run_theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
@@ -963,11 +982,13 @@ hints:
 "sbg:license": Apache License 2.0
 "sbg:publisher": KFDRC
 "sbg:categories":
+- AMPLICONARCHITECT
 - BAM
 - CNV
 - CNVKIT
 - CONTROLFREEC
 - CRAM
+- ECDNA
 - FUNCOTATOR
 - GATK
 - INDEL
@@ -984,5 +1005,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.0.1'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.1.0'
   label: github-release
