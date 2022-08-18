@@ -120,7 +120,6 @@ doc: |
    - `summary`: summary for all amplicons detected by AA
    - `cycles`: text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
    - `graph`: A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
-   - `sv_pdf`: PDF image file displaying the SV view of AA
    - `sv_png`: PNG image file displaying the SV view of AA
 
   ### `tools/aa_classifier.cwl`
