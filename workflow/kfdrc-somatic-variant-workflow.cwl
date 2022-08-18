@@ -902,7 +902,7 @@ steps:
         source: cnvkit_sex
         valueFrom: "$(self == 'y' ? true : null)"
       wgs_or_wxs: wgs_or_wxs
-    out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_pdf, aa_sv_png, aa_classification_profiles,
+    out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_png, aa_classification_profiles,
       aa_gene_list]
 
   run_theta2_purity:
