@@ -30,12 +30,10 @@ mosek_license_file: { type: File, doc: "This tool uses some software that requir
  - `aa_cnv_seeds`: Bed file with candidate regions to search
  - `aa_summary`: Summary for all amplicons detected by AA
  - `aa_cycles`: Text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
- - `graph`: A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
- - `sv_png`: PNG image file displaying the SV view of AA
- - `amplicon_classification_profiles`: Abstract classification of the amplicon
- - `gene_list`: Genes present on amplicons with each classification
- - `ecDNA_cts`: Not yet defined
-
+ - `aa_graph`: A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
+ - `aa_sv_png`: PNG image file displaying the SV view of AA
+ - `aa_classification_profiles`: Abstract classification of the amplicon
+ - `aa_gene_list`: Genes present on amplicons with each classification
 
 ## Tools
 ### Dockerfiles:

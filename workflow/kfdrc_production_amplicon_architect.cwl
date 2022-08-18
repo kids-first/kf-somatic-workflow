@@ -174,13 +174,13 @@ outputs:
   aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges\
       \ in the breakpoint graph, their categorization (sequence, discordant, concordant,\
       \ source) and their copy counts", outputSource: amplicon_architect/cycles}
-  graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges in
+  aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges in
       the breakpoint graph, their categorization (sequence, discordant, concordant,
       source) and their copy counts', outputSource: amplicon_architect/graph}
-  sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: amplicon_architect/sv_png}
-  amplicon_classification_profiles: {type: 'File[]?', doc: "abstract classification\
+  aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: amplicon_architect/sv_png}
+  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification\
       \ of the amplicon", outputSource: amplicon_classifier/amplicon_classification_profiles}
-  gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
+  aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
     outputSource: amplicon_classifier/gene_list}
 
 steps:

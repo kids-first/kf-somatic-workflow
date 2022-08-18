@@ -474,13 +474,13 @@ outputs:
       \ source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
   aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges
       in the breakpoint graph, their categorization (sequence, discordant, concordant,
-      source) and their copy counts', outputSource: run_amplicon_architect/graph}
+      source) and their copy counts', outputSource: run_amplicon_architect/aa_graph}
   aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA",
-    outputSource: run_amplicon_architect/sv_png}
+    outputSource: run_amplicon_architect/aa_sv_png}
   aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the\
-      \ amplicon", outputSource: run_amplicon_architect/amplicon_classification_profiles}
+      \ amplicon", outputSource: run_amplicon_architect/aa_classification_profiles}
   aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
-    outputSource: run_amplicon_architect/gene_list}
+    outputSource: run_amplicon_architect/aa_gene_list}
   ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
   ctrlfreec_config: {type: 'File', outputSource: run_controlfreec/ctrlfreec_config}
   ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
@@ -902,8 +902,8 @@ steps:
         source: cnvkit_sex
         valueFrom: "$(self == 'y' ? true : null)"
       wgs_or_wxs: wgs_or_wxs
-    out: [aa_cnv_seeds, aa_summary, aa_cycles, graph, sv_pdf, sv_png, amplicon_classification_profiles,
-      gene_list]
+    out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_pdf, aa_sv_png, aa_classification_profiles,
+      aa_gene_list]
 
   run_theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
