@@ -2,7 +2,7 @@ cwlVersion: v1.2
 class: Workflow
 id: kfdrc-somatic-variant-workflow
 label: Kids First DRC Somatic Variant Workflow
-doc: |+
+doc: |-
   # Kids First DRC Somatic Variant Workflow
 
   This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
@@ -62,7 +62,7 @@ doc: |+
   #### SNV Callers
 
   - [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
-    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information 
+    - See the [subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_strelka2_subworkflow.md) for more information
   - [Mutect2](https://gatk.broadinstitute.org/hc/en-us/articles/360036730411-Mutect2) `v4.1.1.0`, from the Broad institute, calls SNV, multi-nucleotide variants (MNV, basically equal length substitutions with length > 1) and INDEL
     - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
     - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
@@ -257,8 +257,6 @@ doc: |+
 
   ## Other Resources
   - dockerfiles: https://github.com/d3b-center/bixtools
-
-
 requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
