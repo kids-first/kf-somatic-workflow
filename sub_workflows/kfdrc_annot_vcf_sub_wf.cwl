@@ -89,7 +89,9 @@ steps:
       cores: vep_cores
       ram: vep_ram
       buffer_size: vep_buffer_size
-      input_vcf: add_standard_fields/output
+      input_vcf:
+        source: [add_standard_fields/output, bcftools_strip_info/stripped_vcf]
+        pickValue: first_non_null
       output_basename: output_basename
       tool_name: tool_name
       cache: vep_cache
