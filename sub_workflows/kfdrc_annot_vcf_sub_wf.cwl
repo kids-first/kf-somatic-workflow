@@ -12,8 +12,11 @@ inputs:
   input_tumor_name: string
   input_normal_name: string
   add_common_fields: {type: 'boolean', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
-  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "bgzipped annotation vcf file"}
+  # bcftools strip, if needed
+  bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
+  # bcftools annotate if more to do
+  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF"}
+  bcftools_annot_vcf: {type: 'File?', secondaryFiles: ['.tbi'], doc: "additional bgzipped annotation vcf file"}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for clues"}
@@ -24,7 +27,7 @@ inputs:
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
   dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
   dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all",
-    default: 'hg19_chr,hg19_pos\(1-based\),SIFT4G_pred,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,LRT_pred,MutationTaster_pred,MutationAssessor_pred,FATHMM_pred,PROVEAN_pred,VEST4_score,VEST4_rankscore,MetaSVM_pred,MetaLR_pred,MetaRNN_pred,M-CAP_pred,REVEL_score,REVEL_rankscore,PrimateAI_pred,DEOGEN2_pred,BayesDel_noAF_pred,ClinPred_pred,LIST-S2_pred,Aloft_pred,fathmm-MKL_coding_pred,fathmm-XF_coding_pred,Eigen-phred_coding,Eigen-PC-phred_coding,phyloP100way_vertebrate,phyloP100way_vertebrate_rankscore,phastCons100way_vertebrate,phastCons100way_vertebrate_rankscore,TWINSUK_AC,TWINSUK_AF,ALSPAC_AC,ALSPAC_AF,UK10K_AC,UK10K_AF,gnomAD_exomes_controls_AC,gnomAD_exomes_controls_AN,gnomAD_exomes_controls_AF,gnomAD_exomes_controls_nhomalt,gnomAD_exomes_controls_POPMAX_AC,gnomAD_exomes_controls_POPMAX_AN,gnomAD_exomes_controls_POPMAX_AF,gnomAD_exomes_controls_POPMAX_nhomalt,gnomAD_genomes_flag,gnomAD_genomes_AC,gnomAD_genomes_AN,gnomAD_genomes_AF,gnomAD_genomes_nhomalt,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_POPMAX_AF,gnomAD_genomes_POPMAX_nhomalt,gnomAD_genomes_controls_and_biobanks_AC,gnomAD_genomes_controls_and_biobanks_AN,gnomAD_genomes_controls_and_biobanks_AF,gnomAD_genomes_controls_and_biobanks_nhomalt,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'
+    default: 'SIFT4G_pred,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,LRT_pred,MutationTaster_pred,MutationAssessor_pred,FATHMM_pred,PROVEAN_pred,VEST4_score,VEST4_rankscore,MetaSVM_pred,MetaLR_pred,MetaRNN_pred,M-CAP_pred,REVEL_score,REVEL_rankscore,PrimateAI_pred,DEOGEN2_pred,BayesDel_noAF_pred,ClinPred_pred,LIST-S2_pred,Aloft_pred,fathmm-MKL_coding_pred,fathmm-XF_coding_pred,Eigen-phred_coding,Eigen-PC-phred_coding,phyloP100way_vertebrate,phyloP100way_vertebrate_rankscore,phastCons100way_vertebrate,phastCons100way_vertebrate_rankscore,TWINSUK_AC,TWINSUK_AF,ALSPAC_AC,ALSPAC_AF,UK10K_AC,UK10K_AF,gnomAD_exomes_controls_AC,gnomAD_exomes_controls_AN,gnomAD_exomes_controls_AF,gnomAD_exomes_controls_nhomalt,gnomAD_exomes_controls_POPMAX_AC,gnomAD_exomes_controls_POPMAX_AN,gnomAD_exomes_controls_POPMAX_AF,gnomAD_exomes_controls_POPMAX_nhomalt,gnomAD_genomes_flag,gnomAD_genomes_AC,gnomAD_genomes_AN,gnomAD_genomes_AF,gnomAD_genomes_nhomalt,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_POPMAX_AF,gnomAD_genomes_POPMAX_nhomalt,gnomAD_genomes_controls_and_biobanks_AC,gnomAD_genomes_controls_and_biobanks_AN,gnomAD_genomes_controls_and_biobanks_AF,gnomAD_genomes_controls_and_biobanks_nhomalt,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'
     }
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
@@ -47,10 +50,8 @@ inputs:
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
 
 outputs:
-  annotated_protected_vcf: {type: 'File', outputSource: hotspots_annotation/hotspots_vcf}
-  annotated_protected_maf: {type: 'File', outputSource: kfdrc_vcf2maf_protected/output_maf}
-  annotated_public_vcf: {type: 'File', outputSource: hard_filter_vcf/filtered_vcf}
-  annotated_public_maf: {type: 'File', outputSource: kfdrc_vcf2maf_public/output_maf}
+  annotated_protected: {type: 'File[]', outputSource: rename_protected/renamed_files}
+  annotated_public: {type: 'File[]', outputSource: rename_public/renamed_files}
 
 steps:
   normalize_vcf:
@@ -63,19 +64,22 @@ steps:
     out: [normalized_vcf]
 
   bcftools_strip_info:
+    when: $(inputs.bcftools_strip_columns != null)
     run: ../tools/bcftools_strip_ann.cwl
     in:
       input_vcf: normalize_vcf/normalized_vcf
       output_basename: output_basename
       tool_name: tool_name
-      strip_info: bcftools_annot_columns
+      strip_info: bcftools_strip_columns
     out: [stripped_vcf]
 
   add_standard_fields:
     run: ../tools/add_strelka2_fields.cwl
     when: $(inputs.run_tool_flag)
     in:
-      strelka2_vcf: bcftools_strip_info/stripped_vcf
+      strelka2_vcf:
+        source: [bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
+        pickValue: first_non_null
       run_tool_flag: add_common_fields
       tumor_name: input_tumor_name
       normal_name: input_normal_name
@@ -90,7 +94,7 @@ steps:
       ram: vep_ram
       buffer_size: vep_buffer_size
       input_vcf:
-        source: [add_standard_fields/output, bcftools_strip_info/stripped_vcf]
+        source: [add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
         pickValue: first_non_null
       output_basename: output_basename
       tool_name: tool_name
@@ -107,6 +111,7 @@ steps:
     out: [output_vcf]
 
   bcftools_gnomad_annotate:
+    when: $(inputs.annotation_vcf != null)
     run: ../tools/bcftools_annotate.cwl
     in:
       input_vcf: vep_annotate_vcf/output_vcf
@@ -119,7 +124,9 @@ steps:
   gatk_add_soft_filter:
     run: ../tools/gatk_variant_filter.cwl
     in:
-      input_vcf: bcftools_gnomad_annotate/bcftools_annotated_vcf
+      input_vcf:
+        source: [bcftools_gnomad_annotate/bcftools_annotated_vcf, vep_annotate_vcf/output_vcf]
+        pickValue: first_non_null
       reference: indexed_reference_fasta
       filter_name: gatk_filter_name
       filter_expression: gatk_filter_expression
@@ -176,3 +183,33 @@ steps:
       retain_ann: retain_ann
       maf_center: maf_center
     out: [output_maf]
+
+  rename_protected:
+    run: ../tools/generic_rename_outputs.cwl
+    label: Rename Protected Outputs
+    in:
+      input_files:
+        source: [hotspots_annotation/hotspots_vcf, kfdrc_vcf2maf_protected/output_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: [output_basename, tool_name]
+        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz'; \
+        var pro_tbi=self[0] + '.' + self[1] + '.norm.annot.protected.vcf.gz.tbi'; \
+        var pro_maf=self[0] + '.' + self[1] + '.norm.annot.protected.maf'; \
+        return [pro_vcf, pro_tbi, pro_maf];}"
+    out: [renamed_files]
+
+  rename_public:
+    run: ../tools/generic_rename_outputs.cwl
+    label: Rename Public Outputs
+    in:
+      input_files:
+        source: [hard_filter_vcf/filtered_vcf, kfdrc_vcf2maf_public/output_maf]
+        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
+      rename_to:
+        source: [output_basename, tool_name]
+        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz'; \
+        var pub_tbi=self[0] + '.' + self[1] + '.norm.annot.public.vcf.gz.tbi'; \
+        var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; \
+        return [pub_vcf, pub_tbi, pub_maf];}"
+    out: [renamed_files]

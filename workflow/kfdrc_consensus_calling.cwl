@@ -108,6 +108,7 @@ doc: |
    - `annotated_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
 requirements:
 - class: ScatterFeatureRequirement
+- class: SubworkflowFeatureRequirement
 - class: MultipleInputFeatureRequirement
 - class: StepInputExpressionRequirement
 - class: InlineJavascriptRequirement
@@ -134,31 +135,38 @@ inputs:
   contig_bed: {type: 'File?', doc: "Optional BED file containing names of target contigs / chromosomes"}
   consensus_ram: {type: 'int?', doc: "Set min memory in GB for consensus merge step",
     default: 3}
-  annotation_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "VCF of annotations\
-      \ to add to consensus variants, e.g. gnomAD allele frequency", "sbg:suggestedValue": {
-      class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
-      secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]}}
-  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
-    "sbg:suggestedValue": {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
-  annot_columns: {type: 'string?', default: 'INFO/AF', doc: "column from annotation_vcf\
-      \ to add to consensus VCF; defaults to 'INFO/AF'"}
-  filter_names: {type: 'string[]?', default: ["NORM_DP_LOW", "GNOMAD_AF_HIGH"], doc: "Names\
-      \ of filters to be added to consensus VCF; default values set"}
-  depth_lowerbound: {type: 'int?', default: 7, doc: "Normal-sample read depth at which\
-      \ to apply depth filter; default set"}
-  frequency_upperbound: {type: 'float?', default: 0.001, doc: "Population allele frequency\
-      \ above which to apply frequency filter; default set"}
-  bcftools_public_filter: {type: 'string?', doc: 'Will hard filter final result to create
-      a public version, e.g. FILTER="PASS"|INFO/HotSpotAllele=1; default set', default: 'FILTER="PASS"|INFO/HotSpotAllele=1'}
-  retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to\
-      \ keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
-  retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to\
-      \ keep"}
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
+  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
+  dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+  dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all",
+    default: 'SIFT4G_pred,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,LRT_pred,MutationTaster_pred,MutationAssessor_pred,FATHMM_pred,PROVEAN_pred,VEST4_score,VEST4_rankscore,MetaSVM_pred,MetaLR_pred,MetaRNN_pred,M-CAP_pred,REVEL_score,REVEL_rankscore,PrimateAI_pred,DEOGEN2_pred,BayesDel_noAF_pred,ClinPred_pred,LIST-S2_pred,Aloft_pred,fathmm-MKL_coding_pred,fathmm-XF_coding_pred,Eigen-phred_coding,Eigen-PC-phred_coding,phyloP100way_vertebrate,phyloP100way_vertebrate_rankscore,phastCons100way_vertebrate,phastCons100way_vertebrate_rankscore,TWINSUK_AC,TWINSUK_AF,ALSPAC_AC,ALSPAC_AF,UK10K_AC,UK10K_AF,gnomAD_exomes_controls_AC,gnomAD_exomes_controls_AN,gnomAD_exomes_controls_AF,gnomAD_exomes_controls_nhomalt,gnomAD_exomes_controls_POPMAX_AC,gnomAD_exomes_controls_POPMAX_AN,gnomAD_exomes_controls_POPMAX_AF,gnomAD_exomes_controls_POPMAX_nhomalt,gnomAD_genomes_flag,gnomAD_genomes_AC,gnomAD_genomes_AN,gnomAD_genomes_AF,gnomAD_genomes_nhomalt,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_POPMAX_AF,gnomAD_genomes_POPMAX_nhomalt,gnomAD_genomes_controls_and_biobanks_AC,gnomAD_genomes_controls_and_biobanks_AN,gnomAD_genomes_controls_and_biobanks_AF,gnomAD_genomes_controls_and_biobanks_nhomalt,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'
+    }
+  merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
+  cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+
+  # annotation vars
+  genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
+  protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
+  protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
+  retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep", default: "MQ,MQ0,CAL,HotSpotAllele"}
+  retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
+  retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF" }
+  add_common_fields: {type: 'boolean?', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
+  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
+  bcftools_annot_vcf: {type: 'File?', secondaryFiles: ['.tbi'], doc: "additional bgzipped annotation vcf file"}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
+  disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: true }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
 
 outputs:
-  annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
-  annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
+  annotated_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
+  annotated_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
 steps:
   prep_mnp_variants:
@@ -187,110 +195,40 @@ steps:
       contig_bed: contig_bed
     out: [output]
 
-  vep_annot_consensus:
-    run: ../tools/vep_somatic_annotate_r93.cwl
+  annotate:
+    run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
     in:
+      indexed_reference_fasta: indexed_reference_fasta
       input_vcf: consensus_merge/output
+      input_tumor_name: input_tumor_name
+      input_normal_name: input_normal_name
+      add_common_fields: add_common_fields
+      retain_info: retain_info
+      retain_fmt: retain_fmt
+      retain_ann: retain_ann
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_strip_columns: bcftools_strip_columns
+      bcftools_annot_vcf: bcftools_annot_vcf
+      bcftools_public_filter: bcftools_public_filter
+      dbnsfp: dbnsfp
+      dbnsfp_fields: dbnsfp_fields
+      merged: merged
+      cadd_indels: cadd_indels
+      cadd_snvs: cadd_snvs
+      run_cache_af: run_cache_af
+      run_cache_existing: run_cache_existing
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      vep_cache: vep_cache
+      vep_ref_build: vep_ref_build
+      disable_hotspot_annotation: disable_hotspot_annotation
+      genomic_hotspots: genomic_hotspots
+      protein_snv_hotspots: protein_snv_hotspots
+      protein_indel_hotspots: protein_indel_hotspots
+      maf_center: maf_center
       output_basename: output_basename
       tool_name: tool_name
-      reference: indexed_reference_fasta
-      cache: vep_cache
-    out: [output_vcf]
-
-  bcftools_annotate:
-    run: ../tools/bcftools_annotate.cwl
-    in:
-      input_vcf: vep_annot_consensus/output_vcf
-      annotation_vcf: annotation_vcf
-      output_basename: output_basename
-      tool_name:
-        source: tool_name
-        valueFrom: ${return self + ".bcft_annot"}
-      columns: annot_columns
-    out: [bcftools_annotated_vcf]
-
-  variant_filter:
-    run: ../tools/gatk_variant_filter.cwl
-    in:
-      input_vcf: bcftools_annotate/bcftools_annotated_vcf
-      output_basename: output_basename
-      reference: indexed_reference_fasta
-      tool_name:
-        valueFrom: ${return "filter"}
-      filter_name: filter_names
-      filter_expression:
-        source: [input_normal_name, depth_lowerbound, frequency_upperbound]
-        valueFrom: ${return [ "vc.getGenotype('" + self[0] + "').getDP() <= " + self[1],
-          "AF > " + self[2] ]}
-    out: [gatk_soft_filtered_vcf]
-
-  kfdrc_vcf2maf_protected:
-    run: ../tools/kf_mskcc_vcf2maf.cwl
-    in:
-      reference: indexed_reference_fasta
-      input_vcf: variant_filter/gatk_soft_filtered_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        source: tool_name
-        valueFrom: ${return self + ".protected"}
-      retain_info: retain_info
-      retain_fmt: retain_fmt
-      maf_center: maf_center
-    out: [output_maf]
-
-  hard_filter_vcf:
-    run: ../tools/bcftools_filter_vcf.cwl
-    in:
-      input_vcf: variant_filter/gatk_soft_filtered_vcf
-      include_expression: bcftools_public_filter
-      output_basename: output_basename
-    out: [filtered_vcf]
-
-  kfdrc_vcf2maf_public:
-    run: ../tools/kf_mskcc_vcf2maf.cwl
-    in:
-      reference: indexed_reference_fasta
-      input_vcf: hard_filter_vcf/filtered_vcf
-      output_basename: output_basename
-      tumor_id: input_tumor_name
-      normal_id: input_normal_name
-      tool_name:
-        source: tool_name
-        valueFrom: ${return self + ".public"}
-      retain_info: retain_info
-      retain_fmt: retain_fmt
-      maf_center: maf_center
-    out: [output_maf]
-
-  rename_protected:
-    run: ../tools/generic_rename_outputs.cwl
-    in:
-      input_files:
-        source: [variant_filter/gatk_soft_filtered_vcf, kfdrc_vcf2maf_protected/output_maf]
-        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
-      rename_to:
-        source: [output_basename, tool_name]
-        valueFrom: "${var pro_vcf=self[0] + '.' + self[1] + '.protected.vcf.gz';\
-          \ var pro_tbi=self[0] + '.' + self[1] + '.protected.vcf.gz.tbi';\
-          \ var pro_maf=self[0] + '.' + self[1] + '.protected.maf'; return\
-          \ [pro_vcf, pro_tbi, pro_maf];}"
-    out: [renamed_files]
-
-  rename_public:
-    run: ../tools/generic_rename_outputs.cwl
-    in:
-      input_files:
-        source: [hard_filter_vcf/filtered_vcf, kfdrc_vcf2maf_public/output_maf]
-        valueFrom: "${return [self[0],self[0].secondaryFiles[0],self[1]]}"
-      rename_to:
-        source: [output_basename, tool_name]
-        valueFrom: "${var pub_vcf=self[0] + '.' + self[1] + '.public.vcf.gz';\
-          \ var pub_tbi=self[0] + '.' + self[1] + '.public.vcf.gz.tbi';\
-          \ var pub_maf=self[0] + '.' + self[1] + '.public.maf'; return\
-          \ [pub_vcf, pub_tbi, pub_maf];}"
-    out: [renamed_files]
+    out: [annotated_protected, annotated_public]
 
 $namespaces:
   sbg: https://sevenbridges.com
