@@ -106,7 +106,7 @@ arguments:
         return "perl /opt/vep/src/ensembl-vep/INSTALL.pl --NO_TEST --NO_UPDATE --AUTO p --PLUGINS "+plugins.join(',')+" &&"
       }
       ${if(inputs.cache) {return "tar -xzf "+inputs.cache.path} else {return "echo 'No cache'"}} &&
-      /opt/vep/src/ensembl-vep/vep
+      perl /opt/vep/src/ensembl-vep/vep
       --input_file $(inputs.input_vcf.path)
       --output_file STDOUT
       ${
