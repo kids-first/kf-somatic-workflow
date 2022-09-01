@@ -282,8 +282,6 @@ inputs:
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
-    "sbg:suggestedValue": {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
   cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
@@ -373,8 +371,6 @@ inputs:
       \ for vardict to consider. Recommend 0.05"}
   vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict\
       \ (hard-capped)"}
-  vep_ref_build: {type: 'string?', default: "GRCh38", doc: "Genome ref build used,\
-      \ should line up with cache"}
 
   # Optional with Multiple Defaults (handled in choose_defaults)
   exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y\
@@ -421,6 +417,19 @@ inputs:
   manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults\
       \ to 18"}
 
+  # VEP param
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
+  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
+  dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+  dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all",
+    default: 'SIFT4G_pred,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,LRT_pred,MutationTaster_pred,MutationAssessor_pred,FATHMM_pred,PROVEAN_pred,VEST4_score,VEST4_rankscore,MetaSVM_pred,MetaLR_pred,MetaRNN_pred,M-CAP_pred,REVEL_score,REVEL_rankscore,PrimateAI_pred,DEOGEN2_pred,BayesDel_noAF_pred,ClinPred_pred,LIST-S2_pred,Aloft_pred,fathmm-MKL_coding_pred,fathmm-XF_coding_pred,Eigen-phred_coding,Eigen-PC-phred_coding,phyloP100way_vertebrate,phyloP100way_vertebrate_rankscore,phastCons100way_vertebrate,phastCons100way_vertebrate_rankscore,TWINSUK_AC,TWINSUK_AF,ALSPAC_AC,ALSPAC_AF,UK10K_AC,UK10K_AF,gnomAD_exomes_controls_AC,gnomAD_exomes_controls_AN,gnomAD_exomes_controls_AF,gnomAD_exomes_controls_nhomalt,gnomAD_exomes_controls_POPMAX_AC,gnomAD_exomes_controls_POPMAX_AN,gnomAD_exomes_controls_POPMAX_AF,gnomAD_exomes_controls_POPMAX_nhomalt,gnomAD_genomes_flag,gnomAD_genomes_AC,gnomAD_genomes_AN,gnomAD_genomes_AF,gnomAD_genomes_nhomalt,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_POPMAX_AF,gnomAD_genomes_POPMAX_nhomalt,gnomAD_genomes_controls_and_biobanks_AC,gnomAD_genomes_controls_and_biobanks_AN,gnomAD_genomes_controls_and_biobanks_AF,gnomAD_genomes_controls_and_biobanks_nhomalt,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'
+    }
+  merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
+  cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+
   # annotation vars
   genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing\
       \ hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [
@@ -433,8 +442,7 @@ inputs:
       \ file(s) containing protein names and amino acid position ranges corresponding\
       \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
         name: protein_indel_cancer_hotspots_v2.tsv}]}
-  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation\
-      \ to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
   bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {
@@ -686,6 +694,13 @@ steps:
       ram: vardict_ram
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
+      dbnsfp: dbnsfp
+      dbnsfp_fields: dbnsfp_fields
+      merged: merged
+      cadd_indels: cadd_indels
+      cadd_snvs: cadd_snvs
+      run_cache_af: run_cache_af
+      run_cache_existing: run_cache_existing
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: index_bcftools_annot_vcf/output
       bcftools_public_filter: bcftools_public_filter
@@ -724,6 +739,13 @@ steps:
       exome_flag: choose_defaults/out_exome_flag
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
+      dbnsfp: dbnsfp
+      dbnsfp_fields: dbnsfp_fields
+      merged: merged
+      cadd_indels: cadd_indels
+      cadd_snvs: cadd_snvs
+      run_cache_af: run_cache_af
+      run_cache_existing: run_cache_existing
       output_basename: output_basename
       learnorientation_memory: learnorientation_memory
       getpileup_memory: getpileup_memory
@@ -759,6 +781,13 @@ steps:
       strelka2_cores: strelka2_cores
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
+      dbnsfp: dbnsfp
+      dbnsfp_fields: dbnsfp_fields
+      merged: merged
+      cadd_indels: cadd_indels
+      cadd_snvs: cadd_snvs
+      run_cache_af: run_cache_af
+      run_cache_existing: run_cache_existing
       output_basename: output_basename
       select_vars_mode: select_vars_mode
       bcftools_annot_columns: bcftools_annot_columns
@@ -827,6 +856,13 @@ steps:
       padding: choose_defaults/out_lancet_padding
       vep_cache: vep_cache
       vep_ref_build: vep_ref_build
+      dbnsfp: dbnsfp
+      dbnsfp_fields: dbnsfp_fields
+      merged: merged
+      cadd_indels: cadd_indels
+      cadd_snvs: cadd_snvs
+      run_cache_af: run_cache_af
+      run_cache_existing: run_cache_existing
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: index_bcftools_annot_vcf/output
       bcftools_public_filter: bcftools_public_filter
