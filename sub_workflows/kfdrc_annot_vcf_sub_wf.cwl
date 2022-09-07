@@ -32,7 +32,7 @@ inputs:
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
   run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
-  run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: true }
+  run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: false }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
   intervar: { type: 'File?', doc: "Intervar vcf-formatted file. See docs for custom build instructions", secondaryFiles: [.tbi] }
