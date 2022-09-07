@@ -22,7 +22,6 @@ inputs:
   cpus: {type: ['null', int], default: 9}
   ram: {type: ['null', int], default: 18, doc: "In GB"}
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
-  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line up with cache.", default: "GRCh38" }
   vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
   vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
@@ -132,7 +131,6 @@ steps:
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
-      vep_ref_build: vep_ref_build
       vep_ram: vep_ram
       vep_cores: vep_cores
       vep_buffer_size: vep_buffer_size
