@@ -550,6 +550,13 @@ steps:
           $(self ? self+".normal.gatk_cnv" : null)
     out: [output]
 
+  awk_min_seg_length_tumor:
+    run: ../tools/awk_min_seg_length.cwl
+    in:
+      input_file: call_copy_ratio_segments_tumor/called_segments
+      default_min_len: funcotator_minimum_segment_size
+    out: [output]
+
   funcotate_segments:
     run: ../tools/gatk_funcotatesegments.cwl
     in:
@@ -565,7 +572,10 @@ steps:
       transcript_list: funcotator_transcript_list
       transcript_list_file: funcotator_transcript_list_file
       transcript_selection_mode: funcotator_transcript_selection_mode
-      minimum_segment_size: funcotator_minimum_segment_size
+      minimum_segment_size:
+        source: awk_min_seg_length_tumor/output
+        valueFrom: |
+          $(self - 1)
       output_prefix:
         source: output_basename
         valueFrom: |
