@@ -322,7 +322,7 @@ inputs:
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
       \ the panel workflow. Significantly reduces quality of calling if not provided!",
     "sbg:fileTypes": "HDF5"}
-  run_funcotatesegments: {type: 'boolean', doc: "If true, run Funcotator on the called\
+  run_funcotatesegments: {type: 'boolean?', doc: "If true, run Funcotator on the called\
       \ copy-ratio segments. This will generate both a simple TSV and a gene list."}
   funcotator_data_sources_tgz: {type: 'File?', doc: "Path to tar.gz containing the\
       \ data sources for Funcotator to create annotations.", "sbg:fileTypes": "TAR,\
@@ -1022,6 +1022,7 @@ steps:
 
   run_gatk_cnv:
     run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
+    when: $(inputs.count_panel_of_normals != null)
     in:
       input_aligned_reads_tumor: input_tumor_aligned
       input_aligned_reads_normal: input_normal_aligned
