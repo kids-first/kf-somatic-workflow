@@ -539,7 +539,7 @@ outputs:
   lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
   lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
   lancet_prepass_vcf: {type: 'File', outputSource: run_lancet/lancet_prepass_vcf}
-  gatk_copy_ratio_segments_tumor: {type: File, outputSource: run_gatk_cnv/called_copy_ratio_segments_tumor,
+  gatk_copy_ratio_segments_tumor: {type: 'File?', outputSource: run_gatk_cnv/called_copy_ratio_segments_tumor,
     doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file\
       \ with a SAM-style header containing a read group sample name, a sequence dictionary,\
       \ a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,\
@@ -549,7 +549,7 @@ outputs:
       \ with a SAM-style header containing a read group sample name, a sequence dictionary,\
       \ a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,\
       \ and the corresponding entry rows."}
-  gatk_cnv_denoised_tumor_plot: {type: File, outputSource: run_gatk_cnv/denoised_tumor_plot,
+  gatk_cnv_denoised_tumor_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_tumor_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
   gatk_cnv_denoised_normal_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_normal_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
