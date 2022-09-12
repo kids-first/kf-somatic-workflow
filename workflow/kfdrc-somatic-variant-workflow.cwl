@@ -424,7 +424,7 @@ inputs:
   vep_buffer_size: {type: 'int?', default: 1000, doc: "Increase or decrease to balance speed and memory usage"}
   dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
   dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all",
-    default: 'SIFT4G_pred,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,LRT_pred,MutationTaster_pred,MutationAssessor_pred,FATHMM_pred,PROVEAN_pred,VEST4_score,VEST4_rankscore,MetaSVM_pred,MetaLR_pred,MetaRNN_pred,M-CAP_pred,REVEL_score,REVEL_rankscore,PrimateAI_pred,DEOGEN2_pred,BayesDel_noAF_pred,ClinPred_pred,LIST-S2_pred,Aloft_pred,fathmm-MKL_coding_pred,fathmm-XF_coding_pred,Eigen-phred_coding,Eigen-PC-phred_coding,phyloP100way_vertebrate,phyloP100way_vertebrate_rankscore,phastCons100way_vertebrate,phastCons100way_vertebrate_rankscore,TWINSUK_AC,TWINSUK_AF,ALSPAC_AC,ALSPAC_AF,UK10K_AC,UK10K_AF,gnomAD_exomes_controls_AC,gnomAD_exomes_controls_AN,gnomAD_exomes_controls_AF,gnomAD_exomes_controls_nhomalt,gnomAD_exomes_controls_POPMAX_AC,gnomAD_exomes_controls_POPMAX_AN,gnomAD_exomes_controls_POPMAX_AF,gnomAD_exomes_controls_POPMAX_nhomalt,gnomAD_genomes_flag,gnomAD_genomes_AC,gnomAD_genomes_AN,gnomAD_genomes_AF,gnomAD_genomes_nhomalt,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_POPMAX_AF,gnomAD_genomes_POPMAX_nhomalt,gnomAD_genomes_controls_and_biobanks_AC,gnomAD_genomes_controls_and_biobanks_AN,gnomAD_genomes_controls_and_biobanks_AF,gnomAD_genomes_controls_and_biobanks_nhomalt,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'
+    default: 'clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'
     }
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
@@ -433,16 +433,16 @@ inputs:
   run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
 
   # MAF-specific params
-  strelka2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`", default: "gnomad_3_1_2_AF,MQ,MQ0,QSI,HotSpotAllele" }
+  strelka2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`", default: "gnomad_3_0_0_AF,MQ,MQ0,QSI,HotSpotAllele" }
   strelka2_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
   strelka2_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
-  mutect2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`", default: "gnomad_3_1_2_AF,MBQ,TLOD,HotSpotAllele" }
+  mutect2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`", default: "gnomad_3_0_0_AF,MBQ,TLOD,HotSpotAllele" }
   mutect2_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
   mutect2_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
-  lancet_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`", default: "gnomad_3_1_2_AF,MS,FETS,HotSpotAllele" }
+  lancet_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`", default: "gnomad_3_0_0_AF,MS,FETS,HotSpotAllele" }
   lancet_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
   lancet_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
-  vardict_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`", default: "gnomad_3_1_2_AF,MSI,MSILEN,SOR,SSF,HotSpotAllele" }
+  vardict_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`", default: "gnomad_3_0_0_AF,MSI,MSILEN,SOR,SSF,HotSpotAllele" }
   vardict_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
   vardict_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
 
@@ -470,7 +470,7 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to\
       \ establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,\
       \ recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP()\
-      \ <= 7\"), \"gnomad_3_1_2_AF > 0.001\"]"}
+      \ <= 7\"), \"gnomad_3_0_0_AF > 0.001\"]"}
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation\
       \ and skip this task.", default: false}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
@@ -758,6 +758,13 @@ steps:
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
       exome_flag: choose_defaults/out_exome_flag
+      output_basename: output_basename
+      learnorientation_memory: learnorientation_memory
+      getpileup_memory: getpileup_memory
+      filtermutectcalls_memory: filtermutectcalls_memory
+      select_vars_mode: select_vars_mode
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
       vep_ram: vep_ram
       vep_cores: vep_cores
@@ -772,16 +779,9 @@ steps:
       retain_info: mutect2_retain_info
       retain_fmt: mutect2_retain_fmt
       retain_ann: mutect2_retain_ann
-      output_basename: output_basename
-      learnorientation_memory: learnorientation_memory
-      getpileup_memory: getpileup_memory
-      filtermutectcalls_memory: filtermutectcalls_memory
-      select_vars_mode: select_vars_mode
       bcftools_annot_columns: bcftools_annot_columns
       bcftools_annot_vcf: index_bcftools_annot_vcf/output
       bcftools_public_filter: bcftools_public_filter
-      gatk_filter_name: gatk_filter_name
-      gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
