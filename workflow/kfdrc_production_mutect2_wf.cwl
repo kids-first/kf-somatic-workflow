@@ -38,7 +38,6 @@ inputs:
       }
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  vep_cache: { type: 'File', doc: "tar gzipped cache from ensembl/local converted cache" }
   mutect2_af_only_gnomad_vcf: { type: 'File' }
   mutect2_af_only_gnomad_tbi: { type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf" }
   mutect2_exac_common_vcf: { type: 'File' }
@@ -48,10 +47,22 @@ inputs:
 
   # Optional with One Default
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
-  vep_ref_build: { type: 'string?', default: "GRCh38", doc: "Genome ref build used, should line up with cache" }
   learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel; defaults to 4 (hard-capped)"}
   getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries; defaults to 2 (hard-capped)"}
   filtermutectcalls_memory: {type: 'int?', doc: "GB of memory to allocate to GATK FilterMutectCalls; defaults to 4 (hard-capped)"}
+
+  # VEP params
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
+  vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
+  vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
+  vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
+  dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
+  dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all"}
+  merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
+  cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
+  cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
+  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
 
   # Optional with Multiple Defaults (handled in choose_defaults)
   exome_flag: { type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS" }
@@ -68,12 +79,14 @@ inputs:
   protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424, name: protein_indel_cancer_hotspots_v2.tsv}] }
   retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep", default: "MBQ,TLOD,HotSpotAllele"}
   retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
+  retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF" }
   add_common_fields: {type: 'boolean?', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
-  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
-  bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3,
-      name: af-only-gnomad.hg38.vcf.gz} }
-  bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e5,
-      name: af-only-gnomad.hg38.vcf.gz.tbi}}
+  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
+  bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
+      class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
+  bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {
+      class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
@@ -142,14 +155,6 @@ steps:
         valueFrom: ${return 80000000}
     out: [output]
 
-  select_mutect_bed_interval:
-    run: ../tools/mode_selector.cwl
-    in:
-      input_mode: wgs_or_wxs
-      wgs_input: gatk_intervallisttools/output
-      wxs_input: gatk_intervallisttools/output
-    out: [output]
-
   run_mutect2:
     hints:
       - class: 'sbg:AWSInstanceType'
@@ -158,7 +163,7 @@ steps:
     in:
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      bed_invtl_split: select_mutect_bed_interval/output
+      bed_invtl_split: gatk_intervallisttools/output
       af_only_gnomad_vcf: index_mutect_gnomad/output
       exac_common_vcf: index_mutect_exac/output
       input_tumor_aligned: input_tumor_aligned
@@ -166,25 +171,35 @@ steps:
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
       exome_flag: choose_defaults/out_exome_flag
-      vep_cache: vep_cache
-      vep_ref_build: vep_ref_build
       learnorientation_memory: learnorientation_memory
       getpileup_memory: getpileup_memory
       filtermutectcalls_memory: filtermutectcalls_memory
       output_basename: output_basename
       select_vars_mode: select_vars_mode
+      retain_info: retain_info
+      retain_fmt: retain_fmt
+      retain_ann: retain_ann
+      bcftools_annot_columns: bcftools_annot_columns
+      bcftools_strip_columns: bcftools_strip_columns
+      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      bcftools_public_filter: bcftools_public_filter
+      dbnsfp: dbnsfp
+      dbnsfp_fields: dbnsfp_fields
+      merged: merged
+      cadd_indels: cadd_indels
+      cadd_snvs: cadd_snvs
+      run_cache_af: run_cache_af
+      run_cache_existing: run_cache_existing
+      gatk_filter_name: gatk_filter_name
+      gatk_filter_expression: gatk_filter_expression
+      vep_cache: vep_cache
+      vep_ram: vep_ram
+      vep_cores: vep_cores
+      vep_buffer_size: vep_buffer_size
+      disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
-      retain_info: retain_info
-      retain_fmt: retain_fmt
-      add_common_fields: add_common_fields
-      bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: index_bcftools_annot_vcf/output
-      bcftools_public_filter: bcftools_public_filter
-      gatk_filter_name: gatk_filter_name
-      gatk_filter_expression: gatk_filter_expression
-      disable_hotspot_annotation: disable_hotspot_annotation
       maf_center: maf_center
     out:
       [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_protected_outputs, mutect2_public_outputs]
