@@ -202,7 +202,7 @@ inputs:
       \ etc."}
 
   # Funcotator Advanced Options
-  run_funcotatesegments: {type: 'boolean', doc: "If true, run Funcotator on the called\
+  run_funcotatesegments: {type: 'boolean?', doc: "If true, run Funcotator on the called\
       \ copy-ratio segments. This will generate both a simple TSV and a gene list."}
   funcotator_annotation_default: {type: 'string[]?', doc: "Annotations to include\
       \ in all annotated variants if the annotation is not specified in the data sources\

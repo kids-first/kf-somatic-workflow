@@ -38,8 +38,8 @@ arguments:
       ${var pre = inputs.output_prefix ? inputs.output_prefix : inputs.segments ? inputs.segments.nameroot : 'output'; var ext = 'funcotated.tsv'; return pre+'.'+ext}
 inputs:
   run_funcotatesegments:
-    type: 'boolean'
-    doc: "If true, this tool will produce no outputs."
+    type: 'boolean?'
+    doc: "If not true, this tool will produce no outputs."
   add_output_vcf_command_line:
     type: 'boolean?'
     doc: "If true, adds a command line header line to created VCF files."
