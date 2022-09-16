@@ -83,7 +83,7 @@ Outputs include raw ratio calls, copy number calls with p values assigned, b all
 - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
 - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl).
 
-For ControlFreeC and CNVkit, we take advantage of b allele frequency (from the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow)) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
+For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
 
 #### ecDNA Prediction
  - [AmpliconArchitect](https://github.com/jluebeck/PrepareAA/blob/master/GUIDE.md) is used to predict ecDNAs
@@ -96,7 +96,7 @@ Default settings are used at run time.
 - [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta Prepass VCF.
 
 #### Variant Annotation
-Please see the [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md).
+Please see the [annotation workflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md).
 Both the annotated vcf and maf file are made available.
 
 ### Tips to Run:
@@ -140,8 +140,8 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
     - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
     - `protein_indel_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspotsRecommend pulling the two relevant columns for SNVs only, and convert to tsv
-    bcftools_annot_columns: `"INFO/AF"`. csv string of columns from annotation to port into the input vcf
-    - `bcftools_annot_vcf`: `af-only-gnomad.hg38.vcf.gz`. Yes, same as the Mutect2 reference listed above.
+    bcftools_annot_columns: `"INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"`. csv string of columns from annotation to port into the input vcf
+    - `bcftools_annot_vcf`: `gnomad_3.1.1.vwb_subset.vcf.gz`. An export of the gnomAD v3.1.1 genomes reference made available from the KD workbench.
     - `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
     - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression
     - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
