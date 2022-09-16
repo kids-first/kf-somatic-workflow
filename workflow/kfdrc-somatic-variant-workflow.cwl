@@ -418,7 +418,8 @@ inputs:
       \ to 18"}
 
   # VEP param
-  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
+  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",  "sbg:suggestedValue": {class: File, path: 63248585dd7df46f4f14ef7c,
+      name: homo_sapiens_merged_vep_105_GRCh38.tar.gz}}
   vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
   vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   vep_buffer_size: {type: 'int?', default: 1000, doc: "Increase or decrease to balance speed and memory usage"}
@@ -433,18 +434,18 @@ inputs:
   run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
 
   # MAF-specific params
-  strelka2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`", default: "gnomad_3_0_0_AF,MQ,MQ0,QSI,HotSpotAllele" }
+  strelka2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MQ,MQ0,QSI,HotSpotAllele" }
   strelka2_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
-  strelka2_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
-  mutect2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`", default: "gnomad_3_0_0_AF,MBQ,TLOD,HotSpotAllele" }
+  strelka2_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg" }
+  mutect2_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MBQ,TLOD,HotSpotAllele" }
   mutect2_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
-  mutect2_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
-  lancet_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`", default: "gnomad_3_0_0_AF,MS,FETS,HotSpotAllele" }
+  mutect2_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg" }
+  lancet_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MBQ,TLOD,HotSpotAllele" }
   lancet_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
-  lancet_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
-  vardict_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`", default: "gnomad_3_0_0_AF,MSI,MSILEN,SOR,SSF,HotSpotAllele" }
+  lancet_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg" }
+  vardict_retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MSI,MSILEN,SOR,SSF,HotSpotAllele" }
   vardict_retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
-  vardict_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,CADD_PHRED,clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_hgvs" }
+  vardict_retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg" }
 
   # annotation vars
   genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing\
@@ -458,7 +459,7 @@ inputs:
       \ file(s) containing protein names and amino acid position ranges corresponding\
       \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
         name: protein_indel_cancer_hotspots_v2.tsv}]}
-  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_0_AF:=INFO/AF"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
   bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {

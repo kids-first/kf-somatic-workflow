@@ -125,7 +125,7 @@ steps:
     out: [pass_vcf]
 
   annotate:
-    run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
+    run: ../workflow/kfdrc_annot_vcf_wf.cwl
     label: Annotate VCF
     in:
       indexed_reference_fasta: indexed_reference_fasta

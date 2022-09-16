@@ -96,7 +96,7 @@ steps:
     out: [pass_vcf]
 
   annotate:
-    run: ../sub_workflows/kfdrc_annot_vcf_sub_wf.cwl
+    run: ../workflow/kfdrc_annot_vcf_wf.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_vcf: gatk_selectvariants_lancet/pass_vcf

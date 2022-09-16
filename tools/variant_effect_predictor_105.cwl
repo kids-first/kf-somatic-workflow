@@ -148,7 +148,9 @@ arguments:
       --allele_number
       --dont_skip
       --allow_non_variant
-      ${if(inputs.reference) {return "--hgvs --hgvsg --fasta " + inputs.reference.path} else {return ""}}
+      --hgvs
+      --hgvsg
+      --fasta $(inputs.reference.path)
       ${if(inputs.cache) {return "--cache --dir_cache ."} else {return ""}}
       ${if(inputs.species) {return "--species " + inputs.species} else {return ""} }
       ${if(inputs.merged) {return "--merged"} else {return ""} }
@@ -158,7 +160,7 @@ arguments:
       ${if(inputs.dbnsfp) {return "--plugin dbNSFP," + inputs.dbnsfp.path + "," + inputs.dbnsfp_fields} else {return ""}}
       ${if(inputs.dbscsnv) {return "--plugin dbscSNV,"+inputs.dbscsnv.path} else {return ""}}
       ${if(inputs.intervar) {return "--custom "+inputs.intervar.path+",Intervar,vcf,exact,0,STATUS"} else {return ""}}
-      | bgzip -c -@ $(inputs.cores) > $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz &&
+      | bgzip -c -@ 4 > $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz &&
       tabix $(inputs.output_basename).$(inputs.tool_name).vep.vcf.gz
 
 inputs:
@@ -167,7 +169,7 @@ inputs:
   cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
   species: {type: 'string?', default: "homo_sapiens", doc: "Refer to the cache dir structure to set this"}
   buffer_size: {type: 'int?', doc: "Increase or decrease to balance speed and memory usage, tool default is 5000", default: 5000}
-  reference: { type: 'File?',  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
+  reference: { type: File,  secondaryFiles: [.fai], doc: "Fasta genome assembly with indexes" }
   cache: { type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache" }
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }

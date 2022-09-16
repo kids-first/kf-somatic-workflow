@@ -14,7 +14,7 @@ requirements:
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 0
-    shellQuote: false
+    shellQuote: true
     valueFrom: >-
       set -eo pipefail
 
@@ -31,10 +31,9 @@ arguments:
           }
           return cmd;
       }
-      && bcftools norm -m '-any' $VCF > $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
-      && /vt/vt normalize -n -r $(inputs.indexed_reference_fasta.path) $(inputs.output_basename).$(inputs.tool_name).bcf_norm.vcf
-      > $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf
-      && bgzip $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf
+      && bcftools norm --threads 4 -m "-any" $VCF
+      | /vt/vt normalize - -n -r $(inputs.indexed_reference_fasta.path)
+      | bgzip -@ 4 -c >  $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf.gz
       && tabix $(inputs.output_basename).$(inputs.tool_name).bcf_vt_norm.vcf.gz
 
 inputs:
