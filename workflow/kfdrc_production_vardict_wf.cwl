@@ -7,9 +7,12 @@ requirements:
   - class: SubworkflowFeatureRequirement
 inputs:
   # Required
-  reference_fasta: { type: 'File' }
-  reference_fai: { type: 'File?' }
-  reference_dict: { type: 'File?' }
+  reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3,
+      name: Homo_sapiens_assembly38.fasta}}
+  reference_fai: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639016357c3a53540ca7af,
+      name: Homo_sapiens_assembly38.fasta.fai}}
+  reference_dict: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639019357c3a53540ca7e7,
+      name: Homo_sapiens_assembly38.dict}}
   input_tumor_aligned:
     type: File
     secondaryFiles: |
@@ -52,7 +55,9 @@ inputs:
   vardict_padding: { type: 'int?', doc: "Padding to add to input intervals, recommend 0 if intervals already padded such as in WXS, 150 if not such as in WGS" }
 
   # WGS only Fields
-  wgs_calling_interval_list: { type: 'File?', doc: "GATK intervals list-style, or bed file.  Recommend canonical chromosomes with N regions removed" }
+  wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed\
+      \ file.  Recommend canocical chromosomes with N regions removed", "sbg:suggestedValue": {
+      class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
 
   # WXS only Fields
   padded_capture_regions: { type: 'File?', doc: "Recommend 100bp pad, for somatic variant" }
@@ -68,8 +73,8 @@ inputs:
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
-  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
-  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  run_cache_existing: { type: 'boolean?', doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: 'boolean?', doc: "Run the allele frequency flags for cache" }
 
   # annotation vars
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a423, name: tert.bed}] }
@@ -78,7 +83,6 @@ inputs:
   retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MSI,MSILEN,SOR,SSF,HotSpotAllele"}
   retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
   retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg" }
-  add_common_fields: {type: 'boolean?', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
   bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
@@ -151,8 +155,6 @@ steps:
     run: ../tools/samtools_calmd.cwl
     in:
       input_reads: input_tumor_aligned
-      threads:
-        valueFrom: ${return 16;}
       reference: prepare_reference/indexed_fasta
     out: [bam_file]
 
@@ -160,8 +162,6 @@ steps:
     run: ../tools/samtools_calmd.cwl
     in:
       input_reads: input_normal_aligned
-      threads:
-        valueFrom: ${return 16;}
       reference: prepare_reference/indexed_fasta
     out: [bam_file]
 

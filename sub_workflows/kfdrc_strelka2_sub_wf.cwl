@@ -44,9 +44,9 @@ inputs:
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   tool_name: {type: 'string?', doc: "String to describe what tool was run as part of file name", default: "strelka2_somatic"}
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
-  vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
-  vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
-  vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
+  vep_ram: {type: 'int?', doc: "In GB, may need to increase this value depending on the size/complexity of input"}
+  vep_cores: {type: 'int?', doc: "Number of cores to use. May need to increase for really large inputs"}
+  vep_buffer_size: {type: 'int?', doc: "Increase or decrease to balance speed and memory usage"}
   output_basename: string
   dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
   dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all" }

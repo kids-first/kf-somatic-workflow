@@ -50,9 +50,9 @@ inputs:
   learnorientation_memory: {type: 'int?'}
   filtermutectcalls_memory: {type: 'int?'}
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
-  vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value depending on the size/complexity of input"}
-  vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to increase for really large inputs"}
-  vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance speed and memory usage"}
+  vep_ram: {type: 'int?', doc: "In GB, may need to increase this value depending on the size/complexity of input"}
+  vep_cores: {type: 'int?', doc: "Number of cores to use. May need to increase for really large inputs"}
+  vep_buffer_size: {type: 'int?', doc: "Increase or decrease to balance speed and memory usage"}
   dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
   dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all"}
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
