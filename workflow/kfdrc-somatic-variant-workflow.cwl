@@ -476,7 +476,7 @@ inputs:
       \ file(s) containing protein names and amino acid position ranges corresponding\
       \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
         name: protein_indel_cancer_hotspots_v2.tsv}]}
-  bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation\
+  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz}}
@@ -1095,5 +1095,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.1.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.2.0'
   label: github-release
