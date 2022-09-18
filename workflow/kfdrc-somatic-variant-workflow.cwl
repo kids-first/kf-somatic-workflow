@@ -86,7 +86,7 @@ doc: |-
   Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
   - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
   - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
-  - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl).
+  - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl). **Note: If a PON is not provided, GATK CNV will be skipped!**
 
   For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
 
@@ -477,7 +477,7 @@ inputs:
       \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
         name: protein_indel_cancer_hotspots_v2.tsv}]}
   bcftools_annot_columns: {type: 'string', doc: "csv string of columns from annotation\
-      \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_0_AF:=INFO/AF"}
+      \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz}}
   bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {
