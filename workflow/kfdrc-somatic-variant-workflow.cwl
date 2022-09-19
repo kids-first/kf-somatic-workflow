@@ -348,7 +348,7 @@ inputs:
   # AnnotSV Inputs
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing\
       \ annotations for AnnotSV", "sbg:fileTypes": "TAR, TAR.GZ, TGZ", "sbg:suggestedValue": {
-      class: File, path: 6245fde8274f85577d646da0, name: annotsv_311_annotations_dir.tgz}}
+      class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
 
   # Optional with One Default
   cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16\
