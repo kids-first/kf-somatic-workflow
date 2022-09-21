@@ -160,8 +160,9 @@ inputs:
       \ you want to prefilter before annotation"}
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: 'File?', secondaryFiles: ['.tbi'], doc: "additional bgzipped\
-      \ annotation vcf file"}
+  bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
+      class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz, secondaryFiles: [{
+      class: File, path: 6324ef5ad01163633daa00d7, name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}]}}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
       \ create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
