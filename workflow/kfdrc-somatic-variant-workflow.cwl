@@ -275,13 +275,15 @@ inputs:
     secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false},
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "tumor BAM or CRAM"
-  input_tumor_name: string
+  input_tumor_name: { type: string, doc: "Desired sample name for tumor in output VCFs" }
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned:
     type: File
     secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false},
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "normal BAM or CRAM"
-  input_normal_name: string
+  input_normal_name: { type: string, doc: "Desired sample name for normal in output VCFs" }
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
   cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
@@ -717,8 +719,10 @@ steps:
       indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       input_normal_name: input_normal_name
+      old_normal_name: old_normal_name
       output_basename: output_basename
       reference_dict: prepare_reference/reference_dict
       bed_invtl_split: select_vardict_bed_interval/output
@@ -774,8 +778,10 @@ steps:
       exac_common_vcf: index_mutect_exac/output
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
+      old_normal_name: old_normal_name
       exome_flag: choose_defaults/out_exome_flag
       output_basename: output_basename
       learnorientation_memory: learnorientation_memory
@@ -895,8 +901,10 @@ steps:
       indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       input_normal_name: input_normal_name
+      old_normal_name: old_normal_name
       output_basename: output_basename
       select_vars_mode: select_vars_mode
       reference_dict: prepare_reference/reference_dict

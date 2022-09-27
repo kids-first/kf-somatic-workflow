@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_mutect2_sub_wf
 requirements:
@@ -12,36 +12,16 @@ inputs:
   bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}
   af_only_gnomad_vcf: {type: 'File', secondaryFiles: ['.tbi']}
   exac_common_vcf: {type: 'File', secondaryFiles: ['.tbi']}
-  input_tumor_aligned:
-    type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
-    doc: "tumor BAM or CRAM"
-
+  input_tumor_aligned: { type: File, secondaryFiles: [{pattern: ".bai", required: false},
+      {pattern: "^.bai", required: false}, {pattern: ".crai", required: false}, {
+        pattern: "^.crai", required: false}], doc: "tumor BAM or CRAM" }
   input_tumor_name: string
-  input_normal_aligned:
-    type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
-    doc: "normal BAM or CRAM"
-
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  input_normal_aligned: { type: File, secondaryFiles: [{pattern: ".bai", required: false},
+      {pattern: "^.bai", required: false}, {pattern: ".crai", required: false}, {
+        pattern: "^.crai", required: false}], doc: "normal BAM or CRAM" }
   input_normal_name: string
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   tool_name: {type: 'string?', doc: "String to describe what tool was run as part of file name", default: "mutect2_somatic"}
@@ -80,7 +60,7 @@ inputs:
 
 outputs:
   mutect2_filtered_stats: {type: 'File', outputSource: filter_mutect2_vcf/stats_table}
-  mutect2_filtered_vcf: {type: 'File', outputSource: filter_mutect2_vcf/filtered_vcf}
+  mutect2_filtered_vcf: {type: 'File', outputSource: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf], pickValue: first_non_null}
   mutect2_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   mutect2_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -148,11 +128,23 @@ steps:
       max_memory: filtermutectcalls_memory
     out: [stats_table, filtered_vcf]
 
+  rename_vcf_samples:
+    when: $(inputs.old_tumor_name != null)
+    run: ../tools/bcftools_reheader_vcf.cwl
+    in:
+      input_vcf: filter_mutect2_vcf/filtered_vcf
+      input_normal_name: input_normal_name
+      input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
+    out: [reheadered_vcf]
+
   gatk_selectvariants_mutect2:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select PASS
     in:
-      input_vcf: filter_mutect2_vcf/filtered_vcf
+      input_vcf:
+        source: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf]
+        pickValue: first_non_null
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode
@@ -194,7 +186,6 @@ steps:
       output_basename: output_basename
       tool_name: tool_name
     out: [annotated_protected, annotated_public]
-
 
 $namespaces:
   sbg: https://sevenbridges.com
