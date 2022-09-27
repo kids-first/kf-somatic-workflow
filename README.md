@@ -116,6 +116,8 @@ For mate orientation, you will need to specify, the drop down and tool doc expla
 Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
 You can use the `include_expression` `Filter="PASS"` to achieve this.
 
+1. The `SM:` sample IDs in the input alignment files **must** match `input_tumor_name` and `input_normal_name`. If you need the output VCF sample names to differ from the input, enter what is currently in `SM:` into the `old_tumor_name` and `old_normal_name` fields, and enter the desired sample names in `input_tumor_name` and `input_normal_name`. The workflow will rename the samples in the VCF for you.
+
 1. Again, when in doubt our reference inputs can be obtained from [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/). Suggested reference inputs are:
 
     - `reference_fasta`: [Homo_sapiens_assembly38.fasta](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK

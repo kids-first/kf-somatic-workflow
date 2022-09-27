@@ -86,7 +86,7 @@ doc: |-
   Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
   - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
   - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
-  - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somtic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl). **Note: If a PON is not provided, GATK CNV will be skipped!**
+  - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somatic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl). **Note: If a PON is not provided, GATK CNV will be skipped!**
 
   For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
 
@@ -120,6 +120,8 @@ doc: |-
   1. What is `select_vars_mode` you ask? On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
   Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
   You can use the `include_expression` `Filter="PASS"` to achieve this.
+
+  1. The `SM:` sample IDs in the input alignment files **must** match `input_tumor_name` and `input_normal_name`. If you need the output VCF sample names to differ from the input, enter what is currently in `SM:` into the `old_tumor_name` and `old_normal_name` fields, and enter the desired sample names in `input_tumor_name` and `input_normal_name`. The workflow will rename the samples in the VCF for you.
 
   1. Again, when in doubt our reference inputs can be obtained from [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/). Suggested reference inputs are:
 
@@ -275,15 +277,18 @@ inputs:
     secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false},
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "tumor BAM or CRAM"
-  input_tumor_name: { type: string, doc: "Desired sample name for tumor in output VCFs" }
-  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  input_tumor_name: {type: string, doc: "Desired sample name for tumor in output VCFs"}
+  old_tumor_name: {type: 'string?', doc: "If `SM:` sample name in te align file is\
+      \ different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned:
     type: File
     secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false},
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "normal BAM or CRAM"
-  input_normal_name: { type: string, doc: "Desired sample name for normal in output VCFs" }
-  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+  input_normal_name: {type: string, doc: "Desired sample name for normal in output\
+      \ VCFs"}
+  old_normal_name: {type: 'string?', doc: "If `SM:` sample name in te align file is\
+      \ different than `input_normal_name`, you **must** provide it here"}
   cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
@@ -426,7 +431,7 @@ inputs:
       \ depending on the size/complexity of input"}
   vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to\
       \ increase for really large inputs"}
-  vep_buffer_size: {type: 'int?', default: 1000, doc: "Increase or decrease to balance\
+  vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance\
       \ speed and memory usage"}
   dbnsfp: {type: 'File?', secondaryFiles: [.tbi, ^.readme.txt], doc: "VEP-formatted\
       \ plugin file, index, and readme file containing dbNSFP annotations"}
@@ -1103,5 +1108,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.2.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.0'
   label: github-release
