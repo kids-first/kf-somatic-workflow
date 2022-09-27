@@ -391,5 +391,9 @@ steps:
           \ var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; return\
           \ [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
+
+$namespaces:
+  sbg: https://sevenbridges.com
+
 sbg:license: Apache License 2.0
 sbg:publisher: KFDRC

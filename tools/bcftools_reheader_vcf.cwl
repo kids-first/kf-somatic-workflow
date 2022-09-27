@@ -23,6 +23,7 @@ inputs:
   input_vcf: File
   input_normal_name: string
   input_tumor_name: string
+  old_tumor_name: { type: 'string?', doc: "Not needed for this tool. Just here to use as a workflow flag"}
 outputs:
   reheadered_vcf:
     type: File

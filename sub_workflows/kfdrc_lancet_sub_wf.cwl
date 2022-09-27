@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_lancet_sub_wf
 doc: "Lancet sub workflow, meant to be wrapped"
@@ -11,8 +11,10 @@ inputs:
   indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
   input_tumor_aligned: {type: 'File', secondaryFiles: [^.bai]}
   input_tumor_name: string
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned: {type: 'File', secondaryFiles: [^.bai]}
   input_normal_name: string
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
   output_basename: string
   reference_dict: File
   bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}
@@ -53,7 +55,7 @@ inputs:
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
 
 outputs:
-  lancet_prepass_vcf: {type: 'File', outputSource: sort_merge_lancet_vcf/merged_vcf}
+  lancet_prepass_vcf: {type: 'File', outputSource: [rename_vcf_samples/reheadered_vcf, sort_merge_lancet_vcf/merged_vcf], pickValue: first_non_null}
   lancet_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   lancet_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -85,11 +87,23 @@ steps:
       tool_name: tool_name
     out: [merged_vcf]
 
+  rename_vcf_samples:
+    when: $(inputs.old_tumor_name != null)
+    run: ../tools/bcftools_reheader_vcf.cwl
+    in:
+      input_vcf: sort_merge_lancet_vcf/merged_vcf
+      input_normal_name: input_normal_name
+      input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
+    out: [reheadered_vcf]
+
   gatk_selectvariants_lancet:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Lancet PASS
     in:
-      input_vcf: sort_merge_lancet_vcf/merged_vcf
+      input_vcf:
+        source: [ rename_vcf_samples/reheadered_vcf, sort_merge_lancet_vcf/merged_vcf ]
+        pickValue: first_non_null
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode

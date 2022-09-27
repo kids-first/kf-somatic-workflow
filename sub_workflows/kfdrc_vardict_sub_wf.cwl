@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_vardict_1_7_sub_wf
 requirements:
@@ -10,8 +10,10 @@ inputs:
   indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
   input_tumor_aligned: {type: 'File', secondaryFiles: ['^.bai']}
   input_tumor_name: string
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned: {type: 'File', secondaryFiles: ['^.bai']}
   input_normal_name: string
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
   output_basename: string
   reference_dict: File
   padding: {type: ['null', int], doc: "Padding to add to input intervals, recommend 0 if intervals already padded, 150 if not", default: 150}
@@ -53,7 +55,7 @@ inputs:
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   
 outputs:
-  vardict_prepass_vcf: {type: 'File', outputSource: sort_merge_vardict_vcf/merged_vcf}
+  vardict_prepass_vcf: {type: 'File', outputSource: [rename_vcf_samples/reheadered_vcf, sort_merge_vardict_vcf/merged_vcf], pickValue: first_non_null} 
   vardict_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   vardict_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -65,9 +67,13 @@ steps:
         value: c5.9xlarge
     in:
       input_tumor_bam: input_tumor_aligned
-      input_tumor_name: input_tumor_name
+      input_tumor_name: 
+        source: [old_tumor_name, input_tumor_name]
+        pickValue: first_non_null
       input_normal_bam: input_normal_aligned
-      input_normal_name: input_normal_name
+      input_normal_name:
+        source: [old_normal_name, input_normal_name]
+        pickValue: first_non_null
       padding: padding
       min_vaf: min_vaf
       cpus: cpus
@@ -88,10 +94,22 @@ steps:
       tool_name: tool_name
     out: [merged_vcf]
 
+  rename_vcf_samples:
+    when: $(inputs.old_tumor_name != null)
+    run: ../tools/bcftools_reheader_vcf.cwl
+    in:
+      input_vcf: sort_merge_vardict_vcf/merged_vcf
+      input_normal_name: input_normal_name
+      input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
+    out: [reheadered_vcf]
+
   bcbio_filter_fp_somatic:
     run: ../tools/bcbio_filter_vardict_somatic.cwl
     in:
-      input_vcf: sort_merge_vardict_vcf/merged_vcf
+      input_vcf:
+        source: [rename_vcf_samples/reheadered_vcf, sort_merge_vardict_vcf/merged_vcf]
+        pickValue: first_non_null
       output_basename: output_basename
     out: [filtered_vcf] 
 
