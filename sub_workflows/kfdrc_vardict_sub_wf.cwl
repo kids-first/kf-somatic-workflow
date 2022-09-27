@@ -55,7 +55,7 @@ inputs:
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   
 outputs:
-  vardict_prepass_vcf: {type: 'File', outputSource: [rename_vcf_samples/reheadered_vcf, sort_merge_vardict_vcf/merged_vcf], pickValue: first_non_null} 
+  vardict_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output} 
   vardict_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   vardict_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -104,12 +104,18 @@ steps:
       old_tumor_name: old_tumor_name
     out: [reheadered_vcf]
 
+  pickvalue_workaround:
+    run: ../tools/expression_pickvalue_workaround.cwl
+    in:
+      input_file:
+        source: [rename_vcf_samples/reheadered_vcf, sort_merge_vardict_vcf/merged_vcf]
+        pickValue: first_non_null
+    out: [output]
+
   bcbio_filter_fp_somatic:
     run: ../tools/bcbio_filter_vardict_somatic.cwl
     in:
-      input_vcf:
-        source: [rename_vcf_samples/reheadered_vcf, sort_merge_vardict_vcf/merged_vcf]
-        pickValue: first_non_null
+      input_vcf: pickvalue_workaround/output
       output_basename: output_basename
     out: [filtered_vcf] 
 

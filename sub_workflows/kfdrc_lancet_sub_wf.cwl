@@ -55,7 +55,7 @@ inputs:
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
 
 outputs:
-  lancet_prepass_vcf: {type: 'File', outputSource: [rename_vcf_samples/reheadered_vcf, sort_merge_lancet_vcf/merged_vcf], pickValue: first_non_null}
+  lancet_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
   lancet_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   lancet_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -97,13 +97,19 @@ steps:
       old_tumor_name: old_tumor_name
     out: [reheadered_vcf]
 
+  pickvalue_workaround:
+    run: ../tools/expression_pickvalue_workaround.cwl
+    in:
+      input_file:
+        source: [rename_vcf_samples/reheadered_vcf, sort_merge_lancet_vcf/merged_vcf]
+        pickValue: first_non_null
+    out: [output]
+
   gatk_selectvariants_lancet:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Lancet PASS
     in:
-      input_vcf:
-        source: [ rename_vcf_samples/reheadered_vcf, sort_merge_lancet_vcf/merged_vcf ]
-        pickValue: first_non_null
+      input_vcf: pickvalue_workaround/output
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode

@@ -60,7 +60,7 @@ inputs:
 
 outputs:
   mutect2_filtered_stats: {type: 'File', outputSource: filter_mutect2_vcf/stats_table}
-  mutect2_filtered_vcf: {type: 'File', outputSource: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf], pickValue: first_non_null}
+  mutect2_filtered_vcf: { type: 'File', outputSource: pickvalue_workaround/output }
   mutect2_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   mutect2_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -72,9 +72,13 @@ steps:
         value: c5.9xlarge
     in:
       input_tumor_aligned: input_tumor_aligned
-      input_tumor_name: input_tumor_name
+      input_tumor_name: 
+        source: [old_tumor_name, input_tumor_name]
+        pickValue: first_non_null
       input_normal_aligned: input_normal_aligned
-      input_normal_name: input_normal_name
+      input_normal_name:
+        source: [old_normal_name, input_normal_name]
+        pickValue: first_non_null
       reference: indexed_reference_fasta
       interval_list: bed_invtl_split
       af_only_gnomad_vcf: af_only_gnomad_vcf
@@ -138,13 +142,19 @@ steps:
       old_tumor_name: old_tumor_name
     out: [reheadered_vcf]
 
+  pickvalue_workaround:
+    run: ../tools/expression_pickvalue_workaround.cwl
+    in:
+      input_file:
+        source: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf]
+        pickValue: first_non_null
+    out: [output]
+
   gatk_selectvariants_mutect2:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select PASS
     in:
-      input_vcf:
-        source: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf]
-        pickValue: first_non_null
+      input_vcf: pickvalue_workaround/output
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode
