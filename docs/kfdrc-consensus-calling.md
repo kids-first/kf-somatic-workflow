@@ -18,7 +18,7 @@ The general outline is as follows:
    - `GT` fields are estimated as "majority rules," and when no majority exists, set as `0/1` by default
    - `AD`, `DP`, and `AF` are calculated as the average value between callers
    - `ADR`, `DPR`, and `AFR` fields are added as the range of values from the previous point, to give the observer a sense on confidence in the value
-1. VEP Annotate Consensus
+1. VEP Annotate Consensus (see [Kids First DRC Somatic Variant Annotation Workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md) for details )
 1. BCF tools annotate
    - Additional annotation is performed augment VEP annotation
    - While VEP does have extensive gnomad allele frequency annotation, it is limited to exome values. The added gnomad AF only resource we use augments this as an additional `INFO/AF` field to add WGS frequencies
@@ -33,71 +33,32 @@ The general outline is as follows:
 1. VCF2MAF public
 1. Rename outputs
 
-![Consensus workflow](kfdrc-consensus-calling.png)
-
 ## Workflow Description and KF Recommended Inputs
 
-### General workflow inputs:
-```yaml
-inputs:
-  indexed_reference_fasta: {type: File, secondaryFiles: ['.fai', '^.dict'], 
-                            sbg:suggestedValue: {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
-                            secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta},
-                            {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]
-                            }}
-  strelka2_vcf: {type: File, secondaryFiles: ['.tbi']}
-  mutect2_vcf: {type: File, secondaryFiles: ['.tbi']}
-  lancet_vcf: {type: File, secondaryFiles: ['.tbi']}
-  vardict_vcf: {type: File, secondaryFiles: ['.tbi']}
-  cram: {type: File, secondaryFiles: ['.crai'], doc: "Tumor cram recommended for MQ score calculation"}
-  input_tumor_name: string
-  input_normal_name: string
-  output_basename: string
-  tool_name: {type: string?, default: "consensus_somatic", doc: "A helpful file name building component"}
-  ncallers: {type: int?, doc: "Optional number of callers required for consensus [2]",
-    default: 2}
-  consensus_ram: {type: int, doc: "Set min memory in GB for consensus merge step", default: 3}
-  annotation_vcf: {type: File, secondaryFiles: ['.tbi'], doc: "VCF of annotations to add to consensus variants, e.g. gnomAD allele frequency",
-                   sbg:suggestedValue: {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz,
-                   secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]
-                   }}
-  vep_cache: {type: File, doc: "tar gzipped cache from ensembl/local converted cache",
-    sbg:suggestedValue: {class: File, path: 607713829360f10e3982a425, name: homo_sapiens_vep_93_GRCh38.tar.gz}}
-  annot_columns: {type: string?, default: 'INFO/AF', doc: "column from annotation_vcf to add to consensus VCF; defaults to 'INFO/AF'"}
-  filter_names: {type: 'string[]?', default: [ "NORM_DP_LOW", "GNOMAD_AF_HIGH" ], doc: "Names of filters to be added to consensus VCF;\
-     \ default values set"}
-  depth_lowerbound: {type: int?, default: 7, doc: "Normal-sample read depth at which to apply depth filter; default set"}
-  frequency_upperbound: {type: float?, default: 0.001, doc: "Population allele frequency above which to apply frequency filter; default set"}
-  bcftools_public_filter: {type: string?, doc: 'Will hard filter final result to create a public version, e.g. FILTER="PASS"|INFO/HotSpotAllele=1; default set', default: 'FILTER="PASS"|INFO/HotSpotAllele=1'}
-  retain_info: {type: string?, doc: "csv string with INFO fields that you want to keep; default values set", default: 'MQ,MQ0,CAL,HotSpotAllele'}
-  retain_fmt: {type: string?, doc: "csv string with FORMAT fields that you want to keep"}
-  maf_center: {type: string?, doc: "Sequencing center of variant called", default: "."}
-```
-
-### Recommended reference inputs - all file references can be obtained [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/)
-Secondary files needed for each reference file will be a sub-bullet point
- - `indexed_reference_fasta`: `Homo_sapiens_assembly38.fasta`
-   - `Homo_sapiens_assembly38.fasta.fai`
-   - `Homo_sapiens_assembly38.dict`
- - `bcftools_annot_columns`: "INFO/AF"
- - `annotation_vcf`: `af-only-gnomad.hg38.vcf.gz`
-   - `af-only-gnomad.hg38.vcf.gz.tbi`
- - `bcftools_public_filter`: 'FILTER="PASS"|INFO/HotSpotAllele=1'
- - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz`
- - `tool_name`: "consensus_somatic"
-
-### Situational inputs
- - `depth_lowerbound`: Change this `int` if you believe the threshold for `NORM_DP_LOW` should be different
- - `frequency_upperbound` Change this `float` if you believe the max value for `GNOMAD_AF_HIGH` should be different
- - `ncallers`: Change this `int` to adjust the stringency of what is defined as a consensus
- - `consensus_ram`: Change this `int` if the script runs out of memory to increase the size of the instance type used
+### General workflow inputs, all file references can be obtained [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/):
+- indexed_reference_fasta: Homo_sapiens_assembly38.fasta
+- strelka2_vcf
+- mutect2_vcf
+- lancet_vcf
+- vardict_vcf
+- cram #Tumor cram recommended for MQ score calculation
+- input_tumor_name
+- input_normal_name
+- output_basename
+- tool_name: "consensus_somatic"
+- ncallers: # Optional number of callers required for consensus, recommend `2`
+- consensus_ram: `3`
+- annotation_vcf: gnomad_3.1.1.vwb_subset.vcf.gz # population stats VCF for public filtering
+- vep_cache: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz
+- annot_columns: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"
+- gatk_filter_name: `[NORM_DP_LOW, GNOMAD_AF_HIGH]`
+- gatk_filter_expression: `[ vc.getGenotype('`_insert_norm_sample_id_here_`').getDP() <= 7,gnomad_3_1_1_AF > 0.001 ]`
+- bcftools_public_filter: `FILTER="PASS"|INFO/HotSpotAllele=1`
+retain_info: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MQ,MQ0,CAL,HotSpotAllele"
+- retain_fmt: # csv string with FORMAT fields that you want to keep
+- retain_ann: "HGVSg"
+- maf_center: "."
 
 ## Workflow outputs
-```yaml
-outputs:
-  annotated_protected_outputs: {type: 'File[]', outputSource: rename_protected/renamed_files}
-  annotated_public_outputs: {type: 'File[]', outputSource: rename_public/renamed_files}
-
-```
- - `annotated_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
- - `annotated_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
+- `annotated_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
+- `annotated_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
