@@ -14,7 +14,7 @@ doc: |
   1. Normalize VCF
   1. Strip specified `INFO` and `FORMAT` fields (Only if adding a new annotation that clashes with existing)
   1. Annotate with VEP
-  1. Annotated with an additional vcf - optional, recommend using AF-only WGS gnomad VCF)
+  1. Annotated with an additional vcf - optional, recommend using a gnomAD VCF with at least AF)
   1. Soft filter on remarkable variant characteristics
      - KF recommends normal read depth <= 7 and gnomAD AF > 0.001
      - This output will be considered `protected`
@@ -35,50 +35,6 @@ doc: |
   You've got a somatic variant candidate, and the normal-sample reads all support the reference allele.
   However,  if there are only ~5 of those reads, then there's a decent chance that it's a germline het variant and you just didn't get lucky enough to see any alt reads in the normal sample.
   A prior understanding that heterozygous germline variant are much more common than somatic variants informs this.
-
-  ### General workflow inputs:
-  ```yaml
-  inputs:
-    indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
-    input_vcf: {type: 'File', secondaryFiles: ['.tbi'], doc: "Input vcf to annotate and soft filter"}
-    input_tumor_name: string
-    input_normal_name: string
-    add_common_fields: {type: 'boolean', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
-    # bcftools strip, if needed
-    bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
-    # bcftools annotate if more to do
-    bcftools_prefilter_csv: { type: 'string?', doc: "csv of bcftools filter params if you want to prefilter before annotation"}
-    bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF, or syntax to annotate as: INFO/gnomad_3_0_AF:=INFO/AF"}
-    bcftools_annot_vcf: {type: 'File?', secondaryFiles: ['.tbi'], doc: "additional bgzipped annotation vcf file"}
-    bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
-    gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add"}
-    gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for clues"}
-    # VEP-specific
-    vep_ram: {type: 'int?', default: 32, doc: "In GB, good for somatic calls, 48+ better for germline"}
-    vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. Good for somatic calls, 32 better for germline"}
-    vep_buffer_size: {type: 'int?', doc: "Increase or decrease to balance speed and memory usage. 1000 is good for somatic, 100000 with ram increase better for germline"}
-    vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
-    dbnsfp: { type: 'File?', secondaryFiles: [.tbi,^.readme.txt], doc: "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations" }
-    dbnsfp_fields: { type: 'string?', doc: "csv string with desired fields to annotate. Use ALL to grab all"}
-    merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
-    run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache", default: true }
-    run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
-    run_stats: { type: boolean, doc: "Create stats file? Disable for speed", default: false }
-    cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
-    cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
-    # Hotspot Annotation
-    disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task." }
-    genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
-    protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
-    protein_indel_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots" }
-    output_basename: string
-    tool_name: string
-    # MAF-specific
-    retain_info: { type: 'string?', doc: "csv string with INFO fields that you want to keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`" }
-    retain_fmt: { type: 'string?', doc: "csv string with FORMAT fields that you want to keep" }
-    retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF" }
-    maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
-  ```
 
   ### Recommended reference inputs - all file references can be obtained [here](https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/)
   Secondary files needed for each reference file will be a sub-bullet point
@@ -121,20 +77,11 @@ doc: |
      - `Mutect2`: `mutect2_somatic`
      - `Lancet`: `lancet_somatic`
      - `VarDict Java`: `vardict_somatic`
-   - `vep_cores`
-     - WXS: `16`
-     - WGS: `32`
-   - `vep_ram`
-     - WXS: `32`
-     - WGS: `48`
-   - `vep_buffer`: `1000`
+   - `vep_cores`: `16`
+   - `vep_ram`: `32`
+   - `vep_buffer`: `5000`
 
   ## Workflow outputs
-  ```yaml
-  outputs:
-    annotated_protected: {type: 'File[]', outputSource: rename_protected/renamed_files}
-    annotated_public: {type: 'File[]', outputSource: rename_public/renamed_files}
-  ```
    - `annotated_protected`: `PASS` VCF with annotation pipeline soft `FILTER`-added values, VCF index, and MAF format of VCF
    - `annotated_public_vcf`: Same as `annotated_protected`, hard-filtered to include `PASS` only
 requirements:
@@ -161,8 +108,8 @@ inputs:
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
-      class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz, secondaryFiles: [{
-      class: File, path: 6324ef5ad01163633daa00d7, name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}]}}
+      class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz,
+      secondaryFiles: [{class: File, path: 6324ef5ad01163633daa00d7, name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}]}}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
       \ create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
@@ -395,5 +342,9 @@ steps:
 $namespaces:
   sbg: https://sevenbridges.com
 
-sbg:license: Apache License 2.0
-sbg:publisher: KFDRC
+"sbg:license": Apache License 2.0
+"sbg:publisher": KFDRC
+
+"sbg:links":
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.0'
+  label: github-release
