@@ -9,7 +9,7 @@ requirements:
     dockerPull: 'jluebeck/prepareaa:v0.1203.10'
   - class: ResourceRequirement
     ramMin: 4000
-    coresMin: $(inputs.threads)
+    coresMin: 8
   - class: InitialWorkDirRequirement
     listing:
       - $(inputs.data_repo)
