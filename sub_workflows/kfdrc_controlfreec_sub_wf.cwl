@@ -64,6 +64,9 @@ steps:
 
   control_free_c: 
     run: ../tools/control-freec-11-6-sbg.cwl
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.4xlarge
     in: 
       mate_copynumber_file_control: mate_copynumber_file_control
       mate_copynumber_file_sample: mate_copynumber_file_sample

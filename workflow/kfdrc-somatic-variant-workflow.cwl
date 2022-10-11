@@ -495,8 +495,8 @@ inputs:
       \ add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to\
       \ establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,\
-      \ recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP()\
-      \ <= 7\"), \"gnomad_3_1_1_AF > 0.001\"]"}
+      \ recommend: `vc.getGenotype('inputs.input_normal_name').getDP()\
+      \ <= 7)`, `gnomad_3_1_1_AF > 0.001`]"}
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation\
       \ and skip this task.", default: false}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
@@ -716,9 +716,6 @@ steps:
     out: [output]
 
   run_vardict:
-    hints:
-    - class: "sbg:AWSInstanceType"
-      value: c5.9xlarge
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
       indexed_reference_fasta: prepare_reference/indexed_fasta
@@ -771,9 +768,6 @@ steps:
     out: [output]
 
   run_mutect2:
-    hints:
-    - class: "sbg:AWSInstanceType"
-      value: c5.9xlarge
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: prepare_reference/indexed_fasta
