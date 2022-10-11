@@ -250,6 +250,9 @@ steps:
 
   amplicon_architect:
     run: ../tools/amplicon_architect.cwl
+    hints:
+    - class: 'sbg:AWSInstanceType'
+      value: c5.2xlarge
     in:
       data_repo: untar_data_repo/output
       data_ref_version: aa_data_ref_version
@@ -264,6 +267,9 @@ steps:
 
   amplicon_classifier:
     run: ../tools/aa_classifier.cwl
+    hints:
+    - class: 'sbg:AWSInstanceType'
+      value: c5.2xlarge
     in:
       data_repo: untar_data_repo/output
       data_ref_version: aa_data_ref_version

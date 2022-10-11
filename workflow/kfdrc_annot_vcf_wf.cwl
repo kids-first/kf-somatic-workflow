@@ -239,6 +239,9 @@ steps:
   bcftools_gnomad_annotate:
     when: $(inputs.annotation_vcf != null)
     run: ../tools/bcftools_annotate.cwl
+    hints:
+    - class: 'sbg:AWSInstanceType'
+      value: c5.2xlarge
     in:
       input_vcf: vep_annotate_vcf/output_vcf
       annotation_vcf: bcftools_annot_vcf
