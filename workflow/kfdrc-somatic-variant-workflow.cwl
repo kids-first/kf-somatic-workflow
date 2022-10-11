@@ -892,9 +892,6 @@ steps:
     out: [output]
 
   run_lancet:
-    hints:
-    - class: "sbg:AWSInstanceType"
-      value: c5.9xlarge
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
       indexed_reference_fasta: prepare_reference/indexed_fasta
