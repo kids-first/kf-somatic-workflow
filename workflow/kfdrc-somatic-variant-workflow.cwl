@@ -329,7 +329,7 @@ inputs:
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
       \ the panel workflow. Significantly reduces quality of calling if not provided!",
     "sbg:fileTypes": "HDF5"}
-  run_funcotatesegments: {type: 'boolean?', doc: "If true, run Funcotator on the called\
+  run_funcotatesegments: {type: 'boolean?', default: true, doc: "If true, run Funcotator on the called\
       \ copy-ratio segments. This will generate both a simple TSV and a gene list."}
   funcotator_data_sources_tgz: {type: 'File?', doc: "Path to tar.gz containing the\
       \ data sources for Funcotator to create annotations.", "sbg:fileTypes": "TAR,\
