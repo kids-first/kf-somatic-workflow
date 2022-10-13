@@ -237,9 +237,9 @@ inputs:
       \ of the failed segment."}
 
   # Resource Control
-  allelic_counts_max_mem: {type: 'int?', default: 100, doc: "Max memory in GB to allocate\
+  allelic_counts_max_mem: {type: 'int?', default: 40, doc: "Max memory in GB to allocate\
       \ to CollectAllelicCounts"}
-  model_segments_max_mem: {type: 'int?', default: 30, doc: "Max memory in GB to allocate\
+  model_segments_max_mem: {type: 'int?', default: 16, doc: "Max memory in GB to allocate\
       \ to ModelSegments"}
 
 

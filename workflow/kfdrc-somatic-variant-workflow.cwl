@@ -340,6 +340,11 @@ inputs:
       \ for use with FuncotateSegments. If you encounter 'Variant context does not\
       \ represent a copy number segment' error, set this value lower than the length\
       \ of the failed segment."}
+  gatk_allelic_counts_max_mem: {type: 'int?', default: 40, doc: "Max memory in GB to allocate\
+      \ to CollectAllelicCounts"}
+  gatk_model_segments_max_mem: {type: 'int?', default: 16, doc: "Max memory in GB to allocate\
+      \ to ModelSegments"}
+
 
   # Amplicon Architect
   aa_data_repo: {type: 'File?', doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/",
@@ -1063,6 +1068,8 @@ steps:
       run_funcotatesegments: run_funcotatesegments
       funcotator_data_sources_tgz: funcotator_data_sources_tgz
       funcotator_minimum_segment_size: funcotator_minimum_segment_size
+      allelic_counts_max_mem: gatk_allelic_counts_max_mem
+      model_segments_max_mem: gatk_model_segments_max_mem
     out: [tumor_file_archive, modeled_segments_tumor, modeled_segments_tumor_plot,
       called_copy_ratio_segments_tumor, denoised_tumor_plot, normal_file_archive,
       modeled_segments_normal, modeled_segments_normal_plot, called_copy_ratio_segments_normal,
