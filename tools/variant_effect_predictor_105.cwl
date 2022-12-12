@@ -118,6 +118,7 @@ arguments:
           return " --no_stats ";
         }
       }
+      --format vcf
       --warning_file $(inputs.output_basename)_warnings.$(inputs.tool_name).txt
       --buffer_size $(inputs.buffer_size)
       --vcf
