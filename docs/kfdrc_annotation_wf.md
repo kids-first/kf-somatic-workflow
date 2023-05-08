@@ -45,8 +45,8 @@ Secondary files needed for each reference file will be a sub-bullet point
  - `gatk_filter_expression`: ["vc.getGenotype('insert_normal_sample_name').getDP() <= 7", "gnomad_3_1_1_AF > 0.001"] # NOTE!! Replace `insert_normal_sample_name` with the value you'd use for `input_normal_name`!
  - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz`
  - `genomic_hotspots`: `tert.bed` # This file has two common TERT promoter gene hot spots
- - `protein_snv_hotspots`: `protein_snv_cancer_hotspots_v2.tsv` # A tsv formatted SNV + MNV subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
- - `protein_indel_hotspots`: `protein_indel_cancer_hotspots_v2.tsv` # A tsv formatted INDEL subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
+ - `protein_snv_hotspots`: `protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted SNV + MNV subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
+ - `protein_indel_hotspots`: `protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted INDEL subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
 
 ### Source-specific inputs
 For each input, the sub-bullet refers to when to use the suggested input

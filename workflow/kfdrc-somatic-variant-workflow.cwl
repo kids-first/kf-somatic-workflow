@@ -135,7 +135,7 @@ doc: |-
       - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
       - `extra_arg`: This can be used to add special params to strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 10000` can balance performance and consistency in results
       - strelka2_cores: `18`. This default is already set, but can be changed if desired.
-      - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
+      - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz` from https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/ - variant effect predictor cache.
        Current production workflow uses this version.
       - `threads`: 16
       - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
@@ -477,12 +477,12 @@ inputs:
       {class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid positions corresponding to\
-      \ hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a426,
-        name: protein_snv_cancer_hotspots_v2.tsv}]}
+      \ hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c,
+        name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid position ranges corresponding\
-      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
-        name: protein_indel_cancer_hotspots_v2.tsv}]}
+      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d,
+        name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {

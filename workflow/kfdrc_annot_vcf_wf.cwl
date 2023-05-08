@@ -50,8 +50,8 @@ doc: |
    - `gatk_filter_expression`: ["vc.getGenotype('insert_normal_sample_name').getDP() <= 7", "gnomad_3_1_1_AF > 0.001"] # NOTE!! Replace `insert_normal_sample_name` with the value you'd use for `input_normal_name`!
    - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz`
    - `genomic_hotspots`: `tert.bed` # This file has two common TERT promoter gene hot spots
-   - `protein_snv_hotspots`: `protein_snv_cancer_hotspots_v2.tsv` # A tsv formatted SNV + MNV subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
-   - `protein_indel_hotspots`: `protein_indel_cancer_hotspots_v2.tsv` # A tsv formatted INDEL subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
+   - `protein_snv_hotspots`: `protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted SNV + MNV subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
+   - `protein_indel_hotspots`: `protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted INDEL subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
 
   ### Source-specific inputs
   For each input, the sub-bullet refers to when to use the suggested input
@@ -148,12 +148,12 @@ inputs:
       {class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid positions corresponding to\
-      \ hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a426,
-        name: protein_snv_cancer_hotspots_v2.tsv}]}
+      \ hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c,
+        name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid position ranges corresponding\
-      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a424,
-        name: protein_indel_cancer_hotspots_v2.tsv}]}
+      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d,
+        name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   output_basename: string
   tool_name: string
   # MAF-specific
