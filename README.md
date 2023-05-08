@@ -93,7 +93,7 @@ For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the 
 
 - [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
 Default settings are used at run time.
-- [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta Prepass VCF.
+- [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta PASS VCF.
 
 #### Variant Annotation
 Please see the [annotation workflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md).
@@ -130,7 +130,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
     - `extra_arg`: This can be used to add special params to strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 10000` can balance performance and consistency in results
     - strelka2_cores: `18`. This default is already set, but can be changed if desired.
-    - `vep_cache`: `homo_sapiens_vep_93_GRCh38.tar.gz` from ftp://ftp.ensembl.org/pub/release-93/variation/indexed_vep_cache/ - variant effect predictor cache.
+    - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz` from https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/ - variant effect predictor cache.
      Current production workflow uses this version.
     - `threads`: 16
     - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
@@ -228,7 +228,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
     - `THetA2`: pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1
     - `samtools`: pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
-    - `Variant Effect Predictor`: pgc-images.sbgenomics.com/d3b-bixu/vep:r93.7
+    - `Variant Effect Predictor`: ensemblorg/ensembl-vep:release_105.0
     - `Kids Fist VCF2MAF`: pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.3
     - `Manta`: pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
     - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
