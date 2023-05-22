@@ -6,6 +6,7 @@ import os
 import pysam
 import gzip
 import re
+import math
 
 def parse_command():
     """Function to parse the command line input
@@ -175,8 +176,8 @@ def create_splice_hgvsp_short(csq_record,csq_items,cons_field="Consequence",cdna
         cdna_pos = csq_record.split('|')[csq_items.index(cdna_field)]
         m = re.search(r"c\.(-?\d+)",cdna_pos) # Search for coding DNA reference sequence
         if m: # If we match
-            cdna_val = 1 if int(m[1]) < 0 else int(m[1]) # Rescue the negative value cDNA positions used in 5' UTRs
-            pro_val = int((cdna_val + cdna_val % 3) / 3) # Recalculate protein position and drop the decimals
+            cdna_val = max(1, int(m[1])) # Set zero/negative cDNA values (positions in the 5' UTR) to 1
+            pro_val = math.ceil(cdna_val / 3) # Convert cDNA to protein position
             short = "X{}_splice".format(pro_val)
         elif cdna_pos:
             print("Warning! Could not process HGVSc: {} of CSQ:{}{}{}".format(cdna_pos,chr(10),chr(9),csq_record))

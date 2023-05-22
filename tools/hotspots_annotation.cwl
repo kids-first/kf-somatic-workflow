@@ -1,23 +1,25 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: hotspots_annotation
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    ramMin: ${ return inputs.ram * 1000 }
+    ramMin: $(inputs.ram * 1000)
     coresMin: $(inputs.cores)
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/hotspots:0.1.0'
-
+    dockerPull: 'quay.io/biocontainers/pysam:0.21.0--py310h41dec4a_1'
+  - class: InitialWorkDirRequirement
+    listing:
+      - entryname: hotspot.py
+        entry:
+          $include: ../scripts/hotspot.py
 baseCommand: []
-
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
-      $(inputs.disable_hotspot_annotation ? ">&2 echo 'User elected to skip hotspot annotation' && exit 0;" : ">&2 /hotspot.py")
-
+      $(inputs.disable_hotspot_annotation ? ">&2 echo 'User elected to skip hotspot annotation' && exit 0;" : ">&2 python hotspot.py")
 inputs:
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task." }
   input_vcf: { type: 'File', inputBinding: { position: 99, prefix: '--vcf', shellQuote: false }, secondaryFiles: [.tbi], doc: "VCF file to annotate hotspots." }
