@@ -270,12 +270,15 @@ def process_vcf(infile,outfile,genomic_hs,hugo_hs,fid,pos='HGVSp',allele='ALLELE
                 var_class = i.split('|')[csq_items.index(variant_class)]
                 var_class = 'INDEL' if var_class not in ['SNV', 'substitution'] else 'SNV'
                 if field_id in hugo_hs and protein_range in hugo_hs[field_id][var_class]: # Flag all exact matches
-                    flagged.append("Hugo_Symbol:{} AA_Start:{} AA_End:{}".format(field_id,protein_range[0],protein_range[1]-1)) # uncorrect the inclusive addition
+                    flagged.append("Hugo_Symbol:{} AA_Start:{} AA_End:{}".format(field_id,protein_range[0],protein_range[1]-1)) # remove inclusive end for reporting
                     hotspot_alleles.append(i.split('|')[csq_items.index(allele)])
                     break
-                elif var_class == 'INDEL' and field_id in hugo_hs: # Secondary check for indels
+                elif var_class == 'INDEL' and field_id in hugo_hs: # Backup check for inexact matches
                     for r in hugo_hs[field_id][var_class]:
-                        if protein_range[0] >= r[0] and protein_range[1] <= r[1]: # Indels just need to be contained the range
+                        # Single AA varaints must have complete overlap with hotspot region
+                        # Multi AA variants can be off by one (start 1 AA before or end 1 AA after hotspot)
+                        # Erring on the side of caution as HGVSp notation is highly complex
+                        if sufficient_overlap(protein_range, r, max(1, protein_range[1] - protein_range[0] - 1)):
                             flagged.append("Hugo_Symbol:{} AA_Start:{} AA_End:{}".format(field_id,protein_range[0],protein_range[1]-1))
                             hotspot_alleles.append(i.split('|')[csq_items.index(allele)])
                             break
