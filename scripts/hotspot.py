@@ -2,11 +2,11 @@
 
 import argparse
 import csv
+import gzip
+import math
 import os
 import pysam
-import gzip
 import re
-import math
 
 def parse_command():
     """Function to parse the command line input
@@ -43,13 +43,9 @@ def parse_command():
         default='SYMBOL',
         metavar='SYMBOL',
         help='Overrides the name of the CSQ field that matches the values found in the protein_colname of the protein_hotspots input(s)')
-    advanced_options.add_argument('--csq_aa',
-        default='Amino_acids',
-        metavar='Amino_acids',
-        help='Overrides the name of the CSQ field that stores amino acid change information')
     advanced_options.add_argument('--csq_pos',
-        default='Protein_position',
-        metavar='Protein_position',
+        default='HGVSp',
+        choices=['HGVSp', 'Protein_position'],
         help='Overrides the name of the CSQ field that stores protein position information')
     advanced_options.add_argument('--csq_allele',
         default='ALLELE_NUM',
@@ -185,7 +181,37 @@ def create_splice_hgvsp_short(csq_record,csq_items,cons_field="Consequence",cdna
             print("Warning! No HGVSc value in CSQ:{}{}{}".format(chr(10),chr(9),csq_record))
     return short
 
-def process_vcf(infile,outfile,genomic_hs,hugo_hs,fid,aa='Amino_acids',pos='Protein_position',allele='ALLELE_NUM',impact='IMPACT',variant_class='VARIANT_CLASS'):
+def interpret_protein_position(pro_pos_key, pro_pos_value):
+    """Function that takes the protein position key (field name) and value to determine the AA position start/end of the event.
+    Args:
+        pro_pos_key (str): The name of the field from which pro_pos_value was derived.
+        pro_pos_value (str): The value that contains the relevant protein position information.
+    Return:
+        int: The AA start position (inclusive) of the event or None if not determinable
+        int: The AA end position (inclusive) of the event or None if not determinable
+    """
+    pos_start = None
+    pos_end = None
+    if pro_pos_key == "Protein_position":
+        pro_pos = pro_pos_value.split('/')[0]
+        m = re.search(r"^(\d+|\?)-?(\d+|\?)?$", pro_pos)
+        if m:
+            pos_start = int(m[2]) if m[1] == '?' else int(m[1])
+            pos_end = int(m[2]) if m[2] and m[2] != '?' else pos_start
+        else:
+            print("Warning! Couldn't process position: {} from key: {}".format(pro_pos_value, pro_pos_key))
+    elif pro_pos_key == "HGVSp":
+        m = re.search("^[A-Z0-9_.]+:p\.([A-Z][a-z]{2})(?P<start>[1-9?][0-9]*)_?(?:([A-Z][a-z]{2})(?P<end>[1-9?][0-9]*))?", pro_pos_value)
+        if m:
+            pos_start = int(m.group('start'))
+            pos_end = int(m.group('end')) if m.group('end') else pos_start
+        else:
+            print("Warning! Couldn't process position: {} from key: {}".format(pro_pos_value, pro_pos_key))
+    else:
+        print("Warning! This program is not capable of interpreting proteins from key: {}!".format(pro_pos_key))
+    return pos_start, pos_end
+
+def process_vcf(infile,outfile,genomic_hs,hugo_hs,fid,pos='HGVSp',allele='ALLELE_NUM',impact='IMPACT',variant_class='VARIANT_CLASS'):
     """Function to take the input VCF and add INFO annotations for the ALT alleles that correspond to genomic or protein hotspots
     Args:
         infile (file): Path to the VCF(.GZ) file
@@ -193,7 +219,6 @@ def process_vcf(infile,outfile,genomic_hs,hugo_hs,fid,aa='Amino_acids',pos='Prot
         genomic_hs (dict): Dict of hg38 genomic coordinate-based hotspots with keys: chrom and values: (chromStart, chromEnd)
         hugo_hs (dict): Dict of protein-based hotspots with keys: protein name and values: unique lists of HGVSp_short strings
         fid (str): the name of the CSQ_FIELD that is being used as the ID in the hslist; commonly Hugo Symbols: SYMBOL, Ensembl Gene IDs: Gene, or Ensembl Transcript IDs: Feature
-        aa (str): the name of the CSQ_FIELD that contains the amino acid change annotation
         pos (str): the name of the CSQ_FIELD that contains the protein position annotation
         allele (str): the name of the CSQ_FIELD that contains the allele number annotation
         impact (str): the name of the CSQ_FIELD that contains the impact assessment
@@ -235,19 +260,15 @@ def process_vcf(infile,outfile,genomic_hs,hugo_hs,fid,aa='Amino_acids',pos='Prot
                         break
                     else:
                         continue
-                protein_pos = i.split('|')[csq_items.index(pos)].split('/')[0]
+                protein_pos = i.split('|')[csq_items.index(pos)]
                 if not protein_pos:
-                    continue # No protein position to check. Continue to next CSQ
-                elif re.search(r"^(\d+|\?)-?(\d+|\?)?$", protein_pos):
-                    m = re.search(r"^(\d+|\?)-?(\d+|\?)?$", protein_pos)
-                    protein_start = m[2] if m[1] == '?' else m[1]
-                    protein_end = m[2] if m[2] and m[2] != '?' else protein_start
-                else:
-                    print("Warning! Couldn't process position: {} in CSQ:{}{}{}".format(protein_pos,chr(10),chr(9),i))
-                    continue # Print anything that doesn't match our expectations for position and go to next CSQ
-                protein_range = (int(protein_start),int(protein_end)+1) # correct inclusive end
+                    continue # No protein position to interpret. Continue to next CSQ
+                protein_start, protein_end = interpret_protein_position(pos, protein_pos)
+                if protein_start is None or protein_end is None:
+                    continue # Protein positions could not be interpreted. Continue to next CSQ
+                protein_range = (protein_start, protein_end + 1) # Convert inclusive to non-inclusive end
                 var_class = i.split('|')[csq_items.index(variant_class)]
-                var_class = 'INDEL' if var_class != 'SNV' else 'SNV'
+                var_class = 'INDEL' if var_class in ['SNV', 'substitution'] else 'SNV'
                 if field_id in hugo_hs and protein_range in hugo_hs[field_id][var_class]: # Flag all exact matches
                     flagged.append("Hugo_Symbol:{} AA_Start:{} AA_End:{}".format(field_id,protein_range[0],protein_range[1]-1)) # uncorrect the inclusive addition
                     hotspot_alleles.append(i.split('|')[csq_items.index(allele)])
@@ -310,7 +331,7 @@ def main():
         for hugo_hotspot_file in args.protein_indels:
             hugo_hs = process_protein_and_position(hugo_hotspot_file,args.protein_colname,args.position_colname,variant_class="INDEL",hs_dict=hugo_hs)
     output_name = build_output_name(args.vcf,args.output_basename)
-    numhs = process_vcf(args.vcf,output_name,genomic_hs,hugo_hs,args.csq_field,args.csq_aa,args.csq_pos,args.csq_allele,args.csq_impact,args.csq_class)
+    numhs = process_vcf(args.vcf,output_name,genomic_hs,hugo_hs,args.csq_field,args.csq_pos,args.csq_allele,args.csq_impact,args.csq_class)
     pysam.tabix_index(output_name, preset="vcf", force=True)
     print("Total Hotspots Annotated: {}".format(numhs))
 
