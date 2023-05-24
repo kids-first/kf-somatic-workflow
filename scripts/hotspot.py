@@ -268,7 +268,7 @@ def process_vcf(infile,outfile,genomic_hs,hugo_hs,fid,pos='HGVSp',allele='ALLELE
                     continue # Protein positions could not be interpreted. Continue to next CSQ
                 protein_range = (protein_start, protein_end + 1) # Convert inclusive to non-inclusive end
                 var_class = i.split('|')[csq_items.index(variant_class)]
-                var_class = 'INDEL' if var_class in ['SNV', 'substitution'] else 'SNV'
+                var_class = 'INDEL' if var_class not in ['SNV', 'substitution'] else 'SNV'
                 if field_id in hugo_hs and protein_range in hugo_hs[field_id][var_class]: # Flag all exact matches
                     flagged.append("Hugo_Symbol:{} AA_Start:{} AA_End:{}".format(field_id,protein_range[0],protein_range[1]-1)) # uncorrect the inclusive addition
                     hotspot_alleles.append(i.split('|')[csq_items.index(allele)])
