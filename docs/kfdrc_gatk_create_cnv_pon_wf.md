@@ -7,6 +7,62 @@ a direct port of the GATK best practices workflow WDL. Use this workflow for
 creating a GATK CNV Panel of Normals given a list of normal samples aligned
 reads. Supports both WGS and WES/WXS.
 
+## Panel of Normal Recommendations
+
+### Best Case Scenario
+
+Our Panel of Normal standards are the same as those defined in the Broad/GATK
+Documentation here:
+https://gatk.broadinstitute.org/hc/en-us/articles/360035890631-Panel-of-Normals-PON-.
+
+In the best case scenario, you will have 40 samples derived from healthy
+tissue. Ideally these samples come from young and healthy individuals (thus
+eliminating the chance of a sample containing undiagnosed tumor tissue). Those
+40 samples will then be processed in the same way as the tumor sample.
+Processing includes all technical variables through sequencing (library
+preparation, sequencing platform, etc.). For WGS or WXS that spans the
+allosomes, the samples used for the panel of normals should have uniform sex.
+
+### Imperfect Scenarios
+
+Often when working on a project, there will not be 40 normal samples available
+to the user. If multiple sequencing approaches/centers are used or you have
+allosomal regions of interest, the number of required normals can rapidly
+expand. If you are unable to acquire the 40 samples, it is still possible to
+create a smaller panel of normals. According to GATK, there is no definitive
+rule for the number of samples and even a small panel is better than no panel.
+
+Internally, we have observed that as the panel becomes smaller, more calls are
+made and those calls are less accurate. For WGS, we have observed that once
+panels become smaller than 15 samples, the calls begin to noticeably
+deteriorate. For WXS, calling deteriorates somewhere under 25 samples.
+
+### Run at Own Risk
+
+It is possible to create a panel of normals from a single normal sample.
+Internally, we have observed that the calls generated from this scenario are
+highly erratic. In the case of WXS, the calls made had little overlap with the
+calls made from a larger panel. In the case of WGS, we had instances where the
+results looked slightly worse than the 15 sample panel of normals but we also
+had instances where the calls in no way resembled those from the larger panel.
+Again these results were all better than no panel but were far from what we
+would call reliable calls.
+
+#### Potential Workflow
+
+1. Your tumor sample shares an sequencing approach with 40 normals samples (same sex if the approach includes allosomal regions) in the same project.
+1. If not, reach out to the sequencing center that provided the tumor sample and request a set of normal samples that share the sequencing approach.
+1. If the center cannot provide such samples, search for public or similarly-controlled samples that share the sequencing approach. You will probably have most luck with WGS.
+
+At this point you have exhausted your sample sources. From here you can evaluate where you stand:
+
+- <span style="color:green;">`40 or more`</span>: you meet the GATK recommended minimum. Feel free to proceed.
+- <span style="color:yellowgreen;">`30 to 40`</span>: the results do not meet the GATK minimum but the panel is still rather sizable and worth a run
+- <span style="color:orange;">`20 to 30`</span>: calls from WXS or low-coverage WGS begin to deteriorate; run at your own risk!
+- <span style="color:orange;">`10 to 20`</span>: calls from high-coverage WGS begin to deteriorate; run at your own risk!
+- <span style="color:red">`1 to 10`</span>: do not trust calls without extensive follow-up analysis!!!
+
+
 ## Generalized steps:
 
 - prepares a genomic intervals list with PreprocessIntervals
