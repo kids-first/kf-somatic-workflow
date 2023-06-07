@@ -94,6 +94,8 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
+  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": [{class: File, path: 6480c8a61dfc710d24a3a368,
+        name: kf_isoform_override.tsv}] }
 
 outputs:
   vardict_prepass_vcf: { type: 'File', outputSource: run_vardict/vardict_prepass_vcf }
@@ -217,6 +219,7 @@ steps:
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       maf_center: maf_center
+      custom_enst: custom_enst
     out:
       [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
 
