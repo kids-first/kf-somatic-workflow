@@ -107,7 +107,7 @@ inputs:
       \ you want to prefilter before annotation"}
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
+  bcftools_annot_vcf: {type: 'File?', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz,
       secondaryFiles: [{class: File, path: 6324ef5ad01163633daa00d7, name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}]}}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
@@ -118,13 +118,15 @@ inputs:
       \ establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration\
       \ for clues"}
   # VEP-specific
+  disable_vep_annotation: {type: 'boolean?', doc: "Disable VEP Annotation\
+      \ and skip this task."}
   vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value\
       \ depending on the size/complexity of input"}
   vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to\
       \ increase for really large inputs"}
   vep_buffer_size: {type: 'int?', default: 1000, doc: "Increase or decrease to balance\
       \ speed and memory usage"}
-  vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
+  vep_cache: {type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache",
     "sbg:suggestedValue": {class: File, path: 6332f8e47535110eb79c794f, name: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz}}
   dbnsfp: {type: 'File?', secondaryFiles: [.tbi, ^.readme.txt], doc: "VEP-formatted\
       \ plugin file, index, and readme file containing dbNSFP annotations"}
@@ -164,6 +166,8 @@ inputs:
   retain_ann: {type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN)\
       \ to retain as extra columns in MAF"}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
+  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": [{class: File, path: 6480c8a61dfc710d24a3a368,
+        name: kf_isoform_override.tsv}] }
 
 outputs:
   annotated_protected: {type: 'File[]', outputSource: rename_protected/renamed_files}
@@ -214,9 +218,11 @@ steps:
     out: [output]
 
   vep_annotate_vcf:
+    when: $(inputs.disable_annotation == null)
     run: ../tools/variant_effect_predictor_105.cwl
     in:
       reference: indexed_reference_fasta
+      disable_annotation: disable_vep_annotation
       cores: vep_cores
       ram: vep_ram
       buffer_size: vep_buffer_size
@@ -243,7 +249,9 @@ steps:
     - class: 'sbg:AWSInstanceType'
       value: c5.2xlarge
     in:
-      input_vcf: vep_annotate_vcf/output_vcf
+      input_vcf:
+        source: [vep_annotate_vcf/output_vcf, add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
+        pickValue: first_non_null
       annotation_vcf: bcftools_annot_vcf
       columns: bcftools_annot_columns
       output_basename: output_basename
@@ -254,7 +262,7 @@ steps:
     run: ../tools/gatk_variant_filter.cwl
     in:
       input_vcf:
-        source: [bcftools_gnomad_annotate/bcftools_annotated_vcf, vep_annotate_vcf/output_vcf]
+        source: [bcftools_gnomad_annotate/bcftools_annotated_vcf, vep_annotate_vcf/output_vcf, add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
         pickValue: first_non_null
       reference: indexed_reference_fasta
       filter_name: gatk_filter_name
@@ -287,6 +295,7 @@ steps:
       retain_fmt: retain_fmt
       retain_ann: retain_ann
       maf_center: maf_center
+      custom_enst: custom_enst
     out: [output_maf]
 
   hard_filter_vcf:
@@ -310,6 +319,7 @@ steps:
       retain_fmt: retain_fmt
       retain_ann: retain_ann
       maf_center: maf_center
+      custom_enst: custom_enst
     out: [output_maf]
 
   rename_protected:

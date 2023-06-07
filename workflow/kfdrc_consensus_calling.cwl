@@ -153,6 +153,8 @@ inputs:
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation\
       \ and skip this task.", default: true}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
+  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": [{class: File, path: 6480c8a61dfc710d24a3a368,
+        name: kf_isoform_override.tsv}] }
 
 outputs:
   annotated_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
@@ -216,6 +218,7 @@ steps:
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       maf_center: maf_center
+      custom_enst: custom_enst
       output_basename: output_basename
       tool_name: tool_name
     out: [annotated_protected, annotated_public]

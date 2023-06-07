@@ -57,6 +57,7 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
+  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK" }
 
 outputs:
   mutect2_filtered_stats: {type: 'File', outputSource: filter_mutect2_vcf/stats_table}
@@ -193,6 +194,7 @@ steps:
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
       maf_center: maf_center
+      custom_enst: custom_enst
       output_basename: output_basename
       tool_name: tool_name
     out: [annotated_protected, annotated_public]
