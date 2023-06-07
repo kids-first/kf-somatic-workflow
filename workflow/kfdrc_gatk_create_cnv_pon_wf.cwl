@@ -2,7 +2,7 @@ cwlVersion: v1.1
 class: Workflow
 id: kfdrc_gatk_create_cnv_pon_wf
 label: KFDRC GATK Create CNV Panel of Normals Workflow
-doc: |
+doc: |+
   # KFDRC GATK Create CNV Panel Of Normals Workflow
 
   ![data service logo](https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png)
@@ -11,6 +11,62 @@ doc: |
   a direct port of the GATK best practices workflow WDL. Use this workflow for
   creating a GATK CNV Panel of Normals given a list of normal samples aligned
   reads. Supports both WGS and WES/WXS.
+
+  ## Panel of Normal Recommendations
+
+  ### Best Case Scenario
+
+  Our Panel of Normal standards are the same as those defined in the Broad/GATK
+  Documentation here:
+  https://gatk.broadinstitute.org/hc/en-us/articles/360035890631-Panel-of-Normals-PON-.
+
+  In the best case scenario, you will have 40 samples derived from healthy
+  tissue. Ideally these samples come from young and healthy individuals (thus
+  eliminating the chance of a sample containing undiagnosed tumor tissue). Those
+  40 samples will then be processed in the same way as the tumor sample.
+  Processing includes all technical variables through sequencing (library
+  preparation, sequencing platform, etc.). For WGS or WXS that spans the
+  allosomes, the samples used for the panel of normals should have uniform sex.
+
+  ### Imperfect Scenarios
+
+  Often when working on a project, there will not be 40 normal samples available
+  to the user. If multiple sequencing approaches/centers are used or you have
+  allosomal regions of interest, the number of required normals can rapidly
+  expand. If you are unable to acquire the 40 samples, it is still possible to
+  create a smaller panel of normals. According to GATK, there is no definitive
+  rule for the number of samples and even a small panel is better than no panel.
+
+  Internally, we have observed that as the panel becomes smaller, more calls are
+  made and those calls are less accurate. For WGS, we have observed that once
+  panels become smaller than 15 samples, the calls begin to noticeably
+  deteriorate. For WXS, calling deteriorates somewhere under 25 samples.
+
+  ### Run at Own Risk
+
+  It is possible to create a panel of normals from a single normal sample.
+  Internally, we have observed that the calls generated from this scenario are
+  highly erratic. In the case of WXS, the calls made had little overlap with the
+  calls made from a larger panel. In the case of WGS, we had instances where the
+  results looked slightly worse than the 15 sample panel of normals but we also
+  had instances where the calls in no way resembled those from the larger panel.
+  Again these results were all better than no panel but were far from what we
+  would call reliable calls.
+
+  #### Potential Workflow
+
+  1. Your tumor sample shares an sequencing approach with 40 normals samples (same sex if the approach includes allosomal regions) in the same project.
+  1. If not, reach out to the sequencing center that provided the tumor sample and request a set of normal samples that share the sequencing approach.
+  1. If the center cannot provide such samples, search for public or similarly-controlled samples that share the sequencing approach. You will probably have most luck with WGS.
+
+  At this point you have exhausted your sample sources. From here you can evaluate where you stand:
+
+  - <span style="color:green;">`40 or more`</span>: you meet the GATK recommended minimum. Feel free to proceed.
+  - <span style="color:yellowgreen;">`30 to 40`</span>: the results do not meet the GATK minimum but the panel is still rather sizable and worth a run
+  - <span style="color:orange;">`20 to 30`</span>: calls from WXS or low-coverage WGS begin to deteriorate; run at your own risk!
+  - <span style="color:orange;">`10 to 20`</span>: calls from high-coverage WGS begin to deteriorate; run at your own risk!
+  - <span style="color:red">`1 to 10`</span>: do not trust calls without extensive follow-up analysis!!!
+
 
   ## Generalized steps:
 
@@ -41,11 +97,11 @@ doc: |
   ### Other Resources
 
   dockerfiles: https://github.com/d3b-center/bixtools
+
 requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
 - class: SubworkflowFeatureRequirement
-
 inputs:
   input_aligned_reads: {type: 'File[]', secondaryFiles: [{pattern: ".bai", required: false},
       {pattern: "^.bai", required: false}, {pattern: ".crai", required: false}, {
@@ -117,7 +173,6 @@ inputs:
   create_pon_max_memory: {type: 'int?', doc: "Max memory in GB to allocate to the\
       \ task"}
   create_pon_cpus: {type: 'int?', doc: "Cores to allocate to the task"}
-
 outputs:
   preprocessed_intervals: {type: File, outputSource: preprocess_intervals/output,
     doc: "Preprocessed Picard interval-list file used to collect read counts for PoN."}
@@ -125,7 +180,6 @@ outputs:
       \ files generated for each input aligned reads file. Used to generate PoN."}
   cnv_pon: {type: File, outputSource: create_read_count_panel_of_normals/output, doc: "Panel-of-normals\
       \ file in HDF5 format."}
-
 steps:
   preprocess_intervals:
     run: ../tools/gatk_preprocessintervals.cwl
@@ -143,7 +197,6 @@ steps:
         source: output_basename
         valueFrom: $(self).gatk_cnv
     out: [output]
-
   annotate_intervals:
     run: ../tools/gatk_annotateintervals.cwl
     in:
@@ -156,7 +209,6 @@ steps:
       interval_merging_rule: {default: "OVERLAPPING_ONLY"}
       feature_query_lookahead: feature_query_lookahead
     out: [output]
-
   collect_read_counts:
     run: ../tools/gatk_collectreadcounts.cwl
     hints:
@@ -171,7 +223,6 @@ steps:
       interval_merging_rule: {default: "OVERLAPPING_ONLY"}
       output_format: readcount_format
     out: [output]
-
   create_read_count_panel_of_normals:
     run: ../tools/gatk_createreadcountpanelofnormals.cwl
     in:
@@ -190,7 +241,6 @@ steps:
       max_memory: create_pon_max_memory
       cpus: create_pon_cpus
     out: [output]
-
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
