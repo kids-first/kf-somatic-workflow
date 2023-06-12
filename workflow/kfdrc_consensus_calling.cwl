@@ -63,6 +63,8 @@ doc: |
   - retain_fmt: # csv string with FORMAT fields that you want to keep
   - retain_ann: "HGVSg"
   - maf_center: "."
+  - `custom_enst`: `kf_isoform_override.tsv`. As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects maf file output and may results in representative protein changes that defy historical expectations
+
 
   ## Workflow outputs
   - `annotated_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
@@ -229,5 +231,5 @@ $namespaces:
 "sbg:publisher": KFDRC
 
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.5'
   label: github-release
