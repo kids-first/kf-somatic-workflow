@@ -13,8 +13,8 @@ doc: |
 
   1. Normalize VCF
   1. Strip specified `INFO` and `FORMAT` fields (Only if adding a new annotation that clashes with existing)
-  1. Annotate with VEP
-  1. Annotated with an additional vcf - optional, recommend using a gnomAD VCF with at least AF)
+  1. Annotate with VEP - can be skipped if VEP run previously and downstream tools are to be repeated
+  1. Annotated with an additional vcf - optional, recommend using a gnomAD VCF with at least AF
   1. Soft filter on remarkable variant characteristics
      - KF recommends normal read depth <= 7 and gnomAD AF > 0.001
      - This output will be considered `protected`
@@ -52,11 +52,12 @@ doc: |
    - `genomic_hotspots`: `tert.bed` # This file has two common TERT promoter gene hot spots
    - `protein_snv_hotspots`: `protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted SNV + MNV subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
    - `protein_indel_hotspots`: `protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted INDEL subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
+   - `custom_enst`: `kf_isoform_override.tsv` # As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects maf file output and may results in representative protein changes that defy historical expectations
 
   ### Source-specific inputs
   For each input, the sub-bullet refers to when to use the suggested input
    - `add_common_fields`
-     - Strelka2 calls: `true`
+     - Strelka2 calls: `true`, *exception if already run previously and other downstream tools are being run*
      - All others: `false`
    - `retain_info` # This is fairly subjective, some useful columns unique from each caller to carry over from VCF to MAF
      - Strelka2: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MQ,MQ0,QSI,HotSpotAllele"
@@ -68,10 +69,11 @@ doc: |
      - Mutect2: "HGVSg"
      - Lancet: "HGVSg"
      - Vardict: "HGVSg"
-   - `bcftools_strip_columns` # if reannotating an old file, especially a KF one that had VEP 93 annotation, recommend the following:
-     - "FILTER/GNOMAD_AF_HIGH,FILTER/NORM_DP_LOW,INFO/CSQ,INFO/HotSpotAllele"
+   - `bcftools_strip_columns` # if reannotating an old file:
+     - "FILTER/GNOMAD_AF_HIGH,FILTER/NORM_DP_LOW,INFO/CSQ,INFO/HotSpotAllele" # recommended if re-annotating from an older VEP cache
+     - "FILTER/GNOMAD_AF_HIGH,FILTER/NORM_DP_LOW,INFO/HotSpotAllele" # recommended if repeating hot spot an d want to keep VEP
    - `bcftools_prefilter_csv` # if annotating a file with calls you want screen for, use this. i.e `FILTER="PASS"`
-
+   - `disable_vep_annotation` # set to `True` if existing VEP annotation of file is ok
    - `tool_name`:
      - `Strelka2`: `strelka2_somatic`
      - `Mutect2`: `mutect2_somatic`
@@ -87,7 +89,6 @@ doc: |
 requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
-
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict], "sbg:suggestedValue": {
       class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
@@ -99,10 +100,8 @@ inputs:
   input_normal_name: string
   add_common_fields: {type: 'boolean', doc: "Set to true if input is a strelka2 vcf\
       \ that hasn't had common fields added", default: false}
-  # bcftools strip, if needed
   bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if\
       \ needed to avoid conflict, i.e INFO/AF"}
-  # bcftools annotate if more to do
   bcftools_prefilter_csv: {type: 'string?', doc: "csv of bcftools filter params if\
       \ you want to prefilter before annotation"}
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
@@ -117,17 +116,17 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to\
       \ establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration\
       \ for clues"}
-  # VEP-specific
-  disable_vep_annotation: {type: 'boolean?', doc: "Disable VEP Annotation\
-      \ and skip this task."}
+  disable_vep_annotation: {type: 'boolean?', doc: "Disable VEP Annotation and skip\
+      \ this task."}
   vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value\
       \ depending on the size/complexity of input"}
   vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to\
       \ increase for really large inputs"}
   vep_buffer_size: {type: 'int?', default: 1000, doc: "Increase or decrease to balance\
       \ speed and memory usage"}
-  vep_cache: {type: 'File?', doc: "tar gzipped cache from ensembl/local converted cache",
-    "sbg:suggestedValue": {class: File, path: 6332f8e47535110eb79c794f, name: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz}}
+  vep_cache: {type: 'File?', doc: "tar gzipped cache from ensembl/local converted\
+      \ cache", "sbg:suggestedValue": {class: File, path: 6332f8e47535110eb79c794f,
+      name: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz}}
   dbnsfp: {type: 'File?', secondaryFiles: [.tbi, ^.readme.txt], doc: "VEP-formatted\
       \ plugin file, index, and readme file containing dbNSFP annotations"}
   dbnsfp_fields: {type: 'string?', doc: "csv string with desired fields to annotate.\
@@ -142,7 +141,6 @@ inputs:
       \ file and index containing CADD indel annotations"}
   cadd_snvs: {type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file\
       \ and index containing CADD SNV annotations"}
-  # Hotspot Annotation
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation\
       \ and skip this task."}
   genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing\
@@ -158,7 +156,6 @@ inputs:
         name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   output_basename: string
   tool_name: string
-  # MAF-specific
   retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to\
       \ keep, i.e. for consensus `MQ,MQ0,CAL,Hotspot`"}
   retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want\
@@ -166,13 +163,12 @@ inputs:
   retain_ann: {type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN)\
       \ to retain as extra columns in MAF"}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
-  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": [{class: File, path: 6480c8a61dfc710d24a3a368,
-        name: kf_isoform_override.tsv}] }
-
+  custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override\
+      \ VEP PICK", "sbg:suggestedValue": [{class: File, path: 6480c8a61dfc710d24a3a368,
+        name: kf_isoform_override.tsv}]}
 outputs:
   annotated_protected: {type: 'File[]', outputSource: rename_protected/renamed_files}
   annotated_public: {type: 'File[]', outputSource: rename_public/renamed_files}
-
 steps:
   prefilter_vcf:
     when: $(inputs.include_expression != null)
@@ -182,7 +178,6 @@ steps:
       include_expression: bcftools_prefilter_csv
       output_basename: output_basename
     out: [filtered_vcf]
-
   normalize_vcf:
     run: ../tools/normalize_vcf.cwl
     in:
@@ -193,7 +188,6 @@ steps:
       output_basename: output_basename
       tool_name: tool_name
     out: [normalized_vcf]
-
   bcftools_strip_info:
     when: $(inputs.strip_info != null)
     run: ../tools/bcftools_strip_ann.cwl
@@ -203,7 +197,6 @@ steps:
       tool_name: tool_name
       strip_info: bcftools_strip_columns
     out: [stripped_vcf]
-
   add_standard_fields:
     run: ../tools/add_strelka2_fields.cwl
     when: $(inputs.run_tool_flag)
@@ -216,7 +209,6 @@ steps:
       normal_name: input_normal_name
       output_basename: output_basename
     out: [output]
-
   vep_annotate_vcf:
     when: $(inputs.disable_annotation == null)
     run: ../tools/variant_effect_predictor_105.cwl
@@ -241,7 +233,6 @@ steps:
       dbnsfp: dbnsfp
       dbnsfp_fields: dbnsfp_fields
     out: [output_vcf]
-
   bcftools_gnomad_annotate:
     when: $(inputs.annotation_vcf != null)
     run: ../tools/bcftools_annotate.cwl
@@ -250,19 +241,20 @@ steps:
       value: c5.2xlarge
     in:
       input_vcf:
-        source: [vep_annotate_vcf/output_vcf, add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
+        source: [vep_annotate_vcf/output_vcf, add_standard_fields/output, bcftools_strip_info/stripped_vcf,
+          normalize_vcf/normalized_vcf]
         pickValue: first_non_null
       annotation_vcf: bcftools_annot_vcf
       columns: bcftools_annot_columns
       output_basename: output_basename
       tool_name: tool_name
     out: [bcftools_annotated_vcf]
-
   gatk_add_soft_filter:
     run: ../tools/gatk_variant_filter.cwl
     in:
       input_vcf:
-        source: [bcftools_gnomad_annotate/bcftools_annotated_vcf, vep_annotate_vcf/output_vcf, add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
+        source: [bcftools_gnomad_annotate/bcftools_annotated_vcf, vep_annotate_vcf/output_vcf,
+          add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
         pickValue: first_non_null
       reference: indexed_reference_fasta
       filter_name: gatk_filter_name
@@ -270,7 +262,6 @@ steps:
       output_basename: output_basename
       tool_name: tool_name
     out: [gatk_soft_filtered_vcf]
-
   hotspots_annotation:
     run: ../tools/hotspots_annotation.cwl
     in:
@@ -281,7 +272,6 @@ steps:
       protein_indels: protein_indel_hotspots
       output_basename: output_basename
     out: [hotspots_vcf]
-
   kfdrc_vcf2maf_protected:
     run: ../tools/kf_mskcc_vcf2maf.cwl
     in:
@@ -297,7 +287,6 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [output_maf]
-
   hard_filter_vcf:
     run: ../tools/bcftools_filter_vcf.cwl
     in:
@@ -305,7 +294,6 @@ steps:
       include_expression: bcftools_public_filter
       output_basename: output_basename
     out: [filtered_vcf]
-
   kfdrc_vcf2maf_public:
     run: ../tools/kf_mskcc_vcf2maf.cwl
     in:
@@ -321,7 +309,6 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [output_maf]
-
   rename_protected:
     run: ../tools/generic_rename_outputs.cwl
     label: Rename Protected Outputs
@@ -336,7 +323,6 @@ steps:
           \ var pro_maf=self[0] + '.' + self[1] + '.norm.annot.protected.maf'; return\
           \ [pro_vcf, pro_tbi, pro_maf];}"
     out: [renamed_files]
-
   rename_public:
     run: ../tools/generic_rename_outputs.cwl
     label: Rename Public Outputs
@@ -351,13 +337,10 @@ steps:
           \ var pub_maf=self[0] + '.' + self[1] + '.norm.annot.public.maf'; return\
           \ [pub_vcf, pub_tbi, pub_maf];}"
     out: [renamed_files]
-
 $namespaces:
   sbg: https://sevenbridges.com
-
 "sbg:license": Apache License 2.0
 "sbg:publisher": KFDRC
-
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.4'
   label: github-release

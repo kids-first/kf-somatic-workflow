@@ -8,8 +8,8 @@ It does the following things as described below:
 
 1. Normalize VCF
 1. Strip specified `INFO` and `FORMAT` fields (Only if adding a new annotation that clashes with existing)
-1. Annotate with VEP
-1. Annotated with an additional vcf - optional, recommend using a gnomAD VCF with at least AF)
+1. Annotate with VEP - can be skipped if VEP run previously and downstream tools are to be repeated
+1. Annotated with an additional vcf - optional, recommend using a gnomAD VCF with at least AF
 1. Soft filter on remarkable variant characteristics
    - KF recommends normal read depth <= 7 and gnomAD AF > 0.001
    - This output will be considered `protected`
@@ -47,11 +47,12 @@ Secondary files needed for each reference file will be a sub-bullet point
  - `genomic_hotspots`: `tert.bed` # This file has two common TERT promoter gene hot spots
  - `protein_snv_hotspots`: `protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted SNV + MNV subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
  - `protein_indel_hotspots`: `protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv` # A tsv formatted INDEL subset of https://www.cancerhotspots.org/files/hotspots_v2.xls
+ - `custom_enst`: `kf_isoform_override.tsv` # As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects maf file output and may results in representative protein changes that defy historical expectations
 
 ### Source-specific inputs
 For each input, the sub-bullet refers to when to use the suggested input
  - `add_common_fields`
-   - Strelka2 calls: `true`
+   - Strelka2 calls: `true`, *exception if already run previously and other downstream tools are being run*
    - All others: `false`
  - `retain_info` # This is fairly subjective, some useful columns unique from each caller to carry over from VCF to MAF
    - Strelka2: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MQ,MQ0,QSI,HotSpotAllele"
@@ -63,10 +64,11 @@ For each input, the sub-bullet refers to when to use the suggested input
    - Mutect2: "HGVSg"
    - Lancet: "HGVSg"
    - Vardict: "HGVSg"
- - `bcftools_strip_columns` # if reannotating an old file, especially a KF one that had VEP 93 annotation, recommend the following:
-   - "FILTER/GNOMAD_AF_HIGH,FILTER/NORM_DP_LOW,INFO/CSQ,INFO/HotSpotAllele"
+ - `bcftools_strip_columns` # if reannotating an old file:
+   - "FILTER/GNOMAD_AF_HIGH,FILTER/NORM_DP_LOW,INFO/CSQ,INFO/HotSpotAllele" # recommended if re-annotating from an older VEP cache
+   - "FILTER/GNOMAD_AF_HIGH,FILTER/NORM_DP_LOW,INFO/HotSpotAllele" # recommended if repeating hot spot an d want to keep VEP
  - `bcftools_prefilter_csv` # if annotating a file with calls you want screen for, use this. i.e `FILTER="PASS"`
-
+ - `disable_vep_annotation` # set to `True` if existing VEP annotation of file is ok
  - `tool_name`:
    - `Strelka2`: `strelka2_somatic`
    - `Mutect2`: `mutect2_somatic`
