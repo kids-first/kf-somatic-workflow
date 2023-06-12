@@ -164,8 +164,8 @@ inputs:
       \ to retain as extra columns in MAF"}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override\
-      \ VEP PICK", "sbg:suggestedValue": [{class: File, path: 6480c8a61dfc710d24a3a368,
-        name: kf_isoform_override.tsv}]}
+      \ VEP PICK", "sbg:suggestedValue": {class: File, path: 6480c8a61dfc710d24a3a368,
+        name: kf_isoform_override.tsv}}
 outputs:
   annotated_protected: {type: 'File[]', outputSource: rename_protected/renamed_files}
   annotated_public: {type: 'File[]', outputSource: rename_public/renamed_files}
