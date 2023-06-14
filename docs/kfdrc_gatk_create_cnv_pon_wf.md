@@ -37,6 +37,16 @@ made and those calls are less accurate. For WGS, we have observed that once
 panels become smaller than 15 samples, the calls begin to noticeably
 deteriorate. For WXS, calling deteriorates somewhere under 25 samples.
 
+#### Consider Dropping Allosomes
+
+It can be difficult to procure the 80 samples (40 male + 40 female) required to
+generate a male and female panel of normals. In case where you have around 40
+samples total and perhaps less than 20 male and/or female samples, you might
+consider dropping allosomes from the analysis. If your analysis has no regions
+of interest on the allosomes, it might be best to drop those chromosomes from
+the panel of normals. The mixed-sex panel of normals will be applicable to all
+samples in your study at the cost of chrX and chrY calls.
+
 ### Run at Own Risk
 
 It is possible to create a panel of normals from a single normal sample.
@@ -50,17 +60,17 @@ would call reliable calls.
 
 #### Potential Workflow
 
-1. Your tumor sample shares an sequencing approach with 40 normals samples (same sex if the approach includes allosomal regions) in the same project.
+1. Your tumor sample shares an sequencing approach with 40 normals samples (if your analysis includes allosomal regions, these samples must have the same sex as your tumor sample) in the same project.
 1. If not, reach out to the sequencing center that provided the tumor sample and request a set of normal samples that share the sequencing approach.
 1. If the center cannot provide such samples, search for public or similarly-controlled samples that share the sequencing approach. You will probably have most luck with WGS.
 
 At this point you have exhausted your sample sources. From here you can evaluate where you stand:
 
-- <span style="color:green;">`40 or more`</span>: you meet the GATK recommended minimum. Feel free to proceed.
-- <span style="color:yellowgreen;">`30 to 40`</span>: the results do not meet the GATK minimum but the panel is still rather sizable and worth a run
-- <span style="color:orange;">`20 to 30`</span>: calls from WXS or low-coverage WGS begin to deteriorate; run at your own risk!
-- <span style="color:orange;">`10 to 20`</span>: calls from high-coverage WGS begin to deteriorate; run at your own risk!
-- <span style="color:red">`1 to 10`</span>: do not trust calls without extensive follow-up analysis!!!
+- `40 or more`: you meet the GATK recommended minimum. Feel free to proceed.
+- `30 to 40`: the results do not meet the GATK minimum but the panel is still rather sizable and worth a run
+- `20 to 30`: calls from WXS or low-coverage WGS begin to deteriorate; run at your own risk!
+- `10 to 20`: calls from high-coverage WGS begin to deteriorate; run at your own risk!
+- `1 to 10`: do not trust calls without extensive follow-up analysis!!!
 
 
 ## Generalized steps:
