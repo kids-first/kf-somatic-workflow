@@ -117,7 +117,7 @@ inputs:
       \ establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration\
       \ for clues"}
   disable_vep_annotation: {type: 'boolean?', doc: "Disable VEP Annotation and skip\
-      \ this task."}
+      \ this task.", default: false}
   vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value\
       \ depending on the size/complexity of input"}
   vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to\
@@ -210,7 +210,7 @@ steps:
       output_basename: output_basename
     out: [output]
   vep_annotate_vcf:
-    when: $(inputs.disable_annotation == null)
+    when: $(inputs.disable_annotation == false)
     run: ../tools/variant_effect_predictor_105.cwl
     in:
       reference: indexed_reference_fasta
