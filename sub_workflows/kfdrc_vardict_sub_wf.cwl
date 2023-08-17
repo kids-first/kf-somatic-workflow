@@ -54,9 +54,9 @@ inputs:
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK" }
-  
+
 outputs:
-  vardict_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output} 
+  vardict_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
   vardict_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   vardict_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -68,7 +68,7 @@ steps:
         value: c5.4xlarge
     in:
       input_tumor_bam: input_tumor_aligned
-      input_tumor_name: 
+      input_tumor_name:
         source: [old_tumor_name, input_tumor_name]
         pickValue: first_non_null
       input_normal_bam: input_normal_aligned
@@ -96,13 +96,20 @@ steps:
     out: [merged_vcf]
 
   rename_vcf_samples:
-    when: $(inputs.old_tumor_name != null)
-    run: ../tools/bcftools_reheader_vcf.cwl
+    run: ../tools/bcftools_reheader_samples_index.cwl
+    when: $(inputs.old_tumor_name != null && inputs.old_tumor_name != null)
     in:
       input_vcf: sort_merge_vardict_vcf/merged_vcf
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
+      output_filename:
+        valueFrom: |
+          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf.gz"))
+      new_normal_name: input_normal_name
+      new_tumor_name: input_tumor_name
+      old_normal_name: old_normal_name
       old_tumor_name: old_tumor_name
+      tbi:
+        valueFrom: |
+          $(1 == 1)
     out: [reheadered_vcf]
 
   pickvalue_workaround:
@@ -118,7 +125,7 @@ steps:
     in:
       input_vcf: pickvalue_workaround/output
       output_basename: output_basename
-    out: [filtered_vcf] 
+    out: [filtered_vcf]
 
   gatk_selectvariants_vardict:
     run: ../tools/gatk_selectvariants.cwl

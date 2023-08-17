@@ -73,7 +73,7 @@ steps:
         value: c5.9xlarge
     in:
       input_tumor_aligned: input_tumor_aligned
-      input_tumor_name: 
+      input_tumor_name:
         source: [old_tumor_name, input_tumor_name]
         pickValue: first_non_null
       input_normal_aligned: input_normal_aligned
@@ -134,13 +134,20 @@ steps:
     out: [stats_table, filtered_vcf]
 
   rename_vcf_samples:
-    when: $(inputs.old_tumor_name != null)
-    run: ../tools/bcftools_reheader_vcf.cwl
+    run: ../tools/bcftools_reheader_samples_index.cwl
+    when: $(inputs.old_tumor_name != null && inputs.old_normal_name != null)
     in:
       input_vcf: filter_mutect2_vcf/filtered_vcf
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
+      output_filename:
+        valueFrom: |
+          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf.gz"))
+      new_normal_name: input_normal_name
+      new_tumor_name: input_tumor_name
+      old_normal_name: old_normal_name
       old_tumor_name: old_tumor_name
+      tbi:
+        valueFrom: |
+          $(1 == 1)
     out: [reheadered_vcf]
 
   pickvalue_workaround:
