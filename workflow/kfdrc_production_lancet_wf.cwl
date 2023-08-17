@@ -44,6 +44,9 @@ inputs:
   output_basename: { type: 'string', doc: "String value to use as basename for outputs" }
   wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+
   # Optional with One Default
   lancet_ram: { type: 'int?', default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough" }
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
@@ -132,7 +135,7 @@ steps:
       input_file: bcftools_annot_vcf
       input_index: bcftools_annot_vcf_index
     out: [output]
-  
+
   select_interval_list:
     run: ../tools/mode_selector.cwl
     in:
@@ -241,6 +244,8 @@ steps:
       protein_indel_hotspots: protein_indel_hotspots
       maf_center: maf_center
       custom_enst: custom_enst
+      old_normal_name: old_normal_name
+      old_tumor_name: old_tumor_name
     out:
       [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
 

@@ -43,6 +43,9 @@ inputs:
   hg38_strelka_tbi: { type: 'File?', doc: "Tabix index for hg38_strelka_bed" }
   output_basename: { type: string, doc: "String value to use as basename for outputs" }
 
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+
   # Optional with One Default
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }
   manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to 10 (soft-capped)"}
@@ -84,6 +87,8 @@ steps:
       manta_memory: manta_memory
       manta_cores: manta_cores
       select_vars_mode: select_vars_mode
+      old_tumor_name: old_tumor_name
+      old_normal_name: old_normal_name
     out:
       [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
 

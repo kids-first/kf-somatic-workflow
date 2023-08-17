@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_strelka2_sub_wf
 requirements:
@@ -7,37 +7,19 @@ requirements:
   - class: SubworkflowFeatureRequirement
 
 inputs:
-  indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
+  indexed_reference_fasta: {type: 'File', secondaryFiles: [{ pattern: '.fai', required: true }, { pattern: '^.dict', required: true }]}
   reference_dict: File
-  hg38_strelka_bed: {type: 'File', secondaryFiles: ['.tbi']}
-  manta_small_indels: {type: 'File?', secondaryFiles: ['.tbi']}
+  hg38_strelka_bed: {type: 'File', secondaryFiles: [{ pattern: '.tbi', required: true }]}
+  manta_small_indels: {type: 'File?', secondaryFiles: [{ pattern: '.tbi', required: true }]}
   use_manta_small_indels: {type: 'boolean?', default: false}
   input_tumor_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{ pattern: '.bai', required: false }, { pattern: '^.bai', required: false }, { pattern: '.crai', required: false }, { pattern: '^.crai', required: false }]
     doc: "tumor BAM or CRAM"
   input_tumor_name: string
   input_normal_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{ pattern: '.bai', required: false }, { pattern: '^.bai', required: false }, { pattern: '.crai', required: false }, { pattern: '^.crai', required: false }]
     doc: "normal BAM or CRAM"
   input_normal_name: string
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
@@ -108,11 +90,21 @@ steps:
     out: [merged_vcf]
 
   rename_strelka_samples:
-    run: ../tools/bcftools_reheader_vcf.cwl
+    run: ../tools/bcftools_reheader_samples_index.cwl
     in:
       input_vcf: merge_strelka2_vcf/merged_vcf
-      input_normal_name: input_normal_name
-      input_tumor_name: input_tumor_name
+      output_filename:
+        valueFrom: |
+          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf.gz"))
+      new_normal_name: input_normal_name
+      new_tumor_name: input_tumor_name
+      old_normal_name:
+        valueFrom: "NORMAL"
+      old_tumor_name:
+        valueFrom: "TUMOR"
+      tbi:
+        valueFrom: |
+          $(1 == 1)
     out: [reheadered_vcf]
 
   gatk_selectvariants_strelka2:

@@ -1034,8 +1034,10 @@ steps:
       hg38_strelka_bed: index_strelka_bed/output
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
+      old_normal_name: old_normal_name
       vep_cache: vep_cache
       output_basename: output_basename
       manta_memory: manta_memory
