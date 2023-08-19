@@ -53,7 +53,7 @@ steps:
       input_vcf: manta/output_sv
       output_filename:
         valueFrom: |
-          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf.gz"))
+          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf"))
       new_normal_name: input_normal_name
       new_tumor_name: input_tumor_name
       old_normal_name: old_normal_name

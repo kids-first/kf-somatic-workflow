@@ -95,7 +95,7 @@ steps:
       input_vcf: sort_merge_lancet_vcf/merged_vcf
       output_filename:
         valueFrom: |
-          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf.gz"))
+          $(inputs.input_vcf.basename.replace(".vcf", ".reheadered.vcf"))
       new_normal_name: input_normal_name
       new_tumor_name: input_tumor_name
       old_normal_name: old_normal_name
