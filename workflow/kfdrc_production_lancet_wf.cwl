@@ -44,8 +44,8 @@ inputs:
   output_basename: { type: 'string', doc: "String value to use as basename for outputs" }
   wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
-  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
-  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_normal_name`, you **must** provide it here"}
 
   # Optional with One Default
   lancet_ram: { type: 'int?', default: 12, doc: "Adjust in rare circumstances in which 12 GB is not enough" }

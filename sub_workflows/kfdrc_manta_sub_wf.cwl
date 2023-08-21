@@ -15,13 +15,13 @@ inputs:
     secondaryFiles: [{ pattern: '.bai', required: false }, { pattern: '^.bai', required: false }, { pattern: '.crai', required: false }, { pattern: '^.crai', required: false }]
     doc: "tumor BAM or CRAM"
   input_tumor_name: string
-  old_tumor_name: {type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_tumor_name: {type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned:
     type: File
     secondaryFiles: [{ pattern: '.bai', required: false }, { pattern: '^.bai', required: false }, { pattern: '.crai', required: false }, { pattern: '^.crai', required: false }]
     doc: "normal BAM or CRAM"
   input_normal_name: string
-  old_normal_name: {type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+  old_normal_name: {type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_normal_name`, you **must** provide it here"}
   vep_cache: {type: 'File', label: tar gzipped cache from ensembl/local converted cache}
   output_basename: string
   manta_memory: {type: 'int?'}
@@ -48,7 +48,7 @@ steps:
 
   rename_manta_samples:
     run: ../tools/bcftools_reheader_samples_index.cwl
-    when: $(inputs.old_tumor_name != null && inputs.old_tumor_name != null)
+    when: $(inputs.old_tumor_name != null && inputs.old_normal_name != null)
     in:
       input_vcf: manta/output_sv
       output_filename:
