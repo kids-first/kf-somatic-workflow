@@ -11,10 +11,10 @@ inputs:
   indexed_reference_fasta: {type: 'File', secondaryFiles: [.fai, ^.dict]}
   input_tumor_aligned: {type: 'File', secondaryFiles: [^.bai]}
   input_tumor_name: string
-  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned: {type: 'File', secondaryFiles: [^.bai]}
   input_normal_name: string
-  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_normal_name`, you **must** provide it here"}
   output_basename: string
   reference_dict: File
   bed_invtl_split: {type: 'File[]', doc: "Bed file intervals passed on from and outside pre-processing step"}

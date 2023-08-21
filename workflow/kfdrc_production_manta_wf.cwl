@@ -43,8 +43,8 @@ inputs:
   hg38_strelka_tbi: { type: 'File?', doc: "Tabix index for hg38_strelka_bed" }
   output_basename: { type: string, doc: "String value to use as basename for outputs" }
 
-  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
-  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_normal_name`, you **must** provide it here"}
 
   # Optional with One Default
   select_vars_mode: { type: ['null', { type: enum, name: select_vars_mode, symbols: ["gatk", "grep"] }], default: "gatk", doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression" }

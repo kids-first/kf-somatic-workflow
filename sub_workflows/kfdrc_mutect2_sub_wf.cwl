@@ -16,12 +16,12 @@ inputs:
       {pattern: "^.bai", required: false}, {pattern: ".crai", required: false}, {
         pattern: "^.crai", required: false}], doc: "tumor BAM or CRAM" }
   input_tumor_name: string
-  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here"}
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned: { type: File, secondaryFiles: [{pattern: ".bai", required: false},
       {pattern: "^.bai", required: false}, {pattern: ".crai", required: false}, {
         pattern: "^.crai", required: false}], doc: "normal BAM or CRAM" }
   input_normal_name: string
-  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here"}
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_normal_name`, you **must** provide it here"}
   exome_flag: {type: ['null', string], doc: "set to 'Y' for exome mode"}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
   tool_name: {type: 'string?', doc: "String to describe what tool was run as part of file name", default: "mutect2_somatic"}
