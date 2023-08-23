@@ -84,7 +84,7 @@ doc: |-
   The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
   Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
   Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
-  - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a CNV second tool we currently use.
+  - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a second CNV tool we currently use.
   - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
   - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somatic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl). **Note: If a PON is not provided, GATK CNV will be skipped!**
 
@@ -98,7 +98,7 @@ doc: |-
 
   - [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
   Default settings are used at run time.
-  - [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta Prepass VCF.
+  - [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta PASS VCF.
 
   #### Variant Annotation
   Please see the [annotation workflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md).
@@ -117,7 +117,7 @@ doc: |-
 
   1. As a cavatica app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for ControlFreec, and `PASS` filter tool mode.
 
-  1. What is `select_vars_mode` you ask? On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
+  1. `select_vars_mode`: On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
   Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
   You can use the `include_expression` `Filter="PASS"` to achieve this.
 
@@ -128,7 +128,7 @@ doc: |-
       - `reference_fasta`: [Homo_sapiens_assembly38.fasta](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
       - `reference_dict`: [Homo_sapiens_assembly38.dict](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
       - `annotation_file`: [refFlat_HG38.txt](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refFlat.txt.gz) gunzip this file from UCSC.  Needed for gene annotation in `CNVkit`
-      - `wgs_calling_interval_list`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M.M may need to be added.
+      - `wgs_calling_interval_list`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M. M may need to be added.
       - `lancet_calling_interval_bed`: `GRCh38.gencode.v31.CDS.merged.bed`.  As described at the beginning, for WGS, it's highly recommended to use CDS bed, and supplement with region calls from Strelka2 & Mutect2. Our reference was obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this gtf file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
       - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
       - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
@@ -151,9 +151,9 @@ doc: |-
       - `bcftools_annot_vcf`: `gnomad_3.1.1.vwb_subset.vcf.gz`. An export of the gnomAD v3.1.1 genomes reference made available from the KD workbench.
       - `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
       - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression
-      - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
-      - `disable_hotspot_annotation`: false
+      - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "gnomad_3_1_1_AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration for general JEXL syntax
       - `custom_enst`: `kf_isoform_override.tsv`. As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects maf file output and may results in representative protein changes that defy historical expectations
+      - `disable_hotspot_annotation`: false
       - `maf_center`: `"."`. Sequencing center of variant called
       - `funcotator_data_sources_tgz`: [funcotator_dataSources.v1.6.20190124s.tar.gz](https://console.cloud.google.com/storage/browser/broad-public-datasets/funcotator) - need a valid google account, this is a link to pre-packaged datasources from the Broad Institute. Any of the tar.gz files will do.
       - `annotsv_annotations_dir_tgz`: [annotsv_311_annotations_dir.tgz] - These annotations are simply those from the install-human-annotation installation process run during AnnotSV installation. Specifically these are the annotations installed with v3.1.1 of the software. Newer or older annotations can be slotted in here as needed.
@@ -234,7 +234,7 @@ doc: |-
       - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
       - `THetA2`: pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1
       - `samtools`: pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
-      - `Variant Effect Predictor`: pgc-images.sbgenomics.com/d3b-bixu/vep:r93.7
+      - `Variant Effect Predictor`: ensemblorg/ensembl-vep:release_105.0
       - `Kids Fist VCF2MAF`: pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.3
       - `Manta`: pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
       - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
@@ -279,30 +279,30 @@ inputs:
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "tumor BAM or CRAM"
   input_tumor_name: {type: string, doc: "Desired sample name for tumor in output VCFs"}
-  old_tumor_name: {type: 'string?', doc: "If `SM:` sample name in te align file is\
-      \ different than `input_tumor_name`, you **must** provide it here"}
+  old_tumor_name: {type: 'string?', doc: "If `SM:` sample name in te align file is
+      different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned:
     type: File
     secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false},
       {pattern: ".crai", required: false}, {pattern: "^.crai", required: false}]
     doc: "normal BAM or CRAM"
-  input_normal_name: {type: string, doc: "Desired sample name for normal in output\
-      \ VCFs"}
-  old_normal_name: {type: 'string?', doc: "If `SM:` sample name in te align file is\
-      \ different than `input_normal_name`, you **must** provide it here"}
+  input_normal_name: {type: string, doc: "Desired sample name for normal in output
+      VCFs"}
+  old_normal_name: {type: 'string?', doc: "If `SM:` sample name in te align file is
+      different than `input_normal_name`, you **must** provide it here"}
   cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c4, name: hs38_chr.len}}
-  cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC\
-      \ to try"}
+  cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC
+      to try"}
   cnvkit_annotation_file: {type: 'File', doc: "refFlat.txt file", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051c1, name: refFlat_HG38.txt}}
-  hg38_strelka_bed: {type: 'File', doc: "Bgzipped interval bed file. Recommned padding\
-      \ 100bp for WXS; Recommend canonical chromosomes for WGS", "sbg:suggestedValue": {
+  hg38_strelka_bed: {type: 'File', doc: "Bgzipped interval bed file. Recommned padding
+      100bp for WXS; Recommend canonical chromosomes for WGS", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051ae, name: hg38_strelka.bed.gz}}
   hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051aa, name: hg38_strelka.bed.gz.tbi}}
-  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth\
-      \ 10000"}
+  extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth
+      10000"}
   strelka2_cores: {type: 'int?', doc: "Adjust number of cores used to run strelka2",
     default: 18}
   mutect2_af_only_gnomad_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3,
@@ -314,222 +314,200 @@ inputs:
   mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf",
     "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051af, name: small_exac_common_3.hg38.vcf.gz.tbi}}
   output_basename: {type: 'string', doc: "String value to use as basename for outputs"}
-  wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select\
-      \ if this run is WGS or WXS"}
-
-  # GATK CNV Inputs
+  wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select
+      if this run is WGS or WXS"}
   gatk_cnv_input_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
-        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval\
-      \ list file of regions to analyze. For WGS, this should typically only include\
-      \ the autosomal chromosomes.", 'sbg:fileTypes': "INTERVALS, INTERVAL_LIST, LIST,\
-      \ BED, VCF, VCF.GZ"}
+        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval
+      list file of regions to analyze. For WGS, this should typically only include
+      the autosomal chromosomes.", 'sbg:fileTypes': "INTERVALS, INTERVAL_LIST, LIST,
+      BED, VCF, VCF.GZ"}
   gatk_cnv_input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi",
-        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval\
-      \ list file of regions to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST,\
-      \ LIST, BED, VCF, VCF.GZ"}
-  count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by\
-      \ the panel workflow. Significantly reduces quality of calling if not provided!",
+        required: false}], doc: "For GATK CNV Calling: Picard or GATK-style interval
+      list file of regions to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST,
+      LIST, BED, VCF, VCF.GZ"}
+  count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by
+      the panel workflow. Significantly reduces quality of calling if not provided!",
     "sbg:fileTypes": "HDF5"}
-  run_funcotatesegments: {type: 'boolean?', default: true, doc: "If true, run Funcotator on the called\
-      \ copy-ratio segments. This will generate both a simple TSV and a gene list."}
-  funcotator_data_sources_tgz: {type: 'File?', doc: "Path to tar.gz containing the\
-      \ data sources for Funcotator to create annotations.", "sbg:fileTypes": "TAR,\
-      \ TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 60e5f8636a504e4e0c6408d8,
+  run_funcotatesegments: {type: 'boolean?', default: true, doc: "If true, run Funcotator
+      on the called copy-ratio segments. This will generate both a simple TSV and
+      a gene list."}
+  funcotator_data_sources_tgz: {type: 'File?', doc: "Path to tar.gz containing the
+      data sources for Funcotator to create annotations.", "sbg:fileTypes": "TAR,
+      TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 60e5f8636a504e4e0c6408d8,
       name: funcotator_dataSources.v1.6.20190124s.tar.gz}}
-  funcotator_minimum_segment_size: {type: 'int?', doc: "The minimum number of bases\
-      \ for a variant to be annotated as a segment. Recommended to be changed only\
-      \ for use with FuncotateSegments. If you encounter 'Variant context does not\
-      \ represent a copy number segment' error, set this value lower than the length\
-      \ of the failed segment."}
-
-  # Amplicon Architect
+  funcotator_minimum_segment_size: {type: 'int?', doc: "The minimum number of bases
+      for a variant to be annotated as a segment. Recommended to be changed only for
+      use with FuncotateSegments. If you encounter 'Variant context does not represent
+      a copy number segment' error, set this value lower than the length of the failed
+      segment."}
   aa_data_repo: {type: 'File?', doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/",
     "sbg:suggestedValue": {class: File, path: 62fcf4d40d34597148589e14, name: GRCh38_indexed.tar.gz}}
   aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: [
-          "GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in\
-      \ data repo to use", default: "GRCh38"}
-  mosek_license_file: {type: 'File?', doc: "This tool uses some software that requires\
-      \ a license file. Only provide if input is WGS. You can get a personal or institutional\
-      \ one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {
-      class: File, path: 62fcf4d40d34597148589e15, name: mosek.lic}}
-
-  # AnnotSV Inputs
-  annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing\
-      \ annotations for AnnotSV", "sbg:fileTypes": "TAR, TAR.GZ, TGZ", "sbg:suggestedValue": {
+          "GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in
+      data repo to use", default: "GRCh38"}
+  mosek_license_file: {type: 'File?', doc: "This tool uses some software that requires
+      a license file. Only provide if input is WGS. You can get a personal or institutional
+      one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {class: File,
+      path: 62fcf4d40d34597148589e15, name: mosek.lic}}
+  annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing
+      annotations for AnnotSV", "sbg:fileTypes": "TAR, TAR.GZ, TGZ", "sbg:suggestedValue": {
       class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
-
-  # Optional with One Default
-  cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16\
-      \ max, as I/O gets saturated after that losing any advantage"}
+  cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16
+      max, as I/O gets saturated after that losing any advantage"}
   cfree_mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control,
-        symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends),\
-      \ RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+        symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends),
+      RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample,
-        symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends),\
-      \ RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
-  lancet_ram: {type: 'int?', default: 12, doc: "Adjust in rare circumstances in which\
-      \ 12 GB is not enough"}
+        symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends),
+      RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
+  lancet_ram: {type: 'int?', default: 12, doc: "Adjust in rare circumstances in which
+      12 GB is not enough"}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: [
-          "gatk", "grep"]}], default: "gatk", doc: "Choose 'gatk' for SelectVariants\
-      \ tool, or 'grep' for grep expression"}
-  min_theta2_frac: {type: 'float?', default: 0.01, doc: "Minimum fraction of genome\
-      \ with copy umber alterations.  Default is 0.05, recommend 0.01"}
+          "gatk", "grep"]}], default: "gatk", doc: "Choose 'gatk' for SelectVariants
+      tool, or 'grep' for grep expression"}
+  min_theta2_frac: {type: 'float?', default: 0.01, doc: "Minimum fraction of genome
+      with copy umber alterations.  Default is 0.05, recommend 0.01"}
   vardict_cpus: {type: 'int?', default: 9, doc: "Number of CPUs for Vardict to use"}
-  vardict_min_vaf: {type: 'float?', default: 0.05, doc: "Min variant allele frequency\
-      \ for vardict to consider. Recommend 0.05"}
-  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict\
-      \ (hard-capped)"}
-
-  # Optional with Multiple Defaults (handled in choose_defaults)
-  exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y\
-      \ for WXS, N for WGS"}
-  lancet_window: {type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS;\
-      \ 600 for exome+"}
-  lancet_padding: {type: 'int?', doc: "Recommend 0 if interval file padded already,\
-      \ half window size if not. Recommended: 0 for WXS; 300 for WGS"}
-  vardict_padding: {type: 'int?', doc: "Padding to add to input intervals, recommend\
-      \ 0 if intervals already padded such as in WXS, 150 if not such as in WGS"}
-  cnvkit_wgs_mode: {type: 'string?', doc: "for WGS mode, input Y. leave blank for\
-      \ WXS/hybrid mode"}
-  i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions.\
-      \ Use N if you want to skip this or have a WGS run"}
-
-  # Optional
-  b_allele: {type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input\
-      \ recommended.  Tool will prefilter for germline and pass if expression given"}
+  vardict_min_vaf: {type: 'float?', default: 0.05, doc: "Min variant allele frequency
+      for vardict to consider. Recommend 0.05"}
+  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict
+      (hard-capped)"}
+  exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y
+      for WXS, N for WGS"}
+  lancet_window: {type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS;
+      600 for exome+"}
+  lancet_padding: {type: 'int?', doc: "Recommend 0 if interval file padded already,
+      half window size if not. Recommended: 0 for WXS; 300 for WGS"}
+  vardict_padding: {type: 'int?', doc: "Padding to add to input intervals, recommend
+      0 if intervals already padded such as in WXS, 150 if not such as in WGS"}
+  cnvkit_wgs_mode: {type: 'string?', doc: "for WGS mode, input Y. leave blank for
+      WXS/hybrid mode"}
+  i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions.
+      Use N if you want to skip this or have a WGS run"}
+  b_allele: {type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input
+      recommended.  Tool will prefilter for germline and pass if expression given"}
   b_allele_index: {type: 'File?', doc: "Tabix index for b_allele"}
-  cfree_coeff_var: {type: 'float?', default: 0.05, doc: "Coefficient of variation\
-      \ to set window size.  Default 0.05 recommended"}
-  cfree_contamination_adjustment: {type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec\
-      \ estimate normal contam"}
+  cfree_coeff_var: {type: 'float?', default: 0.05, doc: "Coefficient of variation
+      to set window size.  Default 0.05 recommended"}
+  cfree_contamination_adjustment: {type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec
+      estimate normal contam"}
   cfree_sex: {type: ['null', {type: enum, name: cfree_sex, symbols: ["XX", "XY"]}],
     doc: "If known, XX for female, XY for male", default: "XX"}
   cnvkit_sex: {type: ['null', {type: enum, name: cnvkit_sex, symbols: ["x", "y"]}],
     doc: "Sex, for simplicity x for female y for male", default: "x"}
-  combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
-      \ expression if vcf has non-PASS combined calls, use as-needed, default set\
-      \ for VarDict Java for VarDict", default: FILTER="PASS" && (INFO/STATUS="Germline"
+  combined_include_expression: {type: 'string?', doc: "Theta2 Purity value: Filter
+      expression if vcf has non-PASS combined calls, use as-needed, default set for
+      VarDict Java for VarDict", default: FILTER="PASS" && (INFO/STATUS="Germline"
       | INFO/STATUS="StrongSomatic")}
-  combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter\
-      \ expression if vcf has non-PASS combined calls, use as-needed"}
-  use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program\
-      \ use the small indels output from Manta in Strelka2 calling?"}
-  learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel;\
-      \ defaults to 4 (hard-capped)"}
-  getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries;\
-      \ defaults to 2 (hard-capped)"}
-  filtermutectcalls_memory: {type: 'int?', doc: "GB of memory to allocate to GATK\
-      \ FilterMutectCalls; defaults to 4 (hard-capped)"}
-  manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to\
-      \ 10 (soft-capped)"}
-  manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults\
-      \ to 18"}
-
-  # VEP param
+  combined_exclude_expression: {type: 'string?', doc: "Theta2 Purity value: Filter
+      expression if vcf has non-PASS combined calls, use as-needed"}
+  use_manta_small_indels: {type: 'boolean?', default: false, doc: "Should the program
+      use the small indels output from Manta in Strelka2 calling?"}
+  learnorientation_memory: {type: 'int?', doc: "GB of memory to allocate to GATK LearnReadOrientationModel;
+      defaults to 4 (hard-capped)"}
+  getpileup_memory: {type: 'int?', doc: "GB of memory to allocate to GATK GetPileupSummaries;
+      defaults to 2 (hard-capped)"}
+  filtermutectcalls_memory: {type: 'int?', doc: "GB of memory to allocate to GATK
+      FilterMutectCalls; defaults to 4 (hard-capped)"}
+  manta_memory: {type: 'int?', doc: "GB of memory to allocate to Manta; defaults to
+      10 (soft-capped)"}
+  manta_cores: {type: 'int?', doc: "Number of cores to allocate to Manta; defaults
+      to 18"}
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
     "sbg:suggestedValue": {class: File, path: 6332f8e47535110eb79c794f, name: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz}}
-  vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value\
-      \ depending on the size/complexity of input"}
-  vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to\
-      \ increase for really large inputs"}
-  vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance\
-      \ speed and memory usage"}
-  dbnsfp: {type: 'File?', secondaryFiles: [.tbi, ^.readme.txt], doc: "VEP-formatted\
-      \ plugin file, index, and readme file containing dbNSFP annotations"}
-  dbnsfp_fields: {type: 'string?', doc: "csv string with desired fields to annotate.\
-      \ Use ALL to grab all", default: 'clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'}
+  vep_ram: {type: 'int?', default: 32, doc: "In GB, may need to increase this value
+      depending on the size/complexity of input"}
+  vep_cores: {type: 'int?', default: 16, doc: "Number of cores to use. May need to
+      increase for really large inputs"}
+  vep_buffer_size: {type: 'int?', default: 5000, doc: "Increase or decrease to balance
+      speed and memory usage"}
+  dbnsfp: {type: 'File?', secondaryFiles: [.tbi, ^.readme.txt], doc: "VEP-formatted
+      plugin file, index, and readme file containing dbNSFP annotations"}
+  dbnsfp_fields: {type: 'string?', doc: "csv string with desired fields to annotate.
+      Use ALL to grab all", default: 'clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue'}
   merged: {type: 'boolean?', doc: "Set to true if merged cache used", default: true}
-  cadd_indels: {type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin\
-      \ file and index containing CADD indel annotations"}
-  cadd_snvs: {type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file\
-      \ and index containing CADD SNV annotations"}
+  cadd_indels: {type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin
+      file and index containing CADD indel annotations"}
+  cadd_snvs: {type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file
+      and index containing CADD SNV annotations"}
   run_cache_existing: {type: 'boolean?', doc: "Run the check_existing flag for cache"}
   run_cache_af: {type: 'boolean?', doc: "Run the allele frequency flags for cache"}
-
-  # MAF-specific params
-  strelka2_retain_info: {type: 'string?', doc: "csv string with INFO fields that you\
-      \ want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MQ,MQ0,QSI,HotSpotAllele"}
-  strelka2_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that\
-      \ you want to keep"}
-  strelka2_retain_ann: {type: 'string?', doc: "csv string of annotations (within the\
-      \ VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
-  mutect2_retain_info: {type: 'string?', doc: "csv string with INFO fields that you\
-      \ want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MBQ,TLOD,HotSpotAllele"}
-  mutect2_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you\
-      \ want to keep"}
-  mutect2_retain_ann: {type: 'string?', doc: "csv string of annotations (within the\
-      \ VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
-  lancet_retain_info: {type: 'string?', doc: "csv string with INFO fields that you\
-      \ want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MBQ,TLOD,HotSpotAllele"}
-  lancet_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you\
-      \ want to keep"}
-  lancet_retain_ann: {type: 'string?', doc: "csv string of annotations (within the\
-      \ VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
-  vardict_retain_info: {type: 'string?', doc: "csv string with INFO fields that you\
-      \ want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MSI,MSILEN,SOR,SSF,HotSpotAllele"}
-  vardict_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you\
-      \ want to keep"}
-  vardict_retain_ann: {type: 'string?', doc: "csv string of annotations (within the\
-      \ VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
-
-  # annotation vars
-  genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing\
-      \ hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [
-      {class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
-  protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
-      \ file(s) containing protein names and amino acid positions corresponding to\
-      \ hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c,
-        name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
-  protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
-      \ file(s) containing protein names and amino acid position ranges corresponding\
-      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d,
+  strelka2_retain_info: {type: 'string?', doc: "csv string with INFO fields that you
+      want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MQ,MQ0,QSI,HotSpotAllele"}
+  strelka2_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that
+      you want to keep"}
+  strelka2_retain_ann: {type: 'string?', doc: "csv string of annotations (within the
+      VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
+  mutect2_retain_info: {type: 'string?', doc: "csv string with INFO fields that you
+      want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MBQ,TLOD,HotSpotAllele"}
+  mutect2_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you
+      want to keep"}
+  mutect2_retain_ann: {type: 'string?', doc: "csv string of annotations (within the
+      VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
+  lancet_retain_info: {type: 'string?', doc: "csv string with INFO fields that you
+      want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MBQ,TLOD,HotSpotAllele"}
+  lancet_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you
+      want to keep"}
+  lancet_retain_ann: {type: 'string?', doc: "csv string of annotations (within the
+      VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
+  vardict_retain_info: {type: 'string?', doc: "csv string with INFO fields that you
+      want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,MSI,MSILEN,SOR,SSF,HotSpotAllele"}
+  vardict_retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you
+      want to keep"}
+  vardict_retain_ann: {type: 'string?', doc: "csv string of annotations (within the
+      VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
+  genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing
+      hg38 genomic positions corresponding to hotspots", "sbg:suggestedValue": [{
+        class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
+  protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited
+      file(s) containing protein names and amino acid positions corresponding to hotspots",
+    "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c, name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
+  protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited
+      file(s) containing protein names and amino acid position ranges corresponding
+      to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d,
         name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
-  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
-      \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
+  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation
+      to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
   bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
       class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz}}
   bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {
       class: File, path: 6324ef5ad01163633daa00d7, name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}}
-  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
-      \ create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
-  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
-      \ add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
-  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to\
-      \ establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,\
-      \ recommend: `vc.getGenotype('inputs.input_normal_name').getDP()\
-      \ <= 7)`, `gnomad_3_1_1_AF > 0.001`]"}
-  disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation\
-      \ and skip this task.", default: false}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to
+      create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to
+      add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
+  gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to
+      establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,
+      recommend: `vc.getGenotype('inputs.input_normal_name').getDP() <= 7)`, `gnomad_3_1_1_AF
+      > 0.001`]"}
+  disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation
+      and skip this task.", default: false}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
-  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File, path: 6480c8a61dfc710d24a3a368,
-        name: kf_isoform_override.tsv} }
-
-  # WGS only Fields
-  wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed\
-      \ file.  Recommend canocical chromosomes with N regions removed", "sbg:suggestedValue": {
+  custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override
+      VEP PICK", "sbg:suggestedValue": {class: File, path: 6480c8a61dfc710d24a3a368,
+      name: kf_isoform_override.tsv}}
+  wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed
+      file.  Recommend canocical chromosomes with N regions removed", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
-  lancet_calling_interval_bed: {type: 'File?', doc: "For WGS, highly recommended to\
-      \ use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can\
-      \ still give calling list as bed if true WGS calling desired instead of exome+",
+  lancet_calling_interval_bed: {type: 'File?', doc: "For WGS, highly recommended to
+      use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can
+      still give calling list as bed if true WGS calling desired instead of exome+",
     "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed}}
-
-  # WXS only Fields
   padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
-  unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding\
-      \ for ControlFreeC exome mode CNV calling."}
-
+  unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding
+      for ControlFreeC exome mode CNV calling."}
 outputs:
   aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: run_amplicon_architect/aa_summary}
-  aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges\
-      \ in the breakpoint graph, their categorization (sequence, discordant, concordant,\
-      \ source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
+  aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges
+      in the breakpoint graph, their categorization (sequence, discordant, concordant,
+      source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
   aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges
       in the breakpoint graph, their categorization (sequence, discordant, concordant,
       source) and their copy counts', outputSource: run_amplicon_architect/aa_graph}
   aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA",
     outputSource: run_amplicon_architect/aa_sv_png}
-  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the\
-      \ amplicon", outputSource: run_amplicon_architect/aa_classification_profiles}
+  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the
+      amplicon", outputSource: run_amplicon_architect/aa_classification_profiles}
   aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
     outputSource: run_amplicon_architect/aa_gene_list}
   ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
@@ -569,26 +547,25 @@ outputs:
   lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
   lancet_prepass_vcf: {type: 'File', outputSource: run_lancet/lancet_prepass_vcf}
   gatk_copy_ratio_segments_tumor: {type: 'File?', outputSource: run_gatk_cnv/called_copy_ratio_segments_tumor,
-    doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file\
-      \ with a SAM-style header containing a read group sample name, a sequence dictionary,\
-      \ a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,\
-      \ and the corresponding entry rows."}
+    doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file
+      with a SAM-style header containing a read group sample name, a sequence dictionary,
+      a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,
+      and the corresponding entry rows."}
   gatk_copy_ratio_segments_normal: {type: 'File?', outputSource: run_gatk_cnv/called_copy_ratio_segments_normal,
-    doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file\
-      \ with a SAM-style header containing a read group sample name, a sequence dictionary,\
-      \ a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,\
-      \ and the corresponding entry rows."}
+    doc: "Called copy-ratio-segments file. This is a tab-separated values (TSV) file
+      with a SAM-style header containing a read group sample name, a sequence dictionary,
+      a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn,
+      and the corresponding entry rows."}
   gatk_cnv_denoised_tumor_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_tumor_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
   gatk_cnv_denoised_normal_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_normal_plot,
     doc: "Denoised-plot file that covers the entire range of the copy ratios"}
   gatk_cnv_funcotated_called_file_tumor: {type: 'File?', outputSource: run_gatk_cnv/funcotated_called_file_tumor,
-    doc: "TSV where each row is a segment and the annotations are the covered genes\
-      \ and which genes+exon is overlapped by the segment breakpoints."}
+    doc: "TSV where each row is a segment and the annotations are the covered genes
+      and which genes+exon is overlapped by the segment breakpoints."}
   gatk_cnv_funcotated_called_gene_list_file_tumor: {type: 'File?', outputSource: run_gatk_cnv/funcotated_called_gene_list_file_tumor,
-    doc: "TSV where each row is a gene and the annotations are the covered genes and\
-      \ which genes+exon is overlapped by the segment breakpoints."}
-
+    doc: "TSV where each row is a gene and the annotations are the covered genes and
+      which genes+exon is overlapped by the segment breakpoints."}
 steps:
   choose_defaults:
     run: ../tools/mode_defaults.cwl
@@ -602,7 +579,6 @@ steps:
       vardict_padding: vardict_padding
     out: [out_exome_flag, out_cnvkit_wgs_mode, out_i_flag, out_lancet_padding, out_lancet_window,
       out_vardict_padding]
-
   prepare_reference:
     run: ../sub_workflows/prepare_reference.cwl
     in:
@@ -610,42 +586,36 @@ steps:
       input_fai: reference_fai
       input_dict: reference_dict
     out: [indexed_fasta, reference_dict]
-
   index_b_allele:
     run: ../tools/tabix_index.cwl
     in:
       input_file: b_allele
       input_index: b_allele_index
     out: [output]
-
   index_strelka_bed:
     run: ../tools/tabix_index.cwl
     in:
       input_file: hg38_strelka_bed
       input_index: hg38_strelka_tbi
     out: [output]
-
   index_mutect_gnomad:
     run: ../tools/tabix_index.cwl
     in:
       input_file: mutect2_af_only_gnomad_vcf
       input_index: mutect2_af_only_gnomad_tbi
     out: [output]
-
   index_mutect_exac:
     run: ../tools/tabix_index.cwl
     in:
       input_file: mutect2_exac_common_vcf
       input_index: mutect2_exac_common_tbi
     out: [output]
-
   index_bcftools_annot_vcf:
     run: ../tools/tabix_index.cwl
     in:
       input_file: bcftools_annot_vcf
       input_index: bcftools_annot_vcf_index
     out: [output]
-
   select_interval_list:
     run: ../tools/mode_selector.cwl
     in:
@@ -653,16 +623,13 @@ steps:
       wgs_input: wgs_calling_interval_list
       wxs_input: padded_capture_regions
     out: [output]
-
-  # WGS only
   python_vardict_interval_split:
     run: ../tools/python_vardict_interval_split.cwl
-    doc: "Custom interval list generation for vardict input. Briefly, ~60M bp per\
-      \ interval list, 20K bp intervals, lists break on chr and N reginos only"
+    doc: "Custom interval list generation for vardict input. Briefly, ~60M bp per
+      interval list, 20K bp intervals, lists break on chr and N reginos only"
     in:
       wgs_bed_file: select_interval_list/output
     out: [split_intervals_bed]
-
   bedtools_intersect_germline:
     run: ../tools/bedtools_intersect.cwl
     in:
@@ -671,7 +638,6 @@ steps:
       input_bed_file: unpadded_capture_regions
       flag: choose_defaults/out_i_flag
     out: [intersected_vcf]
-
   gatk_intervallisttools:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -683,7 +649,6 @@ steps:
       bands:
         valueFrom: ${return 80000000}
     out: [output]
-
   gatk_filter_germline:
     run: ../tools/gatk_filter_germline_variant.cwl
     in:
@@ -691,7 +656,6 @@ steps:
       reference_fasta: prepare_reference/indexed_fasta
       output_basename: output_basename
     out: [filtered_vcf, filtered_pass_vcf]
-
   samtools_cram2bam_plus_calmd_tumor:
     run: ../tools/samtools_calmd.cwl
     in:
@@ -700,7 +664,6 @@ steps:
         valueFrom: ${return 16;}
       reference: prepare_reference/indexed_fasta
     out: [bam_file]
-
   samtools_cram2bam_plus_calmd_normal:
     run: ../tools/samtools_calmd.cwl
     in:
@@ -709,7 +672,6 @@ steps:
         valueFrom: ${return 16;}
       reference: prepare_reference/indexed_fasta
     out: [bam_file]
-
   select_vardict_bed_interval:
     run: ../tools/mode_list_selector.cwl
     in:
@@ -717,7 +679,6 @@ steps:
       wgs_input: python_vardict_interval_split/split_intervals_bed
       wxs_input: gatk_intervallisttools/output
     out: [output]
-
   run_vardict:
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
@@ -762,7 +723,6 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
-
   select_mutect_bed_interval:
     run: ../tools/mode_list_selector.cwl
     in:
@@ -770,7 +730,6 @@ steps:
       wgs_input: gatk_intervallisttools/output
       wxs_input: gatk_intervallisttools/output
     out: [output]
-
   run_mutect2:
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
@@ -818,7 +777,6 @@ steps:
       custom_enst: custom_enst
     out: [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_protected_outputs,
       mutect2_public_outputs]
-
   run_strelka2:
     run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
     in:
@@ -862,20 +820,18 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
-
   bedops_gen_lancet_intervals:
     run: ../tools/preprocess_lancet_intervals.cwl
     in:
       strelka2_vcf:
         source: run_strelka2/strelka2_protected_outputs
-        valueFrom: "${var str_vcf = self[1]; return str_vcf;}" # vcf is always item 2 from rename file glob in this context
+        valueFrom: "${var str_vcf = self[1]; return str_vcf;}"
       mutect2_vcf:
         source: run_mutect2/mutect2_protected_outputs
         valueFrom: "${var mut_vcf = self[1]; return mut_vcf;}"
       ref_bed: lancet_calling_interval_bed
       output_basename: output_basename
     out: [run_bed]
-
   gatk_intervallisttools_exome_plus:
     run: ../tools/gatk_intervallisttool.cwl
     in:
@@ -888,7 +844,6 @@ steps:
       bands:
         valueFrom: ${return 80000000}
     out: [output]
-
   select_lancet_bed_inteval:
     run: ../tools/mode_list_selector.cwl
     in:
@@ -896,7 +851,6 @@ steps:
       wgs_input: gatk_intervallisttools_exome_plus/output
       wxs_input: gatk_intervallisttools/output
     out: [output]
-
   run_lancet:
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
@@ -940,7 +894,6 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
-
   run_controlfreec:
     run: ../sub_workflows/kfdrc_controlfreec_sub_wf.cwl
     in:
@@ -962,7 +915,6 @@ steps:
       cfree_sex: cfree_sex
     out: [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg,
       ctrlfreec_baf, ctrlfreec_info]
-
   run_cnvkit:
     run: ../sub_workflows/kfdrc_cnvkit_sub_wf.cwl
     in:
@@ -979,14 +931,12 @@ steps:
       sex: cnvkit_sex
     out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_cns, cnvkit_calls, cnvkit_metrics,
       cnvkit_gainloss, cnvkit_seg, cnvkit_scatter_plot, cnvkit_diagram]
-
   expression_run_aa_if_wgs:
     run: ../tools/expression_run_aa_if_wgs.cwl
     in:
       mosek_license_file: mosek_license_file
       wgs_or_wxs: wgs_or_wxs
     out: [aa_mosek_license_file]
-
   run_amplicon_architect:
     run: ../workflow/kfdrc_production_amplicon_architect.cwl
     when: $(inputs.mosek_license_file != null)
@@ -1004,7 +954,6 @@ steps:
       wgs_or_wxs: wgs_or_wxs
     out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_png, aa_classification_profiles,
       aa_gene_list]
-
   run_theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
     in:
@@ -1019,13 +968,11 @@ steps:
       output_basename: output_basename
     out: [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns,
       theta2_subclone_seg]
-
   expression_flatten_subclonal_results:
     run: ../tools/expression_flatten_file_list.cwl
     in:
       input_list: run_theta2_purity/theta2_subclonal_results
     out: [output]
-
   run_manta:
     run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
     in:
@@ -1044,14 +991,12 @@ steps:
       manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
-
   run_annotsv:
     run: ../tools/annotsv.cwl
     in:
       annotations_dir_tgz: annotsv_annotations_dir_tgz
       sv_input_file: run_manta/manta_pass_vcf
     out: [annotated_calls, unannotated_calls]
-
   run_gatk_cnv:
     run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
     when: $(inputs.count_panel_of_normals != null)
@@ -1076,7 +1021,6 @@ steps:
       called_copy_ratio_segments_tumor, denoised_tumor_plot, normal_file_archive,
       modeled_segments_normal, modeled_segments_normal_plot, called_copy_ratio_segments_normal,
       denoised_normal_plot, funcotated_called_file_tumor, funcotated_called_gene_list_file_tumor]
-
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
@@ -1108,5 +1052,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.4'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.7'
   label: github-release
