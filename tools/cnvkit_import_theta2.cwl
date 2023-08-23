@@ -29,7 +29,7 @@ arguments:
       ${if (inputs.theta2_n2_results != null) {return inputs.theta2_n2_results.path;}}
       -d ./
 
-      mv ${return inputs.output_basename}.call-1.cns ${return inputs.output_basename}.theta2.total.cns
+      mv $(inputs.tumor_cns.basename.replace('.call.cns','')).call-1.cns ${return inputs.output_basename}.theta2.total.cns
       
       ln -s ${return inputs.output_basename}.theta2.total.cns ${return inputs.tumor_sample_name}.cns
 
@@ -42,7 +42,7 @@ arguments:
       ${if (inputs.theta2_best_results != null) {return inputs.theta2_best_results.path;}}
       -d ./
 
-      mv ${return inputs.output_basename}.call-1.cns ${return inputs.output_basename}.theta2.subclone1.cns
+      mv $(inputs.tumor_cns.basename.replace('.call.cns','')).call-1.cns ${return inputs.output_basename}.theta2.subclone1.cns
 
       ln -s ${return inputs.output_basename}.theta2.subclone1.cns ${return inputs.tumor_sample_name}.cns
 
