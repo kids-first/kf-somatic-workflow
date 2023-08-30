@@ -489,6 +489,7 @@ inputs:
   wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed
       file.  Recommend canocical chromosomes with N regions removed", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
+  wgs_calling_blacklist: { type: 'File?', doc: "Blacklist intervals for WGS calling." }
   lancet_calling_interval_bed: {type: 'File?', doc: "For WGS, highly recommended to
       use CDS bed, and supplement with region calls from strelka2 & mutect2.  Can
       still give calling list as bed if true WGS calling desired instead of exome+",
@@ -623,12 +624,22 @@ steps:
       wgs_input: wgs_calling_interval_list
       wxs_input: padded_capture_regions
     out: [output]
+  bedtool_subtract_blacklist:
+    run: ../tools/bedtools_subtract.cwl
+    when: $(inputs.wgs_or_wxs == "WGS" && inputs.b_bed != null)
+    in:
+      wgs_or_wxs: wgs_or_wxs
+      a_bed: select_interval_list/output
+      b_bed: wgs_calling_blacklist
+    out: [subtracted_bed]
   python_vardict_interval_split:
     run: ../tools/python_vardict_interval_split.cwl
     doc: "Custom interval list generation for vardict input. Briefly, ~60M bp per
       interval list, 20K bp intervals, lists break on chr and N reginos only"
     in:
-      wgs_bed_file: select_interval_list/output
+      wgs_bed_file:
+        source: [bedtool_subtract_blacklist/subtracted_bed, select_interval_list/output]
+        pickValue: first_non_null
     out: [split_intervals_bed]
   bedtools_intersect_germline:
     run: ../tools/bedtools_intersect.cwl

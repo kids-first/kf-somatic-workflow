@@ -1,10 +1,12 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_production_vardict_wf
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
   - class: SubworkflowFeatureRequirement
+  - class: InlineJavascriptRequirement
+  - class: StepInputExpressionRequirement
 inputs:
   # Required
   reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3,
@@ -15,32 +17,16 @@ inputs:
       name: Homo_sapiens_assembly38.dict}}
   input_tumor_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{ pattern: '.crai', required: false }, { pattern: '^.crai', required: false }, { pattern: '.bai', required: false }, { pattern: '^.bai', required: false }]
     doc: "tumor BAM or CRAM"
   input_tumor_name: string
+  old_tumor_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_tumor_name`, you **must** provide it here"}
   input_normal_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{ pattern: '.crai', required: false }, { pattern: '^.crai', required: false }, { pattern: '.bai', required: false }, { pattern: '^.bai', required: false }]
     doc: "normal BAM or CRAM"
   input_normal_name: string
+  old_normal_name: { type: 'string?', doc: "If `SM:` sample name in the align file is different than `input_normal_name`, you **must** provide it here"}
   output_basename: { type: 'string', doc: "String value to use as basename for outputs" }
   wgs_or_wxs: { type: { type: enum, name: sex, symbols: ["WGS", "WXS"] }, doc: "Select if this run is WGS or WXS" }
 
@@ -58,6 +44,7 @@ inputs:
   wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed\
       \ file.  Recommend canocical chromosomes with N regions removed", "sbg:suggestedValue": {
       class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
+  wgs_calling_blacklist: { type: 'File?', doc: "Blacklist intervals for WGS calling." }
 
   # WXS only Fields
   padded_capture_regions: { type: 'File?', doc: "Recommend 100bp pad, for somatic variant" }
@@ -134,11 +121,22 @@ steps:
       wxs_input: padded_capture_regions
     out: [output]
 
+  bedtool_subtract_blacklist:
+    run: ../tools/bedtools_subtract.cwl
+    when: $(inputs.wgs_or_wxs == "WGS" && inputs.b_bed != null)
+    in:
+      wgs_or_wxs: wgs_or_wxs
+      a_bed: select_interval_list/output
+      b_bed: wgs_calling_blacklist
+    out: [subtracted_bed]
+
   python_vardict_interval_split:
     run: ../tools/python_vardict_interval_split.cwl
     doc: "Custom interval list generation for vardict input. Briefly, ~60M bp per interval list, 20K bp intervals, lists break on chr and N reginos only"
     in:
-      wgs_bed_file: select_interval_list/output
+      wgs_bed_file:
+        source: [bedtool_subtract_blacklist/subtracted_bed, select_interval_list/output]
+        pickValue: first_non_null
     out: [split_intervals_bed]
 
   gatk_intervallisttools:
@@ -184,8 +182,10 @@ steps:
       indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
+      old_tumor_name: old_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       input_normal_name: input_normal_name
+      old_normal_name: old_normal_name
       output_basename: output_basename
       reference_dict: prepare_reference/reference_dict
       bed_invtl_split: select_vardict_bed_interval/output
