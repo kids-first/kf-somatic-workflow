@@ -349,6 +349,8 @@ inputs:
       a license file. Only provide if input is WGS. You can get a personal or institutional
       one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {class: File,
       path: 62fcf4d40d34597148589e15, name: mosek.lic}}
+  run_sv_tools: { type: 'boolean?', doc: "Flag to run SV tools. For certain assays like panels, this anaylsis may be inappropriate, so set to false to skip", default: true }
+  run_cnv_tools: { type: 'boolean?', doc: "Disable CNV tools. For certain assays like panels, this anaylsis may be inappropriate, so set to false to skip", default: true }
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing
       annotations for AnnotSV", "sbg:fileTypes": "TAR, TAR.GZ, TGZ", "sbg:suggestedValue": {
       class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
@@ -510,31 +512,31 @@ outputs:
       amplicon", outputSource: run_amplicon_architect/aa_classification_profiles}
   aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification",
     outputSource: run_amplicon_architect/aa_gene_list}
-  ctrlfreec_pval: {type: 'File', outputSource: run_controlfreec/ctrlfreec_pval}
-  ctrlfreec_config: {type: 'File', outputSource: run_controlfreec/ctrlfreec_config}
-  ctrlfreec_pngs: {type: 'File[]', outputSource: run_controlfreec/ctrlfreec_pngs}
-  ctrlfreec_bam_ratio: {type: 'File', outputSource: run_controlfreec/ctrlfreec_bam_ratio}
-  ctrlfreec_bam_seg: {type: 'File', outputSource: run_controlfreec/ctrlfreec_bam_seg}
-  ctrlfreec_baf: {type: 'File', outputSource: run_controlfreec/ctrlfreec_baf}
-  ctrlfreec_info: {type: 'File', outputSource: run_controlfreec/ctrlfreec_info}
-  cnvkit_cnr: {type: 'File', outputSource: run_cnvkit/cnvkit_cnr}
-  cnvkit_cnn_output: {type: ['null', File], outputSource: run_cnvkit/cnvkit_cnn_output}
-  cnvkit_calls: {type: 'File', outputSource: run_cnvkit/cnvkit_calls}
-  cnvkit_metrics: {type: 'File', outputSource: run_cnvkit/cnvkit_metrics}
-  cnvkit_gainloss: {type: 'File', outputSource: run_cnvkit/cnvkit_gainloss}
-  cnvkit_seg: {type: 'File', outputSource: run_cnvkit/cnvkit_seg}
-  cnvkit_scatter_plot: {type: 'File', outputSource: run_cnvkit/cnvkit_scatter_plot}
-  cnvkit_diagram: {type: 'File', outputSource: run_cnvkit/cnvkit_diagram}
+  ctrlfreec_pval: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_pval}
+  ctrlfreec_config: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_config}
+  ctrlfreec_pngs: {type: 'File[]?', outputSource: run_controlfreec/ctrlfreec_pngs}
+  ctrlfreec_bam_ratio: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_bam_ratio}
+  ctrlfreec_bam_seg: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_bam_seg}
+  ctrlfreec_baf: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_baf}
+  ctrlfreec_info: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_info}
+  cnvkit_cnr: {type: 'File?', outputSource: run_cnvkit/cnvkit_cnr}
+  cnvkit_cnn_output: {type: 'File?', outputSource: run_cnvkit/cnvkit_cnn_output}
+  cnvkit_calls: {type: 'File?', outputSource: run_cnvkit/cnvkit_calls}
+  cnvkit_metrics: {type: 'File?', outputSource: run_cnvkit/cnvkit_metrics}
+  cnvkit_gainloss: {type: 'File?', outputSource: run_cnvkit/cnvkit_gainloss}
+  cnvkit_seg: {type: 'File?', outputSource: run_cnvkit/cnvkit_seg}
+  cnvkit_scatter_plot: {type: 'File?', outputSource: run_cnvkit/cnvkit_scatter_plot}
+  cnvkit_diagram: {type: 'File?', outputSource: run_cnvkit/cnvkit_diagram}
   theta2_calls: {type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_cns}
   theta2_seg: {type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: ['null', 'File[]'], outputSource: expression_flatten_subclonal_results/output}
-  theta2_subclonal_cns: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclonal_cns}
-  theta2_subclone_seg: {type: ['null', 'File[]'], outputSource: run_theta2_purity/theta2_subclone_seg}
+  theta2_subclonal_results: {type: 'File[]?', outputSource: expression_flatten_subclonal_results/output}
+  theta2_subclonal_cns: {type: 'File[]?', outputSource: run_theta2_purity/theta2_subclonal_cns}
+  theta2_subclone_seg: {type: 'File[]?', outputSource: run_theta2_purity/theta2_subclone_seg}
   strelka2_public_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_public_outputs}
   strelka2_protected_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs}
   strelka2_prepass_vcf: {type: 'File', outputSource: run_strelka2/strelka2_prepass_vcf}
-  manta_pass_vcf: {type: 'File', outputSource: run_manta/manta_pass_vcf}
-  manta_prepass_vcf: {type: 'File', outputSource: run_manta/manta_prepass_vcf}
+  manta_pass_vcf: {type: 'File?', outputSource: run_manta/manta_pass_vcf}
+  manta_prepass_vcf: {type: 'File?', outputSource: run_manta/manta_prepass_vcf}
   annotsv_annotated_calls: {type: 'File?', outputSource: run_annotsv/annotated_calls}
   annotsv_unannotated_calls: {type: 'File?', outputSource: run_annotsv/unannotated_calls}
   mutect2_public_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_public_outputs}
@@ -631,8 +633,10 @@ steps:
       wgs_bed_file: select_interval_list/output
     out: [split_intervals_bed]
   bedtools_intersect_germline:
+    when: $(inputs.run_cnv_tools)
     run: ../tools/bedtools_intersect.cwl
     in:
+      run_cnv_tools: run_cnv_tools
       input_vcf: index_b_allele/output
       output_basename: output_basename
       input_bed_file: unpadded_capture_regions
@@ -650,8 +654,10 @@ steps:
         valueFrom: ${return 80000000}
     out: [output]
   gatk_filter_germline:
+    when: $(inputs.run_cnv_tools)
     run: ../tools/gatk_filter_germline_variant.cwl
     in:
+      run_cnv_tools: run_cnv_tools
       input_vcf: bedtools_intersect_germline/intersected_vcf
       reference_fasta: prepare_reference/indexed_fasta
       output_basename: output_basename
@@ -895,8 +901,10 @@ steps:
       custom_enst: custom_enst
     out: [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
   run_controlfreec:
+    when: $(inputs.run_cnv_tools)
     run: ../sub_workflows/kfdrc_controlfreec_sub_wf.cwl
     in:
+      run_cnv_tools: run_cnv_tools
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
@@ -916,8 +924,10 @@ steps:
     out: [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg,
       ctrlfreec_baf, ctrlfreec_info]
   run_cnvkit:
+    when: $(inputs.run_cnv_tools)
     run: ../sub_workflows/kfdrc_cnvkit_sub_wf.cwl
     in:
+      run_cnv_tools: run_cnv_tools
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
@@ -939,8 +949,9 @@ steps:
     out: [aa_mosek_license_file]
   run_amplicon_architect:
     run: ../workflow/kfdrc_production_amplicon_architect.cwl
-    when: $(inputs.mosek_license_file != null)
+    when: $(inputs.mosek_license_file != null && inputs.run_cnv_tools)
     in:
+      run_cnv_tools: run_cnv_tools
       aa_data_repo: aa_data_repo
       aa_data_ref_version: aa_data_ref_version
       tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
@@ -955,8 +966,10 @@ steps:
     out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_png, aa_classification_profiles,
       aa_gene_list]
   run_theta2_purity:
+    when: $(inputs.run_cnv_tools)
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
     in:
+      run_cnv_tools: run_cnv_tools
       tumor_cns: run_cnvkit/cnvkit_calls
       reference_cnn: run_cnvkit/cnvkit_cnn_output
       tumor_sample_name: input_tumor_name
@@ -969,13 +982,17 @@ steps:
     out: [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns,
       theta2_subclone_seg]
   expression_flatten_subclonal_results:
+    when: $(inputs.run_cnv_tools)
     run: ../tools/expression_flatten_file_list.cwl
     in:
+      run_cnv_tools: run_cnv_tools
       input_list: run_theta2_purity/theta2_subclonal_results
     out: [output]
   run_manta:
+    when: $(inputs.run_sv_tools)
     run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
     in:
+      run_sv_tools: run_sv_tools
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
       hg38_strelka_bed: index_strelka_bed/output
@@ -992,15 +1009,18 @@ steps:
       select_vars_mode: select_vars_mode
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
   run_annotsv:
+    when: $(inputs.run_sv_tools)
     run: ../tools/annotsv.cwl
     in:
+      run_sv_tools: run_sv_tools
       annotations_dir_tgz: annotsv_annotations_dir_tgz
       sv_input_file: run_manta/manta_pass_vcf
     out: [annotated_calls, unannotated_calls]
   run_gatk_cnv:
     run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
-    when: $(inputs.count_panel_of_normals != null)
+    when: $(inputs.count_panel_of_normals != null && inputs.run_cnv_tools)
     in:
+      run_cnv_tools: run_cnv_tools
       input_aligned_reads_tumor: input_tumor_aligned
       input_aligned_reads_normal: input_normal_aligned
       reference_fasta: prepare_reference/indexed_fasta
