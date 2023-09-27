@@ -138,6 +138,8 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
       Last column must be chromosome length.
       Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
     - `coeff_var`: 0.05
+    - `run_cnv_tools`: true. Change this boolean to false if it is inappropriate to perform copy number calling, like on a limited panel
+    - `run_sv_tools`: true. Change this boolean to false if it is inappropriate to perform structural variant calling, like on a limited panel
     - `contamination_adjustment`: FALSE
     - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
     - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
