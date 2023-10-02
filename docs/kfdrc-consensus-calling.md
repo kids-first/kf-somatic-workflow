@@ -19,7 +19,7 @@ The general outline is as follows:
    - `AD`, `DP`, and `AF` are calculated as the average value between callers
    - `ADR`, `DPR`, and `AFR` fields are added as the range of values from the previous point, to give the observer a sense on confidence in the value
 1. VEP Annotate Consensus (see [Kids First DRC Somatic Variant Annotation Workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md) for details )
-1. BCF tools annotate
+1. Echtvar Annotation
    - Additional annotation is performed augment VEP annotation
    - While VEP does have extensive gnomad allele frequency annotation, it is limited to exome values. The added gnomad AF only resource we use augments this as an additional `INFO/AF` field to add WGS frequencies
 1. Soft filter variants
@@ -48,9 +48,8 @@ The general outline is as follows:
 - tool_name: "consensus_somatic"
 - ncallers: # Optional number of callers required for consensus, recommend `2`
 - consensus_ram: `3`
-- annotation_vcf: gnomad_3.1.1.vwb_subset.vcf.gz # population stats VCF for public filtering
+- annotation_zip: gnomad_3_1_1.vwb_subset.echtvar_0_1_9.zip # population stats VCF for public filtering
 - vep_cache: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz
-- annot_columns: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"
 - gatk_filter_name: `[NORM_DP_LOW, GNOMAD_AF_HIGH]`
 - gatk_filter_expression: `[ vc.getGenotype('`_insert_norm_sample_id_here_`').getDP() <= 7,gnomad_3_1_1_AF > 0.001 ]`
 - bcftools_public_filter: `FILTER="PASS"|INFO/HotSpotAllele=1`
