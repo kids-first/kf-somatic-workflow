@@ -102,8 +102,6 @@ inputs:
     default: 3}
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache",
     "sbg:suggestedValue": {class: File, path: 6332f8e47535110eb79c794f, name: homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz}}
-  vep_ref_build: {type: ['null', string], doc: "Genome ref build used, should line\
-      \ up with cache.", default: "GRCh38"}
   dbnsfp: {type: 'File?', secondaryFiles: [.tbi, ^.readme.txt], doc: "VEP-formatted\
       \ plugin file, index, and readme file containing dbNSFP annotations"}
   dbnsfp_fields: {type: 'string?', doc: "csv string with desired fields to annotate\
@@ -136,14 +134,9 @@ inputs:
       \ to retain as extra columns in MAF", default: "HGVSg"}
   add_common_fields: {type: 'boolean?', doc: "Set to true if input is a strelka2 vcf\
       \ that hasn't had common fields added", default: false}
-  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
-      \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
   bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if\
       \ needed to avoid conflict, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: 'File?', secondaryFiles: ['.tbi'], doc: "additional bgzipped\
-      \ annotation vcf file", "sbg:suggestedValue": {class: File, path: 6324ef5ad01163633daa00d8,
-      name: gnomad_3.1.1.vwb_subset.vcf.gz, secondaryFiles: [{class: File, path: 6324ef5ad01163633daa00d7,
-          name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}]}}
+  echtvar_anno_zips: {type: 'File[]', doc: "Annotation ZIP files for echtvar anno"}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
       \ create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
@@ -200,9 +193,8 @@ steps:
       retain_info: retain_info
       retain_fmt: retain_fmt
       retain_ann: retain_ann
-      bcftools_annot_columns: bcftools_annot_columns
+      echtvar_anno_zips: echtvar_anno_zips
       bcftools_strip_columns: bcftools_strip_columns
-      bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_public_filter: bcftools_public_filter
       dbnsfp: dbnsfp
       dbnsfp_fields: dbnsfp_fields
@@ -214,7 +206,6 @@ steps:
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       vep_cache: vep_cache
-      vep_ref_build: vep_ref_build
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots

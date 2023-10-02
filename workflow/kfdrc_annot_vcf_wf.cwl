@@ -89,6 +89,8 @@ doc: |
 requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
+- class: StepInputExpressionRequirement
+- class: InlineJavascriptRequirement
 inputs:
   indexed_reference_fasta: {type: File, secondaryFiles: [.fai, ^.dict], "sbg:suggestedValue": {
       class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta,
@@ -104,11 +106,7 @@ inputs:
       \ needed to avoid conflict, i.e INFO/AF"}
   bcftools_prefilter_csv: {type: 'string?', doc: "csv of bcftools filter params if\
       \ you want to prefilter before annotation"}
-  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
-      \ to port into the input vcf, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: 'File?', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {
-      class: File, path: 6324ef5ad01163633daa00d8, name: gnomad_3.1.1.vwb_subset.vcf.gz,
-      secondaryFiles: [{class: File, path: 6324ef5ad01163633daa00d7, name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}]}}
+  echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno"}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to\
       \ create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
@@ -233,27 +231,28 @@ steps:
       dbnsfp: dbnsfp
       dbnsfp_fields: dbnsfp_fields
     out: [output_vcf]
-  bcftools_gnomad_annotate:
-    when: $(inputs.annotation_vcf != null)
-    run: ../tools/bcftools_annotate.cwl
-    hints:
-    - class: 'sbg:AWSInstanceType'
-      value: c5.2xlarge
+  echtvar_anno_gnomad:
+    when: $(inputs.echtvar_zips != null)
+    run: ../tools/echtvar_anno.cwl
     in:
       input_vcf:
         source: [vep_annotate_vcf/output_vcf, add_standard_fields/output, bcftools_strip_info/stripped_vcf,
           normalize_vcf/normalized_vcf]
         pickValue: first_non_null
-      annotation_vcf: bcftools_annot_vcf
-      columns: bcftools_annot_columns
-      output_basename: output_basename
-      tool_name: tool_name
-    out: [bcftools_annotated_vcf]
+      echtvar_zips: echtvar_anno_zips
+      tbi:
+        valueFrom: |
+          $(1 == 1)
+      output_filename:
+        source: [output_basename, tool_name]
+        valueFrom: |
+          $(self[0]).$(self[1]).bcf_annotated.vcf.gz
+    out: [annotated_vcf]
   gatk_add_soft_filter:
     run: ../tools/gatk_variant_filter.cwl
     in:
       input_vcf:
-        source: [bcftools_gnomad_annotate/bcftools_annotated_vcf, vep_annotate_vcf/output_vcf,
+        source: [echtvar_anno_gnomad/annotated_vcf, vep_annotate_vcf/output_vcf,
           add_standard_fields/output, bcftools_strip_info/stripped_vcf, normalize_vcf/normalized_vcf]
         pickValue: first_non_null
       reference: indexed_reference_fasta
