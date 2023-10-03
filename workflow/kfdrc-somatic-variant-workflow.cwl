@@ -415,13 +415,8 @@ inputs:
       positions corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c, name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino
       acid position ranges corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d, name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
-  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF",
-    default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
-  bcftools_annot_vcf: {type: 'File', doc: "bgzipped annotation vcf file", "sbg:suggestedValue": {class: File, path: 6324ef5ad01163633daa00d8,
-      name: gnomad_3.1.1.vwb_subset.vcf.gz}}
-  bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {class: File, path: 6324ef5ad01163633daa00d7,
-      name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: "FILTER=\"PASS\"|INFO/HotSpotAllele=1"}
+  echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno"}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"\
       ]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,
@@ -551,12 +546,6 @@ steps:
       input_file: mutect2_exac_common_vcf
       input_index: mutect2_exac_common_tbi
     out: [output]
-  index_bcftools_annot_vcf:
-    run: ../tools/tabix_index.cwl
-    in:
-      input_file: bcftools_annot_vcf
-      input_index: bcftools_annot_vcf_index
-    out: [output]
   samtools_cram2bam_plus_calmd_tumor:
     run: ../tools/samtools_calmd.cwl
     when: $(inputs.run_tool.some(function(e) { return e }))
@@ -673,8 +662,7 @@ steps:
       retain_info: vardict_retain_info
       retain_fmt: vardict_retain_fmt
       retain_ann: vardict_retain_ann
-      bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      echtvar_anno_zips: echtvar_anno_zips
       bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
@@ -726,8 +714,7 @@ steps:
       retain_info: mutect2_retain_info
       retain_fmt: mutect2_retain_fmt
       retain_ann: mutect2_retain_ann
-      bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      echtvar_anno_zips: echtvar_anno_zips
       bcftools_public_filter: bcftools_public_filter
       disable_hotspot_annotation: disable_hotspot_annotation
       genomic_hotspots: genomic_hotspots
@@ -772,8 +759,7 @@ steps:
       retain_ann: strelka2_retain_ann
       output_basename: output_basename
       select_vars_mode: select_vars_mode
-      bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      echtvar_anno_zips: echtvar_anno_zips
       bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
@@ -837,8 +823,7 @@ steps:
       retain_info: lancet_retain_info
       retain_fmt: lancet_retain_fmt
       retain_ann: lancet_retain_ann
-      bcftools_annot_columns: bcftools_annot_columns
-      bcftools_annot_vcf: index_bcftools_annot_vcf/output
+      echtvar_anno_zips: echtvar_anno_zips
       bcftools_public_filter: bcftools_public_filter
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression

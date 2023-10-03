@@ -45,9 +45,8 @@ inputs:
   retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
   retain_ann: { type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF" }
   add_common_fields: {type: 'boolean?', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
-  bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation to port into the input vcf, i.e INFO/AF", default: "INFO/AF"}
+  echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno"}
   bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
-  bcftools_annot_vcf: {type: 'File?', secondaryFiles: ['.tbi'], doc: "additional bgzipped annotation vcf file"}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
@@ -149,9 +148,8 @@ steps:
       retain_info: retain_info
       retain_fmt: retain_fmt
       retain_ann: retain_ann
-      bcftools_annot_columns: bcftools_annot_columns
+      echtvar_anno_zips: echtvar_anno_zips
       bcftools_strip_columns: bcftools_strip_columns
-      bcftools_annot_vcf: bcftools_annot_vcf
       bcftools_public_filter: bcftools_public_filter
       dbnsfp: dbnsfp
       dbnsfp_fields: dbnsfp_fields
