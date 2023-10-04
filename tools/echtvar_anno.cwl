@@ -6,7 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: "dmiller15/echtvar:0.1.9"
+    dockerPull: "pgc-images.sbgenomics.com/d3b-bixu/echtvar:0.1.9"
   - class: ResourceRequirement
     coresMin: $(inputs.cpu)
     ramMin: $(inputs.ram * 1000)
