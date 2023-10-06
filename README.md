@@ -1,5 +1,9 @@
 # Kids First DRC Somatic Variant Workflow
 
+<p align="center">
+  <img src="https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png">
+</p>
+
 This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
 This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC, CNVkit, and GATK, and SV calls using Manta.
 For whole genome sequencing (WGS) data, the workflow will also predict extra chromosomal DNA (ecDNA) usiong AmpliconArchitect
@@ -9,8 +13,6 @@ See [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workfl
 If you would like to run this workflow using the cavatica public app, a basic primer on running public apps can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-Cavatica-af5ebb78c38a4f3190e32e67b4ce12bb).
 Alternatively, if you'd like to run it locally using `cwltool`, a basic primer on that can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-CWLtool-b8dbbde2dc7742e4aff290b0a878344d) and combined with app-specific info from the readme below.
 This workflow is the current production workflow, equivalent to this [Cavatica public app](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-somatic-variant-workflow)
-
-![data service logo](https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png)
 
 ## Running WGS or WXS
 
@@ -37,23 +39,6 @@ the pipeline will fail.
 There are two WXS fields `padded_capture_regions` and `unpadded_capture_regions`. If these are not provided in a WXS run,
 the pipeline will fail.
 
-### Standalone Somatic Workflows
-Each tool used in the [combined workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) can be run on its own. While the combined workflow calls all types of variant, each standalone caller only specializes in one class of variant.
-
-| Workflow                                                                                                                                            | CNV | SNV | SV | ecDNA |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------|-----|-----|----|-------|
-| [kfdrc-somatic-variant-workflow.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl)     |  x  |  x  |  x |       |
-| [kfdrc_production_cnvkit_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_wf.cwl)             |  x  |     |    |       |
-| [kfdrc_production_controlfreec_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_controlfreec_wf.cwl) |  x  |     |    |       |
-| [kfdrc_production_lancet_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_lancet_wf.cwl)             |     |  x  |    |       |
-| [kfdrc_production_manta_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_manta_wf.cwl)               |     |     |  x |       |
-| [kfdrc_production_mutect2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_mutect2_wf.cwl)           |     |  x  |    |       |
-| [kfdrc_production_strekla2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_strekla2_wf.cwl)         |     |  x  |    |       |
-| [kfdrc_production_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_theta2_wf.cwl)             |     |     |  x |       |
-| [kfdrc_production_cnvkit_theta2_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_cnvkit_theta2_wf.cwl)|  x |     |    |       |
-| [kfdrc_production_vardict_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_vardict_wf.cwl)           |     |  x  |    |       |
-| [kfdrc_gatk_cnv_somatic_pair_wf.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl)|  x  |     |    |       |
-| [kfdrc_production_amplicon_architect.cwl](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc_production_amplicon_architect.cwl)|     |     |      |   x  |
 #### SNV Callers
 
 - [Strelka2](https://github.com/Illumina/strelka/tree/v2.9.3) `v2.9.3`, from Illumina, calls single nucleotide variants (SNV) and insertions/deletions (INDEL)
@@ -99,6 +84,35 @@ Default settings are used at run time.
 Please see the [annotation workflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md).
 Both the annotated vcf and maf file are made available.
 
+### Partial Workflow Runs
+
+By default, the workflow will attempt to run every caller. However, the user can modify this behavior using various inputs.
+These inputs, and their behavoir, are as follows:
+- wgs_or_wxs: WGS or WXS mode.
+    - WXS mode disables Amplicon Architect, even if run_amplicon_architect is set to true
+    - Picks the appropriate intervals
+- run_vardict: Set to false to disable Vardict.
+    - Warning! Enabling Theta2 with Vardict disabled will throw an error!
+- run_mutect2: Set to false to disable Mutect2.
+    - Warning! Enabling Lancet in WGS mode with Mutect2 disabled will throw an error!
+- run_strelka2: Set to false to disable Strelka2.
+    - Warning! Enabling Lancet in WGS mode with Strelka2 disabled will throw an error!
+- run_lancet: Set to false to disable Lancet.
+- run_controlfreec: Set to false to disable ControlFreeC.
+- run_cnvkit: Set to false to disable CNVkit.
+    - Warning! Enabling Amplicon Architect with CNVkit disabled will throw an error!
+    - Warning! Enabling Theta2 with CNVkit disabled will throw an error!
+- run_amplicon_architect: Set to false to disable Amplicon Architect.
+- run_theta2: Set to false to disable Theta2.
+- run_manta: Set to false to disable Manta.
+- run_gatk_cnv: Set to false to disable GATK CNV.
+
+The first step of the workflow will check the user inputs and throw errors for impossible scenarios:
+- Enabling Lancet in WGS without enabling both Mutect2 and Strelka2
+- Enabling Amplicon Architect without enabling CNVkit or providing the Mosek config file
+- Enabling Theta2 without enabling both Vardict and CNVkit
+- Enabling GATK CNV without providing a Panel of Normals
+
 ### Tips to Run:
 
 1. For input cram files, be sure to have indexed them beforehand
@@ -138,8 +152,6 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
       Last column must be chromosome length.
       Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
     - `coeff_var`: 0.05
-    - `run_cnv_tools`: true. Change this boolean to false if it is inappropriate to perform copy number calling, like on a limited panel
-    - `run_sv_tools`: true. Change this boolean to false if it is inappropriate to perform structural variant calling, like on a limited panel
     - `contamination_adjustment`: FALSE
     - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
     - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
