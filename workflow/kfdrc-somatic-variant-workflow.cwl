@@ -143,8 +143,6 @@ doc: |-
         Last column must be chromosome length.
         Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
       - `coeff_var`: 0.05
-      - `run_cnv_tools`: true. Change this boolean to false if it is inappropriate to perform copy number calling, like on a limited panel
-      - `run_sv_tools`: true. Change this boolean to false if it is inappropriate to perform structural variant calling, like on a limited panel
       - `contamination_adjustment`: FALSE
       - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
       - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
@@ -267,6 +265,7 @@ requirements:
 - class: MultipleInputFeatureRequirement
 - class: SubworkflowFeatureRequirement
 - class: InlineJavascriptRequirement
+- class: StepInputExpressionRequirement
 inputs:
   reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta}}
   reference_fai: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta.fai}}
@@ -323,10 +322,16 @@ inputs:
   mosek_license_file: {type: 'File?', doc: "This tool uses some software that requires a license file. Only provide if input is WGS.
       You can get a personal or institutional one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {class: File,
       path: 62fcf4d40d34597148589e15, name: mosek.lic}}
-  run_sv_tools: {type: 'boolean?', doc: "Flag to run SV tools. For certain assays like panels, this anaylsis may be inappropriate,
-      so set to false to skip", default: true}
-  run_cnv_tools: {type: 'boolean?', doc: "Disable CNV tools. For certain assays like panels, this anaylsis may be inappropriate, so
-      set to false to skip", default: true}
+  run_vardict: {type: 'boolean?', default: true, doc: "Set to false to disable Vardict. Warning: Vardict is required to run Theta2!"}
+  run_mutect2: {type: 'boolean?', default: true, doc: "Set to false to disable Mutect2. Warning: Mutect2 is required to run Lancet in WGS mode!"}
+  run_strelka2: {type: 'boolean?', default: true, doc: "Set to false to disable Strelka2. Warning: Strelka2 is required to run Lancet in WGS mode!"}
+  run_lancet: {type: 'boolean?', default: true, doc: "Set to false to disable Lancet."}
+  run_controlfreec: {type: 'boolean?', default: true, doc: "Set to false to disable ControlFreeC."}
+  run_cnvkit: {type: 'boolean?', default: true, doc: "Set to false to disable CNVkit. Warning: CNVkit is required to run both Amplicon Architect and Theta2!"}
+  run_amplicon_architect: {type: 'boolean?', default: true, doc: "Set to false to disable Amplicon Architect."}
+  run_theta2: {type: 'boolean?', default: true, doc: "Set to false to disable Theta2."}
+  run_manta: {type: 'boolean?', default: true, doc: "Set to false to disable Manta."}
+  run_gatk_cnv: {type: 'boolean?', default: true, doc: "Set to false to disable GATK CNV."}
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing annotations for AnnotSV", "sbg:fileTypes": "TAR,
       TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
   cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any
@@ -427,79 +432,100 @@ inputs:
   custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File,
       path: 6480c8a61dfc710d24a3a368, name: kf_isoform_override.tsv}}
 outputs:
-  aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: run_amplicon_architect/aa_summary}
+  aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: amplicon_architect/aa_summary}
   aa_cycles: {type: 'File[]?', doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
-      discordant, concordant, source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
+      discordant, concordant, source) and their copy counts", outputSource: amplicon_architect/aa_cycles}
   aa_graph: {type: 'File[]?', doc: 'A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
-      discordant, concordant, source) and their copy counts', outputSource: run_amplicon_architect/aa_graph}
-  aa_sv_png: {type: 'File[]?', doc: "PNG image file displaying the SV view of AA", outputSource: run_amplicon_architect/aa_sv_png}
-  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the amplicon", outputSource: run_amplicon_architect/aa_classification_profiles}
-  aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification", outputSource: run_amplicon_architect/aa_gene_list}
-  ctrlfreec_pval: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_pval}
-  ctrlfreec_config: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_config}
-  ctrlfreec_pngs: {type: 'File[]?', outputSource: run_controlfreec/ctrlfreec_pngs}
-  ctrlfreec_bam_ratio: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_bam_ratio}
-  ctrlfreec_bam_seg: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_bam_seg}
-  ctrlfreec_baf: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_baf}
-  ctrlfreec_info: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_info}
-  cnvkit_cnr: {type: 'File?', outputSource: run_cnvkit/cnvkit_cnr}
-  cnvkit_cnn_output: {type: 'File?', outputSource: run_cnvkit/cnvkit_cnn_output}
-  cnvkit_calls: {type: 'File?', outputSource: run_cnvkit/cnvkit_calls}
-  cnvkit_metrics: {type: 'File?', outputSource: run_cnvkit/cnvkit_metrics}
-  cnvkit_gainloss: {type: 'File?', outputSource: run_cnvkit/cnvkit_gainloss}
-  cnvkit_seg: {type: 'File?', outputSource: run_cnvkit/cnvkit_seg}
-  cnvkit_scatter_plot: {type: 'File?', outputSource: run_cnvkit/cnvkit_scatter_plot}
-  cnvkit_diagram: {type: 'File?', outputSource: run_cnvkit/cnvkit_diagram}
-  theta2_calls: {type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_cns}
-  theta2_seg: {type: 'File?', outputSource: run_theta2_purity/theta2_adjusted_seg}
+      discordant, concordant, source) and their copy counts', outputSource: amplicon_architect/aa_graph}
+  aa_sv_png: {type: 'File[]?', doc: "PNG image file displaying the SV view of AA", outputSource: amplicon_architect/aa_sv_png}
+  aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the amplicon", outputSource: amplicon_architect/aa_classification_profiles}
+  aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification", outputSource: amplicon_architect/aa_gene_list}
+  ctrlfreec_pval: {type: 'File?', outputSource: controlfreec/ctrlfreec_pval}
+  ctrlfreec_config: {type: 'File?', outputSource: controlfreec/ctrlfreec_config}
+  ctrlfreec_pngs: {type: 'File[]?', outputSource: controlfreec/ctrlfreec_pngs}
+  ctrlfreec_bam_ratio: {type: 'File?', outputSource: controlfreec/ctrlfreec_bam_ratio}
+  ctrlfreec_bam_seg: {type: 'File?', outputSource: controlfreec/ctrlfreec_bam_seg}
+  ctrlfreec_baf: {type: 'File?', outputSource: controlfreec/ctrlfreec_baf}
+  ctrlfreec_info: {type: 'File?', outputSource: controlfreec/ctrlfreec_info}
+  cnvkit_cnr: {type: 'File?', outputSource: cnvkit/cnvkit_cnr}
+  cnvkit_cnn_output: {type: 'File?', outputSource: cnvkit/cnvkit_cnn_output}
+  cnvkit_calls: {type: 'File?', outputSource: cnvkit/cnvkit_calls}
+  cnvkit_metrics: {type: 'File?', outputSource: cnvkit/cnvkit_metrics}
+  cnvkit_gainloss: {type: 'File?', outputSource: cnvkit/cnvkit_gainloss}
+  cnvkit_seg: {type: 'File?', outputSource: cnvkit/cnvkit_seg}
+  cnvkit_scatter_plot: {type: 'File?', outputSource: cnvkit/cnvkit_scatter_plot}
+  cnvkit_diagram: {type: 'File?', outputSource: cnvkit/cnvkit_diagram}
+  theta2_calls: {type: 'File?', outputSource: theta2_purity/theta2_adjusted_cns}
+  theta2_seg: {type: 'File?', outputSource: theta2_purity/theta2_adjusted_seg}
   theta2_subclonal_results: {type: 'File[]?', outputSource: expression_flatten_subclonal_results/output}
-  theta2_subclonal_cns: {type: 'File[]?', outputSource: run_theta2_purity/theta2_subclonal_cns}
-  theta2_subclone_seg: {type: 'File[]?', outputSource: run_theta2_purity/theta2_subclone_seg}
-  strelka2_public_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_public_outputs}
-  strelka2_protected_outputs: {type: 'File[]', outputSource: run_strelka2/strelka2_protected_outputs}
-  strelka2_prepass_vcf: {type: 'File', outputSource: run_strelka2/strelka2_prepass_vcf}
-  manta_pass_vcf: {type: 'File?', outputSource: run_manta/manta_pass_vcf}
-  manta_prepass_vcf: {type: 'File?', outputSource: run_manta/manta_prepass_vcf}
-  annotsv_annotated_calls: {type: 'File?', outputSource: run_annotsv/annotated_calls}
-  annotsv_unannotated_calls: {type: 'File?', outputSource: run_annotsv/unannotated_calls}
-  mutect2_public_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_public_outputs}
-  mutect2_protected_outputs: {type: 'File[]', outputSource: run_mutect2/mutect2_protected_outputs}
-  mutect2_prepass_vcf: {type: 'File', outputSource: run_mutect2/mutect2_filtered_vcf}
-  vardict_public_outputs: {type: 'File[]', outputSource: run_vardict/vardict_public_outputs}
-  vardict_protected_outputs: {type: 'File[]', outputSource: run_vardict/vardict_protected_outputs}
-  vardict_prepass_vcf: {type: 'File', outputSource: run_vardict/vardict_prepass_vcf}
-  lancet_public_outputs: {type: 'File[]', outputSource: run_lancet/lancet_public_outputs}
-  lancet_protected_outputs: {type: 'File[]', outputSource: run_lancet/lancet_protected_outputs}
-  lancet_prepass_vcf: {type: 'File', outputSource: run_lancet/lancet_prepass_vcf}
-  gatk_copy_ratio_segments_tumor: {type: 'File?', outputSource: run_gatk_cnv/called_copy_ratio_segments_tumor, doc: "Called copy-ratio-segments
+  theta2_subclonal_cns: {type: 'File[]?', outputSource: theta2_purity/theta2_subclonal_cns}
+  theta2_subclone_seg: {type: 'File[]?', outputSource: theta2_purity/theta2_subclone_seg}
+  strelka2_public_outputs: {type: 'File[]', outputSource: strelka2/strelka2_public_outputs}
+  strelka2_protected_outputs: {type: 'File[]', outputSource: strelka2/strelka2_protected_outputs}
+  strelka2_prepass_vcf: {type: 'File', outputSource: strelka2/strelka2_prepass_vcf}
+  manta_pass_vcf: {type: 'File?', outputSource: manta/manta_pass_vcf}
+  manta_prepass_vcf: {type: 'File?', outputSource: manta/manta_prepass_vcf}
+  annotsv_annotated_calls: {type: 'File?', outputSource: annotsv/annotated_calls}
+  annotsv_unannotated_calls: {type: 'File?', outputSource: annotsv/unannotated_calls}
+  mutect2_public_outputs: {type: 'File[]', outputSource: mutect2/mutect2_public_outputs}
+  mutect2_protected_outputs: {type: 'File[]', outputSource: mutect2/mutect2_protected_outputs}
+  mutect2_prepass_vcf: {type: 'File', outputSource: mutect2/mutect2_filtered_vcf}
+  vardict_public_outputs: {type: 'File[]', outputSource: vardict/vardict_public_outputs}
+  vardict_protected_outputs: {type: 'File[]', outputSource: vardict/vardict_protected_outputs}
+  vardict_prepass_vcf: {type: 'File', outputSource: vardict/vardict_prepass_vcf}
+  lancet_public_outputs: {type: 'File[]', outputSource: lancet/lancet_public_outputs}
+  lancet_protected_outputs: {type: 'File[]', outputSource: lancet/lancet_protected_outputs}
+  lancet_prepass_vcf: {type: 'File', outputSource: lancet/lancet_prepass_vcf}
+  gatk_copy_ratio_segments_tumor: {type: 'File?', outputSource: gatk_cnv/called_copy_ratio_segments_tumor, doc: "Called copy-ratio-segments
       file. This is a tab-separated values (TSV) file with a SAM-style header containing a read group sample name, a sequence dictionary,
       a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn, and the
       corresponding entry rows."}
-  gatk_copy_ratio_segments_normal: {type: 'File?', outputSource: run_gatk_cnv/called_copy_ratio_segments_normal, doc: "Called copy-ratio-segments
+  gatk_copy_ratio_segments_normal: {type: 'File?', outputSource: gatk_cnv/called_copy_ratio_segments_normal, doc: "Called copy-ratio-segments
       file. This is a tab-separated values (TSV) file with a SAM-style header containing a read group sample name, a sequence dictionary,
       a row specifying the column headers contained in CalledCopyRatioSegmentCollection.CalledCopyRatioSegmentTableColumn, and the
       corresponding entry rows."}
-  gatk_cnv_denoised_tumor_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_tumor_plot, doc: "Denoised-plot file that covers
+  gatk_cnv_denoised_tumor_plot: {type: 'File?', outputSource: gatk_cnv/denoised_tumor_plot, doc: "Denoised-plot file that covers
       the entire range of the copy ratios"}
-  gatk_cnv_denoised_normal_plot: {type: 'File?', outputSource: run_gatk_cnv/denoised_normal_plot, doc: "Denoised-plot file that covers
+  gatk_cnv_denoised_normal_plot: {type: 'File?', outputSource: gatk_cnv/denoised_normal_plot, doc: "Denoised-plot file that covers
       the entire range of the copy ratios"}
-  gatk_cnv_funcotated_called_file_tumor: {type: 'File?', outputSource: run_gatk_cnv/funcotated_called_file_tumor, doc: "TSV where
+  gatk_cnv_funcotated_called_file_tumor: {type: 'File?', outputSource: gatk_cnv/funcotated_called_file_tumor, doc: "TSV where
       each row is a segment and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints."}
-  gatk_cnv_funcotated_called_gene_list_file_tumor: {type: 'File?', outputSource: run_gatk_cnv/funcotated_called_gene_list_file_tumor,
+  gatk_cnv_funcotated_called_gene_list_file_tumor: {type: 'File?', outputSource: gatk_cnv/funcotated_called_gene_list_file_tumor,
     doc: "TSV where each row is a gene and the annotations are the covered genes and which genes+exon is overlapped by the segment
       breakpoints."}
 steps:
-  choose_defaults:
-    run: ../tools/mode_defaults.cwl
+  runtime_validator:
+    run: ../tools/runtime_validator.cwl
     in:
-      input_mode: wgs_or_wxs
+      is_wgs:
+        source: wgs_or_wxs
+        valueFrom: |
+          $(self == 'WGS')
+      vardict: run_vardict
+      mutect2: run_mutect2
+      strelka2: run_strelka2
+      lancet: run_lancet
+      controlfreec: run_controlfreec
+      cnvkit: run_cnvkit
+      amplicon_architect: run_amplicon_architect
+      theta2: run_theta2
+      manta: run_manta
+      gatk_cnv: run_gatk_cnv
+      mosek_present:
+        source: mosek_license_file
+        valueFrom: |
+          $(self != null)
+      pon_present:
+        source: count_panel_of_normals
+        valueFrom: |
+          $(self != null)
       exome_flag: exome_flag
       cnvkit_wgs_mode: cnvkit_wgs_mode
       i_flag: i_flag
       lancet_padding: lancet_padding
       lancet_window: lancet_window
       vardict_padding: vardict_padding
-    out: [out_exome_flag, out_cnvkit_wgs_mode, out_i_flag, out_lancet_padding, out_lancet_window, out_vardict_padding]
+    out: [out_wgs, run_vardict, run_mutect2, run_strelka2, run_lancet, run_controlfreec, run_cnvkit, run_amplicon_architect, run_theta2, run_manta, run_gatk_cnv, out_exome_flag, out_cnvkit_wgs_mode, out_i_flag, out_lancet_padding, out_lancet_window, out_vardict_padding]
   prepare_reference:
     run: ../sub_workflows/prepare_reference.cwl
     in:
@@ -533,7 +559,10 @@ steps:
     out: [output]
   samtools_cram2bam_plus_calmd_tumor:
     run: ../tools/samtools_calmd.cwl
+    when: $(inputs.run_tool.some(function(e) { return e }))
     in:
+      run_tool:
+        source: [runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_reads: input_tumor_aligned
       threads:
         valueFrom: ${return 16;}
@@ -541,7 +570,10 @@ steps:
     out: [bam_file]
   samtools_cram2bam_plus_calmd_normal:
     run: ../tools/samtools_calmd.cwl
+    when: $(inputs.run_tool.some(function(e) { return e }))
     in:
+      run_tool:
+        source: [runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_reads: input_normal_aligned
       threads:
         valueFrom: ${return 16;}
@@ -585,27 +617,31 @@ steps:
         valueFrom: $(50)
     out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
   bedtools_intersect_germline:
-    when: $(inputs.run_cnv_tools)
     run: ../tools/bedtools_intersect.cwl
+    when: $(inputs.run_tool.some(function(e) { return e }))
     in:
-      run_cnv_tools: run_cnv_tools
+      run_tool:
+        source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_vcf: index_b_allele/output
       output_basename: output_basename
       input_bed_file: prepare_regions_unpadded/prescatter_bed
-      flag: choose_defaults/out_i_flag
+      flag: runtime_validator/out_i_flag
     out: [intersected_vcf]
   gatk_filter_germline:
-    when: $(inputs.run_cnv_tools)
     run: ../tools/gatk_filter_germline_variant.cwl
+    when: $(inputs.run_tool.some(function(e) { return e }))
     in:
-      run_cnv_tools: run_cnv_tools
+      run_tool:
+        source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_vcf: bedtools_intersect_germline/intersected_vcf
       reference_fasta: prepare_reference/indexed_fasta
       output_basename: output_basename
     out: [filtered_vcf, filtered_pass_vcf]
-  run_vardict:
+  vardict:
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
+    when: $(inputs.run_vardict)
     in:
+      run_vardict: runtime_validator/run_vardict
       indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
@@ -618,7 +654,7 @@ steps:
       bed_invtl_split:
         source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded_minibands/scattered_beds]
         pickValue: the_only_non_null
-      padding: choose_defaults/out_vardict_padding
+      padding: runtime_validator/out_vardict_padding
       min_vaf: vardict_min_vaf
       select_vars_mode: select_vars_mode
       cpus: vardict_cpus
@@ -650,9 +686,11 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
-  run_mutect2:
+  mutect2:
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
+    when: $(inputs.run_mutect2)
     in:
+      run_mutect2: runtime_validator/run_mutect2
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
       bed_invtl_split:
@@ -666,7 +704,7 @@ steps:
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
       old_normal_name: old_normal_name
-      exome_flag: choose_defaults/out_exome_flag
+      exome_flag: runtime_validator/out_exome_flag
       output_basename: output_basename
       learnorientation_memory: learnorientation_memory
       getpileup_memory: getpileup_memory
@@ -699,9 +737,11 @@ steps:
       custom_enst: custom_enst
       disable_vep_annotation: disable_vep_annotation
     out: [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_protected_outputs, mutect2_public_outputs]
-  run_strelka2:
+  strelka2:
     run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
+    when: $(inputs.run_strelka2)
     in:
+      run_strelka2: runtime_validator/run_strelka2
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
       hg38_strelka_bed:
@@ -711,9 +751,9 @@ steps:
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
       input_normal_name: input_normal_name
-      manta_small_indels: run_manta/manta_small_indels
+      manta_small_indels: manta/manta_small_indels
       use_manta_small_indels: use_manta_small_indels
-      exome_flag: choose_defaults/out_exome_flag
+      exome_flag: runtime_validator/out_exome_flag
       extra_arg: extra_arg
       strelka2_cores: strelka2_cores
       vep_cache: vep_cache
@@ -753,7 +793,7 @@ steps:
       reference_dict: prepare_reference/reference_dict
       calling_regions: coding_sequence_regions
       supplement_vcfs:
-        source: [run_strelka2/strelka2_protected_outputs, run_mutect2/mutect2_protected_outputs]
+        source: [strelka2/strelka2_protected_outputs, mutect2/mutect2_protected_outputs]
         valueFrom: |
           $(self.filter(function(e) { return e != null }).map(function(e) { return e.filter(function(i) { return i.basename.search(/(.vcf|.vcf.gz)$/) != -1 })[0] }))
       blacklist_regions: blacklist_regions
@@ -762,9 +802,11 @@ steps:
       scatter_count:
         valueFrom: $(50)
     out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
-  run_lancet:
+  lancet:
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
+    when: $(inputs.run_lancet)
     in:
+      run_lancet: runtime_validator/run_lancet
       indexed_reference_fasta: prepare_reference/indexed_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
@@ -779,8 +821,8 @@ steps:
         source: [prepare_regions_lancet_wgs/scattered_beds, prepare_regions_padded/scattered_beds]
         pickValue: the_only_non_null
       ram: lancet_ram
-      window: choose_defaults/out_lancet_window
-      padding: choose_defaults/out_lancet_padding
+      window: runtime_validator/out_lancet_window
+      padding: runtime_validator/out_lancet_padding
       vep_cache: vep_cache
       vep_ram: vep_ram
       vep_cores: vep_cores
@@ -808,11 +850,11 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [lancet_prepass_vcf, lancet_protected_outputs, lancet_public_outputs]
-  run_controlfreec:
-    when: $(inputs.run_cnv_tools)
+  controlfreec:
     run: ../sub_workflows/kfdrc_controlfreec_sub_wf.cwl
+    when: $(inputs.run_controlfreec)
     in:
-      run_cnv_tools: run_cnv_tools
+      run_controlfreec: runtime_validator/run_controlfreec
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
@@ -833,11 +875,11 @@ steps:
       contamination_adjustment: cfree_contamination_adjustment
       cfree_sex: cfree_sex
     out: [ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_bam_seg, ctrlfreec_baf, ctrlfreec_info]
-  run_cnvkit:
-    when: $(inputs.run_cnv_tools)
+  cnvkit:
     run: ../sub_workflows/kfdrc_cnvkit_sub_wf.cwl
+    when: $(inputs.run_cnvkit)
     in:
-      run_cnv_tools: run_cnv_tools
+      run_cnvkit: runtime_validator/run_cnvkit
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
@@ -847,63 +889,56 @@ steps:
         source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
         valueFrom: |
           $(self[0] == 'WXS' ? self[1] : null)
-      wgs_mode: choose_defaults/out_cnvkit_wgs_mode
+      wgs_mode: runtime_validator/out_cnvkit_wgs_mode
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
       sex: cnvkit_sex
     out: [cnvkit_cnr, cnvkit_cnn_output, cnvkit_cns, cnvkit_calls, cnvkit_metrics, cnvkit_gainloss, cnvkit_seg, cnvkit_scatter_plot,
       cnvkit_diagram]
-  expression_run_aa_if_wgs:
-    run: ../tools/expression_run_aa_if_wgs.cwl
-    in:
-      mosek_license_file: mosek_license_file
-      wgs_or_wxs: wgs_or_wxs
-    out: [aa_mosek_license_file]
-  run_amplicon_architect:
+  amplicon_architect:
     run: ../workflow/kfdrc_production_amplicon_architect.cwl
-    when: $(inputs.mosek_license_file != null && inputs.run_cnv_tools)
+    when: $(inputs.run_amplicon_architect)
     in:
-      run_cnv_tools: run_cnv_tools
+      run_amplicon_architect: runtime_validator/run_amplicon_architect
       aa_data_repo: aa_data_repo
       aa_data_ref_version: aa_data_ref_version
       tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
       output_basename: output_basename
-      mosek_license_file: expression_run_aa_if_wgs/aa_mosek_license_file
+      mosek_license_file: mosek_license_file
       reference: prepare_reference/indexed_fasta
-      cnvkit_cns: run_cnvkit/cnvkit_cns
+      cnvkit_cns: cnvkit/cnvkit_cns
       male_input_flag:
         source: cnvkit_sex
         valueFrom: "$(self == 'y' ? true : null)"
       wgs_or_wxs: wgs_or_wxs
     out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_png, aa_classification_profiles, aa_gene_list]
-  run_theta2_purity:
-    when: $(inputs.run_cnv_tools)
+  theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
+    when: $(inputs.run_theta2)
     in:
-      run_cnv_tools: run_cnv_tools
-      tumor_cns: run_cnvkit/cnvkit_calls
-      reference_cnn: run_cnvkit/cnvkit_cnn_output
+      run_theta2: runtime_validator/run_theta2
+      tumor_cns: cnvkit/cnvkit_calls
+      reference_cnn: cnvkit/cnvkit_cnn_output
       tumor_sample_name: input_tumor_name
       normal_sample_name: input_normal_name
-      paired_vcf: run_vardict/vardict_prepass_vcf
+      paired_vcf: vardict/vardict_prepass_vcf
       combined_include_expression: combined_include_expression
       combined_exclude_expression: combined_exclude_expression
       min_theta2_frac: min_theta2_frac
       output_basename: output_basename
     out: [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
   expression_flatten_subclonal_results:
-    when: $(inputs.run_cnv_tools)
     run: ../tools/expression_flatten_file_list.cwl
+    when: $(inputs.input_list != null)
     in:
-      run_cnv_tools: run_cnv_tools
-      input_list: run_theta2_purity/theta2_subclonal_results
+      input_list: theta2_purity/theta2_subclonal_results
     out: [output]
-  run_manta:
-    when: $(inputs.run_sv_tools)
+  manta:
     run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
+    when: $(inputs.run_manta)
     in:
-      run_sv_tools: run_sv_tools
+      run_manta: runtime_validator/run_manta
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
       hg38_strelka_bed:
@@ -921,19 +956,19 @@ steps:
       manta_cores: manta_cores
       select_vars_mode: select_vars_mode
     out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
-  run_annotsv:
-    when: $(inputs.run_sv_tools)
+  annotsv:
     run: ../tools/annotsv.cwl
+    when: $(inputs.run_manta)
     in:
-      run_sv_tools: run_sv_tools
+      run_manta: runtime_validator/run_manta
       annotations_dir_tgz: annotsv_annotations_dir_tgz
-      sv_input_file: run_manta/manta_pass_vcf
+      sv_input_file: manta/manta_pass_vcf
     out: [annotated_calls, unannotated_calls]
-  run_gatk_cnv:
+  gatk_cnv:
     run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
-    when: $(inputs.count_panel_of_normals != null && inputs.run_cnv_tools)
+    when: $(inputs.run_gatk_cnv)
     in:
-      run_cnv_tools: run_cnv_tools
+      run_gatk_cnv: runtime_validator/run_gatk_cnv
       input_aligned_reads_tumor: input_tumor_aligned
       input_aligned_reads_normal: input_normal_aligned
       reference_fasta: prepare_reference/indexed_fasta
