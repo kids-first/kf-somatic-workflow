@@ -6,15 +6,16 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0'
+    dockerPull: 'broadinstitute/gatk:4.2.0.0'
   - class: ResourceRequirement
     ramMin: ${ return inputs.max_memory * 1000 }
     coresMin: 2
-baseCommand: [/gatk, FilterMutectCalls]
+baseCommand: []
 arguments:
   - position: 0
     shellQuote: false
     valueFrom: >-
+      gatk FilterMutectCalls
       --java-options "-Xmx${return Math.floor(inputs.max_memory*1000/1.074-1)}m"
       -V $(inputs.mutect_vcf.path)
       -O $(inputs.output_basename).mutect2_filtered.vcf.gz
