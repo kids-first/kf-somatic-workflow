@@ -12,40 +12,40 @@ requirements:
 baseCommand: [/bin/bash, -c]
 arguments:
   - position: 1
-    shellQuote: false
+    shellQuote: true
     valueFrom: >-
-      set -eo pipefail
-
+      set -eo pipefail;
+      switch-BEDOPS-binary-type --megarow;
       ${
         var flag = 0
         var cmd = "";
         var bed = []
         if(inputs.ref_bed == null) {
-          return "echo No ref bed provided providing empty output >&2 && exit 0;"
+          return "echo \"No ref bed provided providing empty output!\" >&2 && exit 0;"
         }
         else {
           if(inputs.strelka2_vcf != null){
               flag = 1;
-              cmd += "gunzip -c " + inputs.strelka2_vcf.path + " > " + inputs.strelka2_vcf.basename + ";";
-              cmd += "vcf2bed --insertions < " + inputs.strelka2_vcf.basename + " | cut -f 1-3 > strelka2.insertions.bed;";
+              cmd += "gunzip -c " + inputs.strelka2_vcf.path + " > temp.strelka2.vcf; ";
+              cmd += "vcf2bed --insertions < temp.strelka2.vcf | cut -f 1-3 > strelka2.insertions.bed; ";
               bed.push("strelka2.insertions.bed");
-              cmd += "vcf2bed --deletions < " + inputs.strelka2_vcf.basename + " | cut -f 1-3 > strelka2.deletions.bed;";
+              cmd += "vcf2bed --deletions < temp.strelka2.vcf | cut -f 1-3 > strelka2.deletions.bed; ";
               bed.push("strelka2.deletions.bed");
-              cmd += "vcf2bed --snvs < " + inputs.strelka2_vcf.basename + " | cut -f 1-3 > strelka2.snvs.bed;";
+              cmd += "vcf2bed --snvs < temp.strelka2.vcf | cut -f 1-3 > strelka2.snvs.bed; ";
               bed.push("strelka2.snvs.bed");
           }
           if(inputs.mutect2_vcf != null){
               flag = 1;
-              cmd += "gunzip -c " + inputs.mutect2_vcf.path + " > " + inputs.mutect2_vcf.basename + ";";
-              cmd += "vcf2bed --insertions < " + inputs.mutect2_vcf.basename +  " | cut -f 1-3 > mutect2.insertions.bed;";
+              cmd += "gunzip -c " + inputs.mutect2_vcf.path + " > temp.mutect2.vcf; ";
+              cmd += "vcf2bed --insertions < temp.mutect2.vcf | cut -f 1-3 > mutect2.insertions.bed; ";
               bed.push("mutect2.insertions.bed");
-              cmd += "vcf2bed --deletions < " + inputs.mutect2_vcf.basename + " | cut -f 1-3 > mutect2.deletions.bed;";
+              cmd += "vcf2bed --deletions < temp.mutect2.vcf | cut -f 1-3 > mutect2.deletions.bed; ";
               bed.push("mutect2.deletions.bed");
-              cmd += "vcf2bed --snvs < " + inputs.mutect2_vcf.basename +  " | cut -f 1-3 > mutect2.snvs.bed;";
+              cmd += "vcf2bed --snvs < temp.mutect2.vcf | cut -f 1-3 > mutect2.snvs.bed; ";
               bed.push("mutect2.snvs.bed");
           }
           if(flag == 0){
-              cmd += "echo \"No input vcfs found to convert.  Returning ref bed\"; cp " + inputs.ref_bed.path + " " + inputs.output_basename + ".lancet_intervals.bed;";
+              cmd += "echo \"No input vcfs found to convert! Returning ref bed!\" >&2; cp " + inputs.ref_bed.path + " " + inputs.output_basename + ".lancet_intervals.bed;";
           }
           else{
               cmd += "cat " + bed.join(" ") + " " + inputs.ref_bed.path + " | bedtools sort | bedtools merge > " + inputs.output_basename + ".lancet_intervals.bed;";
