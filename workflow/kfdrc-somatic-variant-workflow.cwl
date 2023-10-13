@@ -268,7 +268,6 @@ requirements:
 - class: SubworkflowFeatureRequirement
 - class: InlineJavascriptRequirement
 inputs:
-  # Required
   reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta}}
   reference_fai: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta.fai}}
   reference_dict: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}}
@@ -288,15 +287,14 @@ inputs:
   input_normal_name: {type: string, doc: "Desired sample name for normal in output VCFs"}
   old_normal_name: {type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must**
       provide it here"}
+  calling_regions: { type: 'File', doc: "BED or INTERVALLIST file containing a set of genomic regions over which the callers will be run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for their analysis." }
+  blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions." }
+  coding_sequence_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing the coding sequence regions for the provided reference. This input is used to create custom intervals for WGS Lancet Calling.", "sbg:suggestedValue": { class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed }}
   cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c4,
       name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
   cnvkit_annotation_file: {type: 'File', doc: "refFlat.txt file", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c1,
       name: refFlat_HG38.txt}}
-  hg38_strelka_bed: {type: 'File', doc: "Bgzipped interval bed file. Recommned padding 100bp for WXS; Recommend canonical chromosomes
-      for WGS", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051ae, name: hg38_strelka.bed.gz}}
-  hg38_strelka_tbi: {type: 'File?', doc: "Tabix index for hg38_strelka_bed", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051aa,
-      name: hg38_strelka.bed.gz.tbi}}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 10000"}
   strelka2_cores: {type: 'int?', doc: "Adjust number of cores used to run strelka2", default: 18}
   mutect2_af_only_gnomad_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
@@ -307,12 +305,6 @@ inputs:
       name: small_exac_common_3.hg38.vcf.gz.tbi}}
   output_basename: {type: 'string', doc: "String value to use as basename for outputs"}
   wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select if this run is WGS or WXS"}
-  gatk_cnv_input_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi", required: false}], doc: "For GATK CNV Calling:
-      Picard or GATK-style interval list file of regions to analyze. For WGS, this should typically only include the autosomal chromosomes.",
-    'sbg:fileTypes': "INTERVALS, INTERVAL_LIST, LIST, BED, VCF, VCF.GZ"}
-  gatk_cnv_input_exclude_interval_list: {type: 'File?', secondaryFiles: [{pattern: ".tbi", required: false}], doc: "For GATK CNV Calling:
-      Picard or GATK-style interval list file of regions to ignore.", "sbg:fileTypes": "INTERVALS, INTERVAL_LIST, LIST, BED, VCF,
-      VCF.GZ"}
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by the panel workflow. Significantly reduces quality
       of calling if not provided!", "sbg:fileTypes": "HDF5"}
   run_funcotatesegments: {type: 'boolean?', default: true, doc: "If true, run Funcotator on the called copy-ratio segments. This will
@@ -346,9 +338,9 @@ inputs:
       'gatk' for SelectVariants tool, or 'grep' for grep expression"}
   min_theta2_frac: {type: 'float?', default: 0.01, doc: "Minimum fraction of genome with copy umber alterations.  Default is 0.05,
       recommend 0.01"}
-  vardict_cpus: {type: 'int?', default: 9, doc: "Number of CPUs for Vardict to use"}
+  vardict_cpus: {type: 'int?', default: 8, doc: "Number of CPUs for Vardict to use"}
   vardict_min_vaf: {type: 'float?', default: 0.05, doc: "Min variant allele frequency for vardict to consider. Recommend 0.05"}
-  vardict_ram: {type: 'int?', default: 18, doc: "GB of RAM to allocate to Vardict (hard-capped)"}
+  vardict_ram: {type: 'int?', default: 16, doc: "GB of RAM to allocate to Vardict (hard-capped)"}
   exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers. Y for WXS, N for WGS"}
   lancet_window: {type: 'int?', doc: "Window size for lancet.  Recommend 500 for WGS; 600 for exome+"}
   lancet_padding: {type: 'int?', doc: "Recommend 0 if interval file padded already, half window size if not. Recommended: 0 for WXS;
@@ -431,21 +423,13 @@ inputs:
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File,
       path: 6480c8a61dfc710d24a3a368, name: kf_isoform_override.tsv}}
-  wgs_calling_interval_list: {type: 'File?', doc: "GATK intervals list-style, or bed file.  Recommend canocical chromosomes with N
-      regions removed", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051b6, name: wgs_canonical_calling_regions.hg38.bed}}
-  lancet_calling_interval_bed: {type: 'File?', doc: "For WGS, highly recommended to use CDS bed, and supplement with region calls
-      from strelka2 & mutect2.  Can still give calling list as bed if true WGS calling desired instead of exome+", "sbg:suggestedValue": {
-      class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed}}
-  padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
-  unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding for ControlFreeC exome mode CNV calling."}
-  disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.",default: false}
 outputs:
   aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: run_amplicon_architect/aa_summary}
-  aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
+  aa_cycles: {type: 'File[]?', doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
       discordant, concordant, source) and their copy counts", outputSource: run_amplicon_architect/aa_cycles}
-  aa_graph: {type: 'File[]', doc: 'A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
+  aa_graph: {type: 'File[]?', doc: 'A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
       discordant, concordant, source) and their copy counts', outputSource: run_amplicon_architect/aa_graph}
-  aa_sv_png: {type: 'File[]', doc: "PNG image file displaying the SV view of AA", outputSource: run_amplicon_architect/aa_sv_png}
+  aa_sv_png: {type: 'File[]?', doc: "PNG image file displaying the SV view of AA", outputSource: run_amplicon_architect/aa_sv_png}
   aa_classification_profiles: {type: 'File[]?', doc: "abstract classification of the amplicon", outputSource: run_amplicon_architect/aa_classification_profiles}
   aa_gene_list: {type: 'File[]?', doc: "genes present on amplicons with each classification", outputSource: run_amplicon_architect/aa_gene_list}
   ctrlfreec_pval: {type: 'File?', outputSource: run_controlfreec/ctrlfreec_pval}
@@ -526,12 +510,6 @@ steps:
       input_file: b_allele
       input_index: b_allele_index
     out: [output]
-  index_strelka_bed:
-    run: ../tools/tabix_index.cwl
-    in:
-      input_file: hg38_strelka_bed
-      input_index: hg38_strelka_tbi
-    out: [output]
   index_mutect_gnomad:
     run: ../tools/tabix_index.cwl
     in:
@@ -550,50 +528,6 @@ steps:
       input_file: bcftools_annot_vcf
       input_index: bcftools_annot_vcf_index
     out: [output]
-  select_interval_list:
-    run: ../tools/mode_selector.cwl
-    in:
-      input_mode: wgs_or_wxs
-      wgs_input: wgs_calling_interval_list
-      wxs_input: padded_capture_regions
-    out: [output]
-  python_vardict_interval_split:
-    run: ../tools/python_vardict_interval_split.cwl
-    doc: "Custom interval list generation for vardict input. Briefly, ~60M bp per interval list, 20K bp intervals, lists break on
-      chr and N regions only"
-    in:
-      wgs_bed_file: select_interval_list/output
-    out: [split_intervals_bed]
-  bedtools_intersect_germline:
-    when: $(inputs.run_cnv_tools)
-    run: ../tools/bedtools_intersect.cwl
-    in:
-      run_cnv_tools: run_cnv_tools
-      input_vcf: index_b_allele/output
-      output_basename: output_basename
-      input_bed_file: unpadded_capture_regions
-      flag: choose_defaults/out_i_flag
-    out: [intersected_vcf]
-  gatk_intervallisttools:
-    run: ../tools/gatk_intervallisttool.cwl
-    in:
-      interval_list: select_interval_list/output
-      reference_dict: prepare_reference/reference_dict
-      exome_flag: choose_defaults/out_exome_flag
-      scatter_ct:
-        valueFrom: ${return 50}
-      bands:
-        valueFrom: ${return 80000000}
-    out: [output]
-  gatk_filter_germline:
-    when: $(inputs.run_cnv_tools)
-    run: ../tools/gatk_filter_germline_variant.cwl
-    in:
-      run_cnv_tools: run_cnv_tools
-      input_vcf: bedtools_intersect_germline/intersected_vcf
-      reference_fasta: prepare_reference/indexed_fasta
-      output_basename: output_basename
-    out: [filtered_vcf, filtered_pass_vcf]
   samtools_cram2bam_plus_calmd_tumor:
     run: ../tools/samtools_calmd.cwl
     in:
@@ -610,13 +544,62 @@ steps:
         valueFrom: ${return 16;}
       reference: prepare_reference/indexed_fasta
     out: [bam_file]
-  select_vardict_bed_interval:
-    run: ../tools/mode_list_selector.cwl
+  prepare_regions_padded:
+    run: ../sub_workflows/prepare_regions.cwl
+    when: $(inputs.wgs_or_wxs == 'WXS')
     in:
-      input_mode: wgs_or_wxs
-      wgs_input: python_vardict_interval_split/split_intervals_bed
-      wxs_input: gatk_intervallisttools/output
-    out: [output]
+      wgs_or_wxs: wgs_or_wxs
+      reference_dict: prepare_reference/reference_dict
+      calling_regions: calling_regions
+      calling_padding:
+        valueFrom: $(100)
+      blacklist_regions: blacklist_regions
+      break_bands_at_multiples_of:
+        valueFrom: $(0)
+      scatter_count:
+        valueFrom: $(50)
+    out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
+  prepare_regions_unpadded:
+    run: ../sub_workflows/prepare_regions.cwl
+    in:
+      reference_dict: prepare_reference/reference_dict
+      calling_regions: calling_regions
+      blacklist_regions: blacklist_regions
+      break_bands_at_multiples_of:
+        valueFrom: $(80000000)
+      scatter_count:
+        valueFrom: $(50)
+    out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
+  prepare_regions_unpadded_minibands:
+    run: ../sub_workflows/prepare_regions.cwl
+    when: $(inputs.wgs_or_wxs == 'WGS')
+    in:
+      wgs_or_wxs: wgs_or_wxs
+      calling_regions: prepare_regions_unpadded/prescatter_intervallist
+      break_bands_at_multiples_of:
+        valueFrom: $(20000)
+      scatter_count:
+        valueFrom: $(50)
+    out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
+  bedtools_intersect_germline:
+    when: $(inputs.run_cnv_tools)
+    run: ../tools/bedtools_intersect.cwl
+    in:
+      run_cnv_tools: run_cnv_tools
+      input_vcf: index_b_allele/output
+      output_basename: output_basename
+      input_bed_file: prepare_regions_unpadded/prescatter_bed
+      flag: choose_defaults/out_i_flag
+    out: [intersected_vcf]
+  gatk_filter_germline:
+    when: $(inputs.run_cnv_tools)
+    run: ../tools/gatk_filter_germline_variant.cwl
+    in:
+      run_cnv_tools: run_cnv_tools
+      input_vcf: bedtools_intersect_germline/intersected_vcf
+      reference_fasta: prepare_reference/indexed_fasta
+      output_basename: output_basename
+    out: [filtered_vcf, filtered_pass_vcf]
   run_vardict:
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     in:
@@ -629,7 +612,9 @@ steps:
       old_normal_name: old_normal_name
       output_basename: output_basename
       reference_dict: prepare_reference/reference_dict
-      bed_invtl_split: select_vardict_bed_interval/output
+      bed_invtl_split:
+        source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded_minibands/scattered_beds]
+        pickValue: the_only_non_null
       padding: choose_defaults/out_vardict_padding
       min_vaf: vardict_min_vaf
       select_vars_mode: select_vars_mode
@@ -662,19 +647,14 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [vardict_prepass_vcf, vardict_protected_outputs, vardict_public_outputs]
-  select_mutect_bed_interval:
-    run: ../tools/mode_list_selector.cwl
-    in:
-      input_mode: wgs_or_wxs
-      wgs_input: gatk_intervallisttools/output
-      wxs_input: gatk_intervallisttools/output
-    out: [output]
   run_mutect2:
     run: ../sub_workflows/kfdrc_mutect2_sub_wf.cwl
     in:
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      bed_invtl_split: select_mutect_bed_interval/output
+      bed_invtl_split:
+        source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded/scattered_beds]
+        pickValue: first_non_null
       af_only_gnomad_vcf: index_mutect_gnomad/output
       exac_common_vcf: index_mutect_exac/output
       input_tumor_aligned: input_tumor_aligned
@@ -721,7 +701,9 @@ steps:
     in:
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      hg38_strelka_bed: index_strelka_bed/output
+      hg38_strelka_bed:
+        source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
+        pickValue: first_non_null
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -760,37 +742,23 @@ steps:
       maf_center: maf_center
       custom_enst: custom_enst
     out: [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
-  bedops_gen_lancet_intervals:
-    run: ../tools/preprocess_lancet_intervals.cwl
+  prepare_regions_lancet_wgs:
+    run: ../sub_workflows/prepare_regions.cwl
+    when: $(inputs.wgs_or_wxs == 'WGS')
     in:
-      strelka2_vcf:
-        source: run_strelka2/strelka2_protected_outputs
-        valueFrom: "${var str_vcf = self[1]; return str_vcf;}"
-      mutect2_vcf:
-        source: run_mutect2/mutect2_protected_outputs
-        valueFrom: "${var mut_vcf = self[1]; return mut_vcf;}"
-      ref_bed: lancet_calling_interval_bed
-      output_basename: output_basename
-    out: [run_bed]
-  gatk_intervallisttools_exome_plus:
-    run: ../tools/gatk_intervallisttool.cwl
-    in:
-      interval_list: bedops_gen_lancet_intervals/run_bed
+      wgs_or_wxs: wgs_or_wxs
       reference_dict: prepare_reference/reference_dict
-      exome_flag:
-        valueFrom: ${return "Y";}
-      scatter_ct:
-        valueFrom: ${return 50}
-      bands:
-        valueFrom: ${return 80000000}
-    out: [output]
-  select_lancet_bed_inteval:
-    run: ../tools/mode_list_selector.cwl
-    in:
-      input_mode: wgs_or_wxs
-      wgs_input: gatk_intervallisttools_exome_plus/output
-      wxs_input: gatk_intervallisttools/output
-    out: [output]
+      calling_regions: coding_sequence_regions
+      supplement_vcfs:
+        source: [run_strelka2/strelka2_protected_outputs, run_mutect2/mutect2_protected_outputs]
+        valueFrom: |
+          $(self.filter(function(e) { return e != null }).map(function(e) { return e.filter(function(i) { return i.basename.search(/(.vcf|.vcf.gz)$/) != -1 })[0] }))
+      blacklist_regions: blacklist_regions
+      break_bands_at_multiples_of:
+        valueFrom: $(0)
+      scatter_count:
+        valueFrom: $(50)
+    out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
   run_lancet:
     run: ../sub_workflows/kfdrc_lancet_sub_wf.cwl
     in:
@@ -804,7 +772,9 @@ steps:
       output_basename: output_basename
       select_vars_mode: select_vars_mode
       reference_dict: prepare_reference/reference_dict
-      bed_invtl_split: select_lancet_bed_inteval/output
+      bed_invtl_split:
+        source: [prepare_regions_lancet_wgs/scattered_beds, prepare_regions_padded/scattered_beds]
+        pickValue: the_only_non_null
       ram: lancet_ram
       window: choose_defaults/out_lancet_window
       padding: choose_defaults/out_lancet_padding
@@ -848,7 +818,10 @@ steps:
       ploidy: cfree_ploidy
       mate_orientation_sample: cfree_mate_orientation_sample
       mate_orientation_control: cfree_mate_orientation_control
-      capture_regions: unpadded_capture_regions
+      capture_regions:
+        source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
+        valueFrom: |
+          $(self[0] == 'WXS' ? self[1] : null)
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_fai: reference_fai
       b_allele: gatk_filter_germline/filtered_pass_vcf
@@ -867,7 +840,10 @@ steps:
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       reference: prepare_reference/indexed_fasta
       normal_sample_name: input_normal_name
-      capture_regions: unpadded_capture_regions
+      capture_regions:
+        source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
+        valueFrom: |
+          $(self[0] == 'WXS' ? self[1] : null)
       wgs_mode: choose_defaults/out_cnvkit_wgs_mode
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
@@ -927,7 +903,9 @@ steps:
       run_sv_tools: run_sv_tools
       indexed_reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      hg38_strelka_bed: index_strelka_bed/output
+      hg38_strelka_bed:
+        source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
+        pickValue: first_non_null
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
@@ -957,8 +935,8 @@ steps:
       input_aligned_reads_normal: input_normal_aligned
       reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      input_interval_list: gatk_cnv_input_interval_list
-      input_exclude_interval_list: gatk_cnv_input_exclude_interval_list
+      input_interval_list: calling_regions
+      input_exclude_interval_list: blacklist_regions
       bin_length:
         source: wgs_or_wxs
         valueFrom: |

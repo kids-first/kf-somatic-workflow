@@ -662,16 +662,15 @@ arguments:
     valueFrom: |-
       ${
           // script for splitting the genome fasta into chromosomes
-          return 'python split_fasta.py ' + inputs.reference.path
+          return '1>&2 python split_fasta.py ' + inputs.reference.path
 
       }
   - position: 1
     shellQuote: false
     valueFrom: '&&'
   - position: 2
-    prefix: ''
     shellQuote: false
-    valueFrom: /opt/controlfreec/FREEC/src/freec
+    valueFrom: '1>&2 /opt/controlfreec/FREEC/src/freec'
   - position: 3
     shellQuote: false
     valueFrom: '-conf'
@@ -701,7 +700,7 @@ arguments:
           ratio = filename + "_ratio" + ".txt"
 
 
-          return "cat assess_significance.R | R --slave --args " + CNVs + " " + ratio
+          return "cat assess_significance.R | 1>&2 R --slave --args " + CNVs + " " + ratio
       }
   - position: 7
     shellQuote: false
@@ -719,7 +718,7 @@ arguments:
     shellQuote: false
     valueFrom: |-
       ${
-          return "cat makeGraph.R | R --slave --args"
+          return "cat makeGraph.R | 1>&2 R --slave --args"
       }
   - position: 11
     shellQuote: false

@@ -21,8 +21,8 @@ inputs:
   min_vaf: {type: ['null', float], doc: "Min variant allele frequency for vardict to consider.  Recommend 0.05", default: 0.05}
   tool_name: {type: 'string?', doc: "String to describe what tool was run as part of file name", default: "vardict_somatic"}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
-  cpus: {type: ['null', int], default: 9}
-  ram: {type: ['null', int], default: 18, doc: "In GB"}
+  cpus: {type: ['null', int], default: 8}
+  ram: {type: ['null', int], default: 16, doc: "In GB"}
   vep_cache: {type: 'File', doc: "tar gzipped cache from ensembl/local converted cache"}
   vep_ram: {type: 'int?', doc: "In GB, may need to increase this value depending on the size/complexity of input"}
   vep_cores: {type: 'int?', doc: "Number of cores to use. May need to increase for really large inputs"}
