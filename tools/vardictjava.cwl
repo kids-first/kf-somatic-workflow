@@ -39,8 +39,8 @@ inputs:
   input_tumor_name: string
   input_normal_bam: {type: File, secondaryFiles: [^.bai]}
   input_normal_name: string
-  cpus: {type: ['null', int], default: 9}
-  ram: {type: ['null', int], default: 18, doc: "In GB"}
+  cpus: {type: ['null', int], default: 8}
+  ram: {type: ['null', int], default: 15, doc: "In GB"}
   padding: {type: ['null', int], doc: "Padding to add to input intervals, recommened 0 if intervals already padded, 150 if not", default: 150}
   min_vaf:
     type: ['null', float]
