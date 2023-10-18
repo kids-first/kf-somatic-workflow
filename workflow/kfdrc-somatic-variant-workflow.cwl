@@ -264,12 +264,12 @@ requirements:
 - class: ScatterFeatureRequirement
 - class: MultipleInputFeatureRequirement
 - class: SubworkflowFeatureRequirement
+- class: StepInputExpressionRequirement
 - class: InlineJavascriptRequirement
 - class: StepInputExpressionRequirement
 inputs:
-  reference_fasta: {type: 'File', "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta}}
-  reference_fai: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta.fai}}
-  reference_dict: {type: 'File?', "sbg:suggestedValue": {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}}
+  # Required
+  indexed_reference_fasta: {type: 'File', secondaryFiles: [{pattern: ".fai", required: true}, {pattern: "^.dict", required: true}],  "sbg:suggestedValue": {class: File, path: 60639014357c3a53540ca7a3, name: Homo_sapiens_assembly38.fasta, secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta.fai}, {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]}}
   input_tumor_aligned:
     type: File
     secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false}, {pattern: ".crai", required: false},
@@ -298,12 +298,8 @@ inputs:
       name: refFlat_HG38.txt}}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 10000"}
   strelka2_cores: {type: 'int?', doc: "Adjust number of cores used to run strelka2", default: 18}
-  mutect2_af_only_gnomad_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz}}
-  mutect2_af_only_gnomad_tbi: {type: 'File?', doc: "Tabix index for mutect2_af_only_gnomad_vcf", "sbg:suggestedValue": {class: File,
-      path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}}
-  mutect2_exac_common_vcf: {type: 'File', "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051ad, name: small_exac_common_3.hg38.vcf.gz}}
-  mutect2_exac_common_tbi: {type: 'File?', doc: "Tabix index for mutect2_exac_common_vcf", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051af,
-      name: small_exac_common_3.hg38.vcf.gz.tbi}}
+  mutect2_af_only_gnomad_vcf: {type: 'File', secondaryFiles: [{pattern: ".tbi", required: true}], "sbg:suggestedValue": {class: File, path: 5f50018fe4b054958bc8d2e3, name: af-only-gnomad.hg38.vcf.gz, secondaryFiles: [{class: File, path: 5f50018fe4b054958bc8d2e5, name: af-only-gnomad.hg38.vcf.gz.tbi}]}}
+  mutect2_exac_common_vcf: {type: 'File', secondaryFiles: [{pattern: ".tbi", required: true}], "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051ad, name: small_exac_common_3.hg38.vcf.gz, secondaryFiles: [{class: File, path: 5f500135e4b0370371c051af, name: small_exac_common_3.hg38.vcf.gz.tbi}]}}
   output_basename: {type: 'string', doc: "String value to use as basename for outputs"}
   wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select if this run is WGS or WXS"}
   count_panel_of_normals: {type: 'File?', doc: "Path to read-count PoN created by the panel workflow. Significantly reduces quality
@@ -357,9 +353,7 @@ inputs:
   cnvkit_wgs_mode: {type: 'string?', doc: "for WGS mode, input Y. leave blank for WXS/hybrid mode"}
   i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS
       run"}
-  b_allele: {type: 'File?', doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline
-      and pass if expression given"}
-  b_allele_index: {type: 'File?', doc: "Tabix index for b_allele"}
+  b_allele: {type: 'File?', secondaryFiles: [{pattern: ".tbi", required: true}], doc: "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given"}
   cfree_coeff_var: {type: 'float?', default: 0.05, doc: "Coefficient of variation to set window size.  Default 0.05 recommended"}
   cfree_contamination_adjustment: {type: 'boolean?', doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
   cfree_sex: {type: ['null', {type: enum, name: cfree_sex, symbols: ["XX", "XY"]}], doc: "If known, XX for female, XY for male", default: "XX"}
@@ -521,31 +515,6 @@ steps:
       lancet_window: lancet_window
       vardict_padding: vardict_padding
     out: [out_wgs, run_vardict, run_mutect2, run_strelka2, run_lancet, run_controlfreec, run_cnvkit, run_amplicon_architect, run_theta2, run_manta, run_gatk_cnv, out_exome_flag, out_cnvkit_wgs_mode, out_i_flag, out_lancet_padding, out_lancet_window, out_vardict_padding]
-  prepare_reference:
-    run: ../sub_workflows/prepare_reference.cwl
-    in:
-      input_fasta: reference_fasta
-      input_fai: reference_fai
-      input_dict: reference_dict
-    out: [indexed_fasta, reference_dict]
-  index_b_allele:
-    run: ../tools/tabix_index.cwl
-    in:
-      input_file: b_allele
-      input_index: b_allele_index
-    out: [output]
-  index_mutect_gnomad:
-    run: ../tools/tabix_index.cwl
-    in:
-      input_file: mutect2_af_only_gnomad_vcf
-      input_index: mutect2_af_only_gnomad_tbi
-    out: [output]
-  index_mutect_exac:
-    run: ../tools/tabix_index.cwl
-    in:
-      input_file: mutect2_exac_common_vcf
-      input_index: mutect2_exac_common_tbi
-    out: [output]
   samtools_cram2bam_plus_calmd_tumor:
     run: ../tools/samtools_calmd.cwl
     when: $(inputs.run_tool.some(function(e) { return e }))
@@ -555,7 +524,7 @@ steps:
       input_reads: input_tumor_aligned
       threads:
         valueFrom: ${return 16;}
-      reference: prepare_reference/indexed_fasta
+      reference: indexed_reference_fasta
     out: [bam_file]
   samtools_cram2bam_plus_calmd_normal:
     run: ../tools/samtools_calmd.cwl
@@ -566,14 +535,17 @@ steps:
       input_reads: input_normal_aligned
       threads:
         valueFrom: ${return 16;}
-      reference: prepare_reference/indexed_fasta
+      reference: indexed_reference_fasta
     out: [bam_file]
   prepare_regions_padded:
     run: ../sub_workflows/prepare_regions.cwl
     when: $(inputs.wgs_or_wxs == 'WXS')
     in:
       wgs_or_wxs: wgs_or_wxs
-      reference_dict: prepare_reference/reference_dict
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       calling_regions: calling_regions
       calling_padding:
         valueFrom: $(100)
@@ -586,7 +558,10 @@ steps:
   prepare_regions_unpadded:
     run: ../sub_workflows/prepare_regions.cwl
     in:
-      reference_dict: prepare_reference/reference_dict
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       calling_regions: calling_regions
       blacklist_regions: blacklist_regions
       break_bands_at_multiples_of:
@@ -611,7 +586,7 @@ steps:
     in:
       run_tool:
         source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
-      input_vcf: index_b_allele/output
+      input_vcf: b_allele
       output_basename: output_basename
       input_bed_file: prepare_regions_unpadded/prescatter_bed
       flag: runtime_validator/out_i_flag
@@ -623,7 +598,7 @@ steps:
       run_tool:
         source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_vcf: bedtools_intersect_germline/intersected_vcf
-      reference_fasta: prepare_reference/indexed_fasta
+      reference_fasta: indexed_reference_fasta
       output_basename: output_basename
     out: [filtered_vcf, filtered_pass_vcf]
   vardict:
@@ -631,7 +606,7 @@ steps:
     when: $(inputs.run_vardict)
     in:
       run_vardict: runtime_validator/run_vardict
-      indexed_reference_fasta: prepare_reference/indexed_fasta
+      indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
@@ -639,7 +614,10 @@ steps:
       input_normal_name: input_normal_name
       old_normal_name: old_normal_name
       output_basename: output_basename
-      reference_dict: prepare_reference/reference_dict
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       bed_invtl_split:
         source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded_minibands/scattered_beds]
         pickValue: the_only_non_null
@@ -679,13 +657,16 @@ steps:
     when: $(inputs.run_mutect2)
     in:
       run_mutect2: runtime_validator/run_mutect2
-      indexed_reference_fasta: prepare_reference/indexed_fasta
-      reference_dict: prepare_reference/reference_dict
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       bed_invtl_split:
         source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded/scattered_beds]
         pickValue: first_non_null
-      af_only_gnomad_vcf: index_mutect_gnomad/output
-      exac_common_vcf: index_mutect_exac/output
+      af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
+      exac_common_vcf: mutect2_exac_common_vcf
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
@@ -729,8 +710,11 @@ steps:
     when: $(inputs.run_strelka2)
     in:
       run_strelka2: runtime_validator/run_strelka2
-      indexed_reference_fasta: prepare_reference/indexed_fasta
-      reference_dict: prepare_reference/reference_dict
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       hg38_strelka_bed:
         source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
         pickValue: first_non_null
@@ -776,7 +760,10 @@ steps:
     when: $(inputs.wgs_or_wxs == 'WGS')
     in:
       wgs_or_wxs: wgs_or_wxs
-      reference_dict: prepare_reference/reference_dict
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       calling_regions: coding_sequence_regions
       supplement_vcfs:
         source: [strelka2/strelka2_protected_outputs, mutect2/mutect2_protected_outputs]
@@ -793,7 +780,7 @@ steps:
     when: $(inputs.run_lancet)
     in:
       run_lancet: runtime_validator/run_lancet
-      indexed_reference_fasta: prepare_reference/indexed_fasta
+      indexed_reference_fasta: indexed_reference_fasta
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
@@ -802,7 +789,10 @@ steps:
       old_normal_name: old_normal_name
       output_basename: output_basename
       select_vars_mode: select_vars_mode
-      reference_dict: prepare_reference/reference_dict
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       bed_invtl_split:
         source: [prepare_regions_lancet_wgs/scattered_beds, prepare_regions_padded/scattered_beds]
         pickValue: the_only_non_null
@@ -852,8 +842,11 @@ steps:
         source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
         valueFrom: |
           $(self[0] == 'WXS' ? self[1] : null)
-      indexed_reference_fasta: prepare_reference/indexed_fasta
-      reference_fai: reference_fai
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_fai:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.fai$/) != -1 })[0])
       b_allele: gatk_filter_germline/filtered_pass_vcf
       chr_len: cfree_chr_len
       coeff_var: cfree_coeff_var
@@ -868,7 +861,7 @@ steps:
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       tumor_sample_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
-      reference: prepare_reference/indexed_fasta
+      reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
       capture_regions:
         source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
@@ -891,7 +884,7 @@ steps:
       tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
       output_basename: output_basename
       mosek_license_file: mosek_license_file
-      reference: prepare_reference/indexed_fasta
+      reference: indexed_reference_fasta
       cnvkit_cns: cnvkit/cnvkit_cns
       male_input_flag:
         source: cnvkit_sex
@@ -924,8 +917,11 @@ steps:
     when: $(inputs.run_manta)
     in:
       run_manta: runtime_validator/run_manta
-      indexed_reference_fasta: prepare_reference/indexed_fasta
-      reference_dict: prepare_reference/reference_dict
+      indexed_reference_fasta: indexed_reference_fasta
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       hg38_strelka_bed:
         source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
         pickValue: first_non_null
@@ -956,15 +952,18 @@ steps:
       run_gatk_cnv: runtime_validator/run_gatk_cnv
       input_aligned_reads_tumor: input_tumor_aligned
       input_aligned_reads_normal: input_normal_aligned
-      reference_fasta: prepare_reference/indexed_fasta
-      reference_dict: prepare_reference/reference_dict
+      reference_fasta: indexed_reference_fasta
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       input_interval_list: cnv_calling_regions
       input_exclude_interval_list: cnv_blacklist_regions
       bin_length:
         source: wgs_or_wxs
         valueFrom: |
           $(self == "WGS" ? 1000 : 0)
-      common_sites: index_b_allele/output
+      common_sites: b_allele
       count_panel_of_normals: count_panel_of_normals
       output_basename: output_basename
       run_funcotatesegments: run_funcotatesegments
