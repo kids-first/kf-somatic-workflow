@@ -454,8 +454,8 @@ outputs:
   strelka2_prepass_vcf: {type: 'File', outputSource: strelka2/strelka2_prepass_vcf}
   manta_pass_vcf: {type: 'File?', outputSource: manta/manta_pass_vcf}
   manta_prepass_vcf: {type: 'File?', outputSource: manta/manta_prepass_vcf}
-  annotsv_annotated_calls: {type: 'File?', outputSource: annotsv/annotated_calls}
-  annotsv_unannotated_calls: {type: 'File?', outputSource: annotsv/unannotated_calls}
+  annotsv_annotated_calls: {type: 'File?', outputSource: manta/annotsv_annotated_calls}
+  annotsv_unannotated_calls: {type: 'File?', outputSource: manta/annotsv_unannotated_calls}
   mutect2_public_outputs: {type: 'File[]', outputSource: mutect2/mutect2_public_outputs}
   mutect2_protected_outputs: {type: 'File[]', outputSource: mutect2/mutect2_protected_outputs}
   mutect2_prepass_vcf: {type: 'File', outputSource: mutect2/mutect2_filtered_vcf}
@@ -936,15 +936,8 @@ steps:
       manta_memory: manta_memory
       manta_cores: manta_cores
       select_vars_mode: select_vars_mode
-    out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels]
-  annotsv:
-    run: ../tools/annotsv.cwl
-    when: $(inputs.run_manta)
-    in:
-      run_manta: runtime_validator/run_manta
-      annotations_dir_tgz: annotsv_annotations_dir_tgz
-      sv_input_file: manta/manta_pass_vcf
-    out: [annotated_calls, unannotated_calls]
+      annotsv_annotations_dir_tgz: annotsv_annotations_dir_tgz
+    out: [manta_prepass_vcf, manta_pass_vcf, manta_small_indels, annotsv_annotated_calls, annotsv_unannotated_calls]
   gatk_cnv:
     run: ../sub_workflows/kfdrc_gatk_cnv_somatic_pair_wf.cwl
     when: $(inputs.run_gatk_cnv)
