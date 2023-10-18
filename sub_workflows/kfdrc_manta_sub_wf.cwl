@@ -27,11 +27,15 @@ inputs:
   manta_memory: {type: 'int?'}
   manta_cores: {type: 'int?'}
   select_vars_mode: {type: ['null', {type: enum, name: select_vars_mode, symbols: ["gatk", "grep"]}], doc: "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression", default: "gatk"}
+  annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing annotations for AnnotSV", "sbg:fileTypes": "TAR,
+      TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
 
 outputs:
   manta_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
   manta_pass_vcf: {type: 'File', outputSource: gatk_selectvariants_manta/pass_vcf}
   manta_small_indels: {type: 'File', outputSource: manta/small_indels}
+  annotsv_annotated_calls: {type: 'File?', outputSource: annotsv/annotated_calls}
+  annotsv_unannotated_calls: {type: 'File?', outputSource: annotsv/unannotated_calls}
 
 steps:
   manta:
@@ -81,4 +85,11 @@ steps:
         valueFrom: ${return "manta"}
       mode: select_vars_mode
     out: [pass_vcf]
+
+  annotsv:
+    run: ../tools/annotsv.cwl
+    in:
+      annotations_dir_tgz: annotsv_annotations_dir_tgz
+      sv_input_file: gatk_selectvariants_manta/pass_vcf
+    out: [annotated_calls, unannotated_calls]
 
