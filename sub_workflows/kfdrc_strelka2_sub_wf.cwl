@@ -57,6 +57,7 @@ inputs:
 
   strelka2_cores: {type: 'int?', doc: "Adjust number of cores used to run strelka2", default: 16}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
+  disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.", default: false }
 
 outputs:
   strelka2_prepass_vcf: {type: 'File', outputSource: rename_strelka_samples/reheadered_vcf}
@@ -154,6 +155,7 @@ steps:
       custom_enst: custom_enst
       output_basename: output_basename
       tool_name: tool_name
+      disable_vep_annotation: disable_vep_annotation
     out: [annotated_protected, annotated_public]
 
 $namespaces:

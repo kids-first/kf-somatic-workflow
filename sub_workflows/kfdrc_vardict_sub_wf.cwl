@@ -54,7 +54,7 @@ inputs:
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK" }
-
+  disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.",default: false}
 outputs:
   vardict_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
   vardict_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
@@ -167,6 +167,7 @@ steps:
       vep_cores: vep_cores
       vep_buffer_size: vep_buffer_size
       disable_hotspot_annotation: disable_hotspot_annotation
+      disable_vep_annotation: disable_vep_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots

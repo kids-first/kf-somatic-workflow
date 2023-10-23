@@ -438,6 +438,7 @@ inputs:
       class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed}}
   padded_capture_regions: {type: 'File?', doc: "Recommend 100bp pad, for somatic variant"}
   unpadded_capture_regions: {type: 'File?', doc: "Capture regions with NO padding for ControlFreeC exome mode CNV calling."}
+  disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.",default: false}
 outputs:
   aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: run_amplicon_architect/aa_summary}
   aa_cycles: {type: 'File[]', doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
@@ -654,6 +655,7 @@ steps:
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
+      disable_vep_annotation: disable_vep_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
@@ -712,6 +714,7 @@ steps:
       protein_indel_hotspots: protein_indel_hotspots
       maf_center: maf_center
       custom_enst: custom_enst
+      disable_vep_annotation: disable_vep_annotation
     out: [mutect2_filtered_stats, mutect2_filtered_vcf, mutect2_protected_outputs, mutect2_public_outputs]
   run_strelka2:
     run: ../sub_workflows/kfdrc_strelka2_sub_wf.cwl
@@ -750,6 +753,7 @@ steps:
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
+      disable_vep_annotation: disable_vep_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
@@ -824,6 +828,7 @@ steps:
       gatk_filter_name: gatk_filter_name
       gatk_filter_expression: gatk_filter_expression
       disable_hotspot_annotation: disable_hotspot_annotation
+      disable_vep_annotation: disable_vep_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
