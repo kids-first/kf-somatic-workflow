@@ -54,7 +54,7 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: \"vc.getGenotype('\" + inputs.input_normal_name + \"').getDP() <= 7\"), \"AF > 0.001\"]"}
   disable_hotspot_annotation: { type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false }
   custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK" }
-
+  disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.",default: false}
 outputs:
   lancet_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
   lancet_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
@@ -152,6 +152,7 @@ steps:
       vep_cores: vep_cores
       vep_buffer_size: vep_buffer_size
       disable_hotspot_annotation: disable_hotspot_annotation
+      disable_vep_annotation: disable_vep_annotation
       genomic_hotspots: genomic_hotspots
       protein_snv_hotspots: protein_snv_hotspots
       protein_indel_hotspots: protein_indel_hotspots
