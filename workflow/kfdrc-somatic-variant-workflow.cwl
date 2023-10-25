@@ -422,11 +422,11 @@ inputs:
       name: gnomad_3.1.1.vwb_subset.vcf.gz}}
   bcftools_annot_vcf_index: {type: 'File', doc: "index of bcftools_annot_vcf", "sbg:suggestedValue": {class: File, path: 6324ef5ad01163633daa00d7,
       name: gnomad_3.1.1.vwb_subset.vcf.gz.tbi}}
-  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: "FILTER=\"PASS\"|INFO/HotSpotAllele=1"}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"\
       ]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,
-      recommend: `vc.getGenotype('inputs.input_normal_name').getDP() <= 7)`, `gnomad_3_1_1_AF > 0.001`]"}
+      recommend: [`vc.getGenotype('inputs.input_normal_name').getDP() <= 7)`, `gnomad_3_1_1_AF > 0.001`]"}
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File,
