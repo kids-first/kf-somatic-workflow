@@ -289,6 +289,8 @@ inputs:
       provide it here"}
   calling_regions: { type: 'File', doc: "BED or INTERVALLIST file containing a set of genomic regions over which the callers will be run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for their analysis." }
   blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions." }
+  cnv_calling_regions: { type: 'File', doc: "BED or INTERVALLIST file containing a set of genomic regions over which the CNV callers will be run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for their analysis." }
+  cnv_blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the CNV calling regions." }
   coding_sequence_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing the coding sequence regions for the provided reference. This input is used to create custom intervals for WGS Lancet Calling.", "sbg:suggestedValue": { class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed }}
   cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c4,
       name: hs38_chr.len}}
@@ -420,6 +422,7 @@ inputs:
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration,
       recommend: [`vc.getGenotype('inputs.input_normal_name').getDP() <= 7)`, `gnomad_3_1_1_AF > 0.001`]"}
   disable_hotspot_annotation: {type: 'boolean?', doc: "Disable Hotspot Annotation and skip this task.", default: false}
+  disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.", default: false }
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File,
       path: 6480c8a61dfc710d24a3a368, name: kf_isoform_override.tsv}}
@@ -935,8 +938,8 @@ steps:
       input_aligned_reads_normal: input_normal_aligned
       reference_fasta: prepare_reference/indexed_fasta
       reference_dict: prepare_reference/reference_dict
-      input_interval_list: calling_regions
-      input_exclude_interval_list: blacklist_regions
+      input_interval_list: cnv_calling_regions
+      input_exclude_interval_list: cnv_blacklist_regions
       bin_length:
         source: wgs_or_wxs
         valueFrom: |

@@ -6,7 +6,7 @@ doc: |
   conversion from BED to the Picard interval_list format which is required by
   many Picard processing tools. Note that the coordinate system of BED files is
   such that the first base or position in a sequence is numbered "0", while in
-  interval_list files it is numbered
+  interval_list files it is numbered "1"
 requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
