@@ -40,7 +40,7 @@ inputs:
   input_normal_bam: {type: File, secondaryFiles: [^.bai]}
   input_normal_name: string
   cpus: {type: ['null', int], default: 8}
-  ram: {type: ['null', int], default: 15, doc: "In GB"}
+  ram: {type: ['null', int], default: 16, doc: "In GB"}
   padding: {type: ['null', int], doc: "Padding to add to input intervals, recommened 0 if intervals already padded, 150 if not", default: 150}
   min_vaf:
     type: ['null', float]
