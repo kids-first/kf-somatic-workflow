@@ -662,7 +662,7 @@ arguments:
     valueFrom: |-
       ${
           // script for splitting the genome fasta into chromosomes
-          return '1>&2 python split_fasta.py ' + inputs.reference.path
+          return 'python split_fasta.py ' + inputs.reference.path
 
       }
   - position: 1
