@@ -62,8 +62,8 @@ outputs:
           if (!inputs.lancet || !inputs.is_wgs) {
             return inputs.lancet;
           }
-          if (!(inputs.mutect2 && inputs.strelka2)) {
-            throw new Error('Running Lancet in WGS Mode requires both Mutect2 and Strelka2!');
+          if (!(inputs.mutect2 || inputs.strelka2)) {
+            throw new Error('Running Lancet in WGS Mode requires either Mutect2 or Strelka2!');
           }
           return true;
         }
