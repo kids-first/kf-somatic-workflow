@@ -16,28 +16,60 @@ This workflow is the current production workflow, equivalent to this [Cavatica p
 
 ## Running WGS or WXS
 
-The [combined workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
+The [somatic variant workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
 This functionality comes from usage of the `wgs_or_wxs` input enum. Depending on what is provided for this input, the tool will
 set the appropriate default values and check that the user has provided the correct inputs. For example, if the user sets the
-input to WGS the lancet_padding value will be defaulted to 300; alternatively, if the user sets the input to WXS the lancet_padding
-value will be defaulted to 0. In either case, the user can override the defaults simply by providing their own value for lancet_padding
+input to WGS the `lancet_padding` value will be set to 300; alternatively, if the user sets the input to WXS the `lancet_padding`
+value will be defaulted to 0. In either case, the user can override the defaults simply by providing their own value for `lancet_padding`
 in the inputs.
 
-The `wgs_or_wxs` flag also controls which inputs are used for certain steps. For example, the bed_interval input for Lancet comes
-from different sources in the WGS and WXS pipelines. In the WGS pipeline separate processing is done ahead of time to generate
-a new interval file. A tool in the workflow will take in the presumptive inputs for WGS and WXS modes. If the mode is WGS, then
-the pipeline will pass on the file provided as the wgs_input and vice versa. If the wgs_input is missing and the mode is WGS, then
-the pipeline will fail.
+The `wgs_or_wxs` flag also plays an integral role in the use of intervals throughout the pipeline.
 
-### WGS Run Fields
+### Calling Intervals, in short
 
-There are two WGS fields `wgs_calling_interval_list` and `lancet_calling_interval_bed`. If these are not provided in a WGS run,
-the pipeline will fail.
+In order to perform variant calling, the user must provide some of these intervals:
+- `calling_regions`: genomic regions over which the SNV and SV callers will be run
+- `blacklist_regions`: genomic regions to remove from the SNV and SV calling regions
+- `coding_sequence_regions`: genomic regions covering the coding sequence regions of the genome to which the input BAM/CRAM/SAM was aligned
+- `cnv_calling_regions`: genomic regions over which the CNV callers will be run
+- `cnv_blacklist_regions`: genomic regions to remove from the CNV calling regions
+- `chr_len`: A list of chromosomes and their lengths
 
-### WXS Run Fields
+The calling and blacklist files above are used as pairs. The blacklist regions
+first removed from the calling regions and the resulting regions are what are
+passed to callers. SNV and SV callers receive the regions that are
+`calling_regions` with `blacklist_regions` removed. CNV callers receive the
+regions that are `cnv_calling_regions` with `cnv_blacklist_regions` removed.
 
-There are two WXS fields `padded_capture_regions` and `unpadded_capture_regions`. If these are not provided in a WXS run,
-the pipeline will fail.
+In general, what is expected of the user to provide for these intervals is:
+- WGS
+   - `calling_regions`: Whole genome calling regions (for GATK these are the regions of the FASTA on `chr1-22,X,Y` where there is no span of more than 200 Ns; for completeness we add `chrM`)
+   - `blacklist_regions`: Regions that the user is confident are of no interest to SNV and SV calling, if any. Telomeres, centromeres, high signal regions, repetitive regions, etc.
+   - `coding_sequence_regions`: Regions of the genome that GENCODE defines as CDS; can be determined from [their GTF](https://www.gencodegenes.org/human/)
+   - `cnv_calling_regions`: Whole genome calling regions (for GATK these are the regions of the FASTA on `chr1-22,X,Y` where there is no span of more than 200 Ns)
+   - `cnv_blacklist_regions`: Regions that the user is confident are of no interest to CNV calling, if any. Telomeres, centromeres, high signal regions, repetitive regions, etc.
+   - `chr_len`: Chromosome names and lengths for `chr1-22,X,Y`
+- WXS
+   - `calling_regions`: Unpadded capture regions for the WXS experiment
+   - `blacklist_regions`: Regions of the capture region that the user is confident are of no interest to SNV and SV calling, if any
+   - `coding_sequence_regions`: This input is not used in WXS runs. Providing it does nothing
+   - `cnv_calling_regions`: Unpadded capture regions for the WXS experiment
+   - `cnv_blacklist_regions` Regions of the capture region that the user is confident are of no interest to CNV calling, if any
+   - `chr_len`: Chromosome names and lengths for all chromosomes found in the capture regions
+
+The coding sequence regions are only relevant for calling WGS data using
+Lancet. Presenting Lancet with intervals spanning the whole genome will lead to
+extreme runtime and cost. By starting from an limited calling region and
+supplementing with calls from Mutect2 and/or Strelka2, Lancet is able to run on
+the scale of hours rather than days.
+
+The `chr_len` file is only relevant for calling with ControlFreeC. ControlFreeC
+is unique in that its calling regions can only be limited at the chromosome
+level. This file can be a cut down FAI with only the chromosomes that are in
+your experiment and you wish to call.
+
+There's a lot more to talk about with intervals, how they are prepared, and
+some finer details. If you are interested, see our [interval preparation walkthrough](./docs/interval_preparation_walkthrough.md).
 
 #### SNV Callers
 
@@ -48,12 +80,12 @@ the pipeline will fail.
   - Those intervals are used to run the [Mutect2 subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_mutect2_sub_wf.md)
 - [Lancet](https://github.com/nygenome/lancet/releases/tag/v1.0.7) `v1.0.7`, from the New York Genome Center (NYGC), calls SNV, MNV, and INDEL
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
-  - It will also convert cram input to bam input, if applicable
-  - Intervals and bams are used as inputs to run the [Lancet subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_lancet_sub_wf.md)
+  - It will also convert cram input to BAM input, if applicable
+  - Intervals and BAMs are used as inputs to run the [Lancet subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_lancet_sub_wf.md)
 - [VarDict Java](https://github.com/AstraZeneca-NGS/VarDictJava/tree/1.7.0) `v1.7.0`, from AstraZeneca, calls SNV, MNV, INDEL and more
   - This workflow will generate the interval lists needed to split up calling jobs to significantly reduce run time
-  - It will also convert cram input to bam input, if applicable
-  - Intervals and bams are used as inputs to run the [VarDict Java subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_vardict_sub_wf.md)
+  - It will also convert cram input to BAM input, if applicable
+  - Intervals and BAMs are used as inputs to run the [VarDict Java subworkflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_vardict_sub_wf.md)
 
 Each caller has a different approach to variant calling, and together one can glean confident results.
 **After running this overall workflow, we recommend running our [consensus calling workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc-consensus-calling.md) for a balance of sensitivity and specificity overall.**
@@ -68,29 +100,29 @@ Outputs include raw ratio calls, copy number calls with p values assigned, b all
 - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
 - [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somatic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl). **Note: If a PON is not provided, GATK CNV will be skipped!**
 
-For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy. Additionally these tools make use of the `unpadded_capture_regions` to provide the canonical calling regions.
+For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy.
 
 #### ecDNA Prediction
  - [AmpliconArchitect](https://github.com/jluebeck/PrepareAA/blob/master/GUIDE.md) is used to predict ecDNAs
- - Workflfow documentation available [here](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_amplicon_architect.md)
+ - Workflow documentation available [here](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_amplicon_architect.md)
 
 #### SV Callers and Annotators
 
-- [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in vcf format, with calls filtered on `PASS`.
+- [Manta](https://github.com/Illumina/manta/tree/v1.4.0) `v1.4.0` is used to call SVs. Output is also in VCF format, with calls filtered on `PASS`.
 Default settings are used at run time.
 - [AnnotSV](https://github.com/lgmgeo/AnnotSV/releases/tag/v3.1.1) `v3.1.1` is used to annotate the calls in the Manta PASS VCF.
 
 #### Variant Annotation
 Please see the [annotation workflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_wf.md).
-Both the annotated vcf and maf file are made available.
+Both the annotated VCF and MAF file are made available.
 
 ### Partial Workflow Runs
 
 By default, the workflow will attempt to run every caller. However, the user can modify this behavior using various inputs.
-These inputs, and their behavoir, are as follows:
+These inputs, and their behavior, are as follows:
 - wgs_or_wxs: WGS or WXS mode.
     - WXS mode disables Amplicon Architect, even if run_amplicon_architect is set to true
-    - Picks the appropriate intervals
+    - Activates appropriate interval processing
 - run_vardict: Set to false to disable Vardict.
     - Warning! Enabling Theta2 with Vardict disabled will throw an error!
 - run_mutect2: Set to false to disable Mutect2.
@@ -108,7 +140,7 @@ These inputs, and their behavoir, are as follows:
 - run_gatk_cnv: Set to false to disable GATK CNV.
 
 The first step of the workflow will check the user inputs and throw errors for impossible scenarios:
-- Enabling Lancet in WGS without enabling both Mutect2 and Strelka2
+- Enabling Lancet in WGS without enabling either Mutect2 or Strelka2
 - Enabling Amplicon Architect without enabling CNVkit or providing the Mosek config file
 - Enabling Theta2 without enabling both Vardict and CNVkit
 - Enabling GATK CNV without providing a Panel of Normals
@@ -119,12 +151,12 @@ The first step of the workflow will check the user inputs and throw errors for i
 
 1. When in doubt, all of our reference files can be obtained from here: https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/
 
-1. For ControlFreeC, it is highly recommended that you supply a vcf file with germline calls, GATK Haplotype caller recommended.
+1. For ControlFreeC, it is highly recommended that you supply a VCF file with germline calls, GATK Haplotype caller recommended.
 Please also make sure the index for this file is available.
 Also, a range of input ploidy possibilities for the inputs are needed. You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
 For mate orientation, you will need to specify, the drop down and tool doc explains your options.
 
-1. As a cavatica app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for ControlFreec, and `PASS` filter tool mode.
+1. As a CAVATICA app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for ControlFreeC, and `PASS` filter tool mode.
 
 1. `select_vars_mode`: On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
 Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
@@ -137,12 +169,11 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `reference_fasta`: [Homo_sapiens_assembly38.fasta](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
     - `reference_dict`: [Homo_sapiens_assembly38.dict](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
     - `annotation_file`: [refFlat_HG38.txt](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refFlat.txt.gz) gunzip this file from UCSC.  Needed for gene annotation in `CNVkit`
-    - `wgs_calling_interval_list`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M. M may need to be added.
-    - `lancet_calling_interval_bed`: `GRCh38.gencode.v31.CDS.merged.bed`.  As described at the beginning, for WGS, it's highly recommended to use CDS bed, and supplement with region calls from Strelka2 & Mutect2. Our reference was obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this gtf file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
+    - `calling_regions`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK.*To create our 'wgs_canonical_calling_regions.hg38.interval_list', edit this file* by leaving only entries related to chr 1-22, X,Y, and M. M may need to be added.
+    - `coding_sequence_regions`: `GRCh38.gencode.v31.CDS.merged.bed`.  As described at the beginning, for WGS, it's highly recommended to use CDS bed, and supplement with region calls from Strelka2 & Mutect2. Our reference was obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this gtf file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
     - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/-gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
     - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
-    - `hg38_strelka_bed`: [hg38_strelka.bed.gz'](https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md#extended-use-cases) - this link here has the bed-formatted text needed to copy to create this file. You will need to bgzip this file.
-    - `extra_arg`: This can be used to add special params to strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 10000` can balance performance and consistency in results
+    - `extra_arg`: This can be used to add special params to Strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 10000` can balance performance and consistency in results
     - strelka2_cores: `18`. This default is already set, but can be changed if desired.
     - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz` from https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/ - variant effect predictor cache.
      Current production workflow uses this version.
@@ -150,7 +181,6 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
       The first column must be chromosomes, optionally the second can be an alternate format of chromosomes.
       Last column must be chromosome length.
-      Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
     - `coeff_var`: 0.05
     - `contamination_adjustment`: FALSE
     - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
@@ -169,7 +199,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `mosek_license_file`: [mosek.lic](https://www.mosek.com/license/request/) - required if amplicon architect is run. License is good for one year and is renewable
     - `aa_data_ref_version`: `"GRCh38"`. Genome reference version used
 
-1. Output files (Note, all vcf files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
+1. Output files (Note, all VCF files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
 
     - Simple variant callers
         - Strelka2:
