@@ -5,16 +5,16 @@
 </p>
 
 This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
-This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using ControlFreeC, CNVkit, and GATK, and SV calls using Manta.
-For whole genome sequencing (WGS) data, the workflow will also predict extra chromosomal DNA (ecDNA) usiong AmpliconArchitect
-Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor, then added an additional MAF output using a modified version of MSKCCs vcf2maf.
+This workflow takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using Control-FREEC, CNVkit, and GATK, and SV calls using Manta.
+For whole genome sequencing data, the workflow will also predict extra chromosomal DNA (ecDNA) using AmpliconArchitect
+Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor, then added an additional MAF output using a modified version of Memorial Sloan Kettering Cancer Center's (MSKCC) vcf2maf.
 See [annotation subworkflow doc](https://github.com/kids-first/kf-somatic-workflow/blob/master/docs/kfdrc_annotation_subworkflow.md) for more details on annotation.
 
-If you would like to run this workflow using the cavatica public app, a basic primer on running public apps can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-Cavatica-af5ebb78c38a4f3190e32e67b4ce12bb).
+If you would like to run this workflow using the CAVATICA public app, a basic primer on running public apps can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-Cavatica-af5ebb78c38a4f3190e32e67b4ce12bb).
 Alternatively, if you'd like to run it locally using `cwltool`, a basic primer on that can be found [here](https://www.notion.so/d3b/Starting-From-Scratch-Running-CWLtool-b8dbbde2dc7742e4aff290b0a878344d) and combined with app-specific info from the readme below.
-This workflow is the current production workflow, equivalent to this [Cavatica public app](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-somatic-variant-workflow)
+This workflow is the current production workflow, equivalent to this [CAVATICA public app](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-somatic-variant-workflow)
 
-## Running WGS or WXS
+## Running Whole Genome Sequencing (WGS) or Whole Exome Sequencing (WXS)
 
 The [somatic variant workflow](https://github.com/kids-first/kf-somatic-workflow/blob/master/workflow/kfdrc-somatic-variant-workflow.cwl) is designed to be able to process either WGS or WXS inputs.
 This functionality comes from usage of the `wgs_or_wxs` input enum. Depending on what is provided for this input, the tool will
@@ -23,7 +23,7 @@ input to WGS the `lancet_padding` value will be set to 300; alternatively, if th
 value will be defaulted to 0. In either case, the user can override the defaults simply by providing their own value for `lancet_padding`
 in the inputs.
 
-The `wgs_or_wxs` flag also plays an integral role in the use of intervals throughout the pipeline.
+The `wgs_or_wxs` flag also plays an integral role in the preparation of intervals throughout the pipeline.
 
 ### Calling Intervals, in short
 
@@ -63,7 +63,7 @@ extreme runtime and cost. By starting from an limited calling region and
 supplementing with calls from Mutect2 and/or Strelka2, Lancet is able to run on
 the scale of hours rather than days.
 
-The `chr_len` file is only relevant for calling with ControlFreeC. ControlFreeC
+The `chr_len` file is only relevant for calling with Control-FREEC. Control-FREEC
 is unique in that its calling regions can only be limited at the chromosome
 level. This file can be a cut down FAI with only the chromosomes that are in
 your experiment and you wish to call.
@@ -92,15 +92,15 @@ Each caller has a different approach to variant calling, and together one can gl
 
 #### CNV Estimators
 
-- [ControlFreeC](https://github.com/BoevaLab/FREEC) `v11.6` is used for CNV estimation.
+- [Control-FREEC](https://github.com/BoevaLab/FREEC) `v11.6` is used for CNV estimation.
 The tool portion of the workflow is a port from the [Seven Bridges Genomics](https://www.sevenbridges.com/) team, with a slight tweak in image outputs.
 Also, the workflow wrapper limits what inputs and outputs are used based on our judgement of utility.
 Outputs include raw ratio calls, copy number calls with p values assigned, b allele frequency data, as well as copy number and b allele frequency plots.
 - [CNVkit](https://cnvkit.readthedocs.io/en/v0.9.3/) `v0.9.3` is a second CNV tool we currently use.
 - [THeTa2](https://github.com/kids-first/THetA/tree/v0.7.1) is used to inform and adjust copy number calls from CNVkit with purity estimations.
-- [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somatic CNVs using a Panel of Normals created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl). **Note: If a PON is not provided, GATK CNV will be skipped!**
+- [GATK CNV](https://gatk.broadinstitute.org/hc/en-us/articles/360035531152--How-to-Call-common-and-rare-germline-copy-number-variants) uses GATK 4.2.4.1 to call somatic CNVs using a Panel of Normals (PON) created using [this workflow](https://github.com/kids-first/kf-gatk-cnv-wf/blob/master/workflows/kf_create_cnv_pon_wf.cwl).
 
-For ControlFreeC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy.
+For Control-FREEC and CNVkit, we take advantage of b allele frequency (using the gVCF created by our [alignment and haplotypecaller workflows](https://github.com/kids-first/kf-alignment-workflow), **then** running our [Single Sample Genotyping Workflow](https://cavatica.sbgenomics.com/public/apps#cavatica/apps-publisher/kfdrc-single-sample-genotyping-wf/) on the gVCF) integration for copy number genotype estimation and increased CNV accuracy.
 
 #### ecDNA Prediction
  - [AmpliconArchitect](https://github.com/jluebeck/PrepareAA/blob/master/GUIDE.md) is used to predict ecDNAs
@@ -123,26 +123,26 @@ These inputs, and their behavior, are as follows:
 - wgs_or_wxs: WGS or WXS mode.
     - WXS mode disables Amplicon Architect, even if run_amplicon_architect is set to true
     - Activates appropriate interval processing
-- run_vardict: Set to false to disable Vardict.
-    - Warning! Enabling Theta2 with Vardict disabled will throw an error!
+- run_vardict: Set to false to disable VarDict.
+    - Warning! Enabling THeTa2 with VarDict disabled will throw an error!
 - run_mutect2: Set to false to disable Mutect2.
     - Warning! Enabling Lancet in WGS mode with Mutect2 disabled will throw an error!
 - run_strelka2: Set to false to disable Strelka2.
     - Warning! Enabling Lancet in WGS mode with Strelka2 disabled will throw an error!
 - run_lancet: Set to false to disable Lancet.
-- run_controlfreec: Set to false to disable ControlFreeC.
+- run_controlfreec: Set to false to disable Control-FREEC.
 - run_cnvkit: Set to false to disable CNVkit.
     - Warning! Enabling Amplicon Architect with CNVkit disabled will throw an error!
-    - Warning! Enabling Theta2 with CNVkit disabled will throw an error!
+    - Warning! Enabling THeTa2 with CNVkit disabled will throw an error!
 - run_amplicon_architect: Set to false to disable Amplicon Architect.
-- run_theta2: Set to false to disable Theta2.
+- run_theta2: Set to false to disable THeTa2.
 - run_manta: Set to false to disable Manta.
 - run_gatk_cnv: Set to false to disable GATK CNV.
 
 The first step of the workflow will check the user inputs and throw errors for impossible scenarios:
 - Enabling Lancet in WGS without enabling either Mutect2 or Strelka2
 - Enabling Amplicon Architect without enabling CNVkit or providing the Mosek config file
-- Enabling Theta2 without enabling both Vardict and CNVkit
+- Enabling THeTa2 without enabling both VarDict and CNVkit
 - Enabling GATK CNV without providing a Panel of Normals
 
 ### Tips to Run:
@@ -151,12 +151,12 @@ The first step of the workflow will check the user inputs and throw errors for i
 
 1. When in doubt, all of our reference files can be obtained from here: https://cavatica.sbgenomics.com/u/kfdrc-harmonization/kf-references/
 
-1. For ControlFreeC, it is highly recommended that you supply a VCF file with germline calls, GATK Haplotype caller recommended.
+1. For Control-FREEC, it is highly recommended that you supply a VCF file with germline calls, GATK Haplotype caller recommended.
 Please also make sure the index for this file is available.
 Also, a range of input ploidy possibilities for the inputs are needed. You can simply use `2`, or put in a range, as an array, like 2, 3, 4.
 For mate orientation, you will need to specify, the drop down and tool doc explains your options.
 
-1. As a CAVATICA app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for ControlFreeC, and `PASS` filter tool mode.
+1. As a CAVATICA app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for Control-FREEC, and `PASS` filter tool mode.
 
 1. `select_vars_mode`: On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
 Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
@@ -183,7 +183,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
       Last column must be chromosome length.
     - `coeff_var`: 0.05
     - `contamination_adjustment`: FALSE
-    - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
+    - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our CAVATICA reference project
     - `protein_snv_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to tsv
     - `protein_indel_hotspots`: [hotspots_v2.xls](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspotsRecommend pulling the two relevant columns for SNVs only, and convert to tsv
     - `echtvar_anno_zips`: `gnomad_3_1_1.vwb_subset.echtvar_0_1_9.zip`. Echtvar annotation ZIP file made using echtvar encode on an export of the gnomAD v3.1.1 genomes reference made available from the KF workbench.
@@ -210,7 +210,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
             - `mutect2_filtered_vcf`: VCF with SNV, MNV, and INDEL variant calls. Contains all soft `FILTER` values generated by variant caller. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
             - `mutect2_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
             - `mutect2_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
-        - VardictJava
+        - VarDictJava
             - `vardict_prepass_vcf`: VCF with SNV, MNV, and INDEL variant calls. Contains all soft `FILTER` values generated by variant caller. Use this file if you believe important variants are being left out when using the algorithm's `PASS` filter
             - `vardict_protected_outputs`: Array of files containing MAF format of PASS hits, `PASS` VCF with annotation pipeline soft `FILTER`-added values, and VCF index
             - `vardict_public_outputs`: Same as above, except MAF and VCF have had entries with soft `FILTER` values removed
@@ -228,8 +228,8 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
             - `annotsv_unannotated_calls`: This file contains all records from the `manta_pass_vcf` that AnnotSV could not annotate.
     - Copy number variation callers
         - ControlFREEC
-            - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from ControlFreeC.  See author manual for more details.
-            - `ctrlfreec_config`: Config file used to run ControlFreeC.  Has some useful information on what parameters were used to run the tool.
+            - `ctrlfreec_pval`: CNV calls with copy number and p value confidence, a qualitative "gain, loss, neutral" assignment, and genotype with uncertainty assigned from Control-FREEC.  See author manual for more details.
+            - `ctrlfreec_config`: Config file used to run Control-FREEC.  Has some useful information on what parameters were used to run the tool.
             - `ctrlfreec_pngs`: Plots of b allele frequency (baf) log2 ratio and ratio of tumor/normal copy number coverage.  Pink line in the middle of ratio plots is the median ratio.
             - `ctrlfreec_bam_ratio`: Bam ratio text file.  Contain ratio, median ratio (used to inform `ctrlfreec_pval`), cnv estimates, baf estimate, and genotype estimate.
             - `ctrlfreec_bam_seg`: In-house generated seg file based on ratio file.  Provided asa a convenience for compatibility with tools that require inputs in legacy microarray format.
@@ -242,11 +242,11 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
             - `cnvkit_metrics`: Basic seg count and call stats
             - `cnvkit_gainloss`: Per-gene log2 ratio
             - `cnvkit_seg`: Classic microarray-style seg file
-            - `theta2_calls`: Purity-adjusted CNVkit copy number calls based on theta2 results
-            - `theta2_seg`: Purity-adjusted CNVkit seg file based on theta results
-            - `theta2_subclonal_results`: Theta2 Subclone purity results
-            - `theta2_subclonal_cns`: Theta2 sublone cns
-            - `theta2_subclone_seg`: Theta subclone seg file
+            - `theta2_calls`: Purity-adjusted CNVkit copy number calls based on THeTa2 results
+            - `theta2_seg`: Purity-adjusted CNVkit seg file based on THeTa2 results
+            - `theta2_subclonal_results`: THeTa2 Subclone purity results
+            - `theta2_subclonal_cns`: THeTa2 sublone cns
+            - `theta2_subclone_seg`: THeTa2 subclone seg file
         - GATK CNV
             - `gatk_copy_ratio_segments_tumor`: Called copy-ratio-segments file for the tumor sample. This is a tab-separated values (TSV) file with SAM-style header containing a read group sample name, a sequence dictionary, a row specifying the column headers output by `CallCopyRatioSegments` and the corresponding entry rows.
             - `gatk_copy_ratio_segments_normal`: Called copy-ratio-segments file for the normal sample. This is a tab-separated values (TSV) file with SAM-style header containing a read group sample name, a sequence dictionary, a row specifying the column headers output by `CallCopyRatioSegments` and the corresponding entry rows.
@@ -255,10 +255,10 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
             - `gatk_cnv_funcotated_called_file_tumor`: TSV where each row is a segment and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
             - `gatk_cnv_funcotated_called_gene_list_file_tumor`: TSV where each row is a gene and the annotations are the covered genes and which genes+exon is overlapped by the segment breakpoints.
     - ecDNA Prediction
-        - `aa_summary`: Summary for all amplicons detected by AA
+        - `aa_summary`: Summary for all amplicons detected by AmpliconArchitect
         - `aa_cycles`: Text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant source) and their copy counts
         - `aa_graph`: A text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence, discordant, concordant, source) and their copy counts
-        - `aa_sv_png`: PNG image file displaying the SV view of AA
+        - `aa_sv_png`: PNG image file displaying the SV view of AmpliconArchitect
         - `aa_classification_profiles`: abstract classification of the amplicon
 
 1. Docker images - the workflow tools will automatically pull them, but as a convenience are listed below:
@@ -268,7 +268,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `GATK CNV`: broadinstitute/gatk:4.2.4.1
     - `Lancet`: pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7
     - `VarDict Java`: pgc-images.sbgenomics.com/d3b-bixu/vardict:1.7.0
-    - `ControlFreeC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
+    - `Control-FREEC`: images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
     - `CNVkit`: images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
     - `THetA2`: pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1
     - `samtools`: pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
@@ -278,12 +278,13 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
     - `bcftools` and `vcftools`: pgc-images.sbgenomics.com/d3b-bixu/bvcftools:latest
     - `annotsv`: pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
     - `AmpliconArchitect`: jluebeck/prepareaa:v0.1203.10
+    - `Echtvar`: pgc-images.sbgenomics.com/d3b-bixu/echtvar:0.1.9
 
 1. For highly complex samples, some tools have shown themselves to require memory allocation adjustments:
-   Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, GATK FilterMutectCalls and Vardict.
+   Manta, GATK LearnReadOrientationModel, GATK GetPileupSummaries, GATK FilterMutectCalls and VarDict.
    Optional inputs exist to expand the memory allocation for these jobs: manta_memory, learnorientation_memory,
    getpileup_memory, filtermutectcalls_memory, and vardict_ram, respectively.
-   For the java tools (Vardict and GATK), these values represent limits on the memory that can
+   For the java tools (VarDict and GATK), these values represent limits on the memory that can
    be used for the respective jobs. Tasks will go to these values and not exceed it. They may succeed or fail,
    but they will not exceed the limit established. The memory allocations for these is hardcapped. The memory
    allocation option for Manta, conversely, is a soft cap. The memory requested will be allocated for the job
