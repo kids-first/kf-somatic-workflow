@@ -41,8 +41,7 @@ releases of gnomAD we might go with that approach.
 ## Input JSON
 
 Once you have your VCF, the next step to create the Echtvar reference is to
-compose a JSON. The [Echtvar
-README](https://github.com/brentp/echtvar#configuration-file-for-encode) is
+compose a JSON. The [Echtvar README](https://github.com/brentp/echtvar#configuration-file-for-encode) is
 again a great source of information. Below you can see what we ultimately used
 for our `gnomad_3_1_1.vwb_subset.echtvar_0_1_9.zip` file. As the versions
 change we'll likely update what we use but the general concepts remain true.
@@ -71,7 +70,7 @@ change we'll likely update what we use but the general concepts remain true.
 ]
 ```
 
-1. All `fields` are given a unique `alias`. Here we just prepent all of the
+1. All `fields` are given a unique `alias`. Here we just prepend all of the
    fields with the release of gnomAD we are using (3.1.1).
 1. All integer fields (`AC`, `AN`, `AC_popmax`, etc.) are given a `missing_value` of
    -2147483648. This integer corresponds to `0x80000000` which is the 32 bit
