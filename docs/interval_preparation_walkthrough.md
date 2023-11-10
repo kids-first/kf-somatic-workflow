@@ -168,7 +168,7 @@ All steps of the workflow are GATK/Picard:
 |---------------|----------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
 | CNVkit        | No Intervals                                                                                                               | calling regions<br>- blacklist regions                                                         |
 | Control-FREEC | No Intervals                                                                                                               | calling regions<br>- blacklist regions                                                         |
-| GATK CNV      | cnv calling regions<br>- cnv blacklist regions                                                                             | cnv calling regions<br>- cnv blacklist regions                                                 |
+| GATK CNV      | cnv calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                                                   | cnv calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                       |
 | Lancet        | coding sequence regions<br>+ Mutect2 VCF<br>+ Strelka2 VCF<br>- calling blacklist<br>+ scattered<br>From tool: 300 padding | calling regions<br>+ 100 padding<br>- blacklist regions<br>From tool: 0 padding                |
 | Manta         | calling regions<br>- blacklist regions                                                                                     | calling regions<br>+ 100 padding<br>- blacklist regions                                        |
 | Mutect2       | calling regions<br>- blacklist regions<br>+ 80M bands<br>+ scattered                                                       | calling regions<br>+ 100 padding<br>- blacklist regions<br>+ scattered                         |
@@ -341,3 +341,17 @@ Using the above reasoning, we ultimately went with the following for band sizes:
   computationally expensive. Larger bands result cause RAM usage far outside
   what we were willing to allocate to the scattered tasks. 20K was the largest we
   could provide with the default 16 GB of RAM.
+
+## Note from GATK on CNV Intervals
+
+Considerations in genomic intervals are as follows.
+- For targeted exomes, the intervals should represent the bait capture or
+  target capture regions.
+- For whole genomes, either supply regions where coverage is expected across
+  samples, e.g. that exclude alternate haplotypes and decoy regions in GRCh38
+  or omit the option for references where coverage is expected for the entirety
+  of the reference.
+- For either type of data, expect to modify the intervals depending on (i)
+  extent of masking in the reference used in read mapping and (ii) expectations
+  in coverage on allosomal contigs. For example, for mammalian data, expect to
+  remove Y chromosome intervals for female samples
