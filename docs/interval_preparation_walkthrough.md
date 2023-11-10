@@ -123,7 +123,7 @@ the user's experiment and they wish to call.
 
 Now that you understand your intervals, you can run the somatic workflow! If you
 trust that we're doing everything perfectly, that's great! No need to keep
-reading. If not, please allow my to introduce...
+reading. If not, please allow me to introduce...
 
 
 ### Prepare Regions: Our Interval Processing Engine

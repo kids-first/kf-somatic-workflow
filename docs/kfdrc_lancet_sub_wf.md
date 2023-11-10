@@ -1,4 +1,4 @@
-# Kids First DRC GATK Lancet Variant Calling Subworkflow
+# Kids First DRC Lancet Variant Calling Subworkflow
 This is a subworkflow that is part of the Kids First DRC Somatic Variant Workflow that can be run nearly as standalone, with a wrapper that creates scattered interval lists.
 Lancet is a variant caller that calls single nucleotide variants, multi-nucleotide variants, and small insertions and deletions.
 
