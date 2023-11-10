@@ -27,7 +27,7 @@ user likes. If you're reading this you likely fall into the group seeking the
 former. So what are the most generic calling regions? That depends on how the
 reads in the alignment file were created. In general, you're going to want to
 call all of the regions you sequenced and aligned. Are your reads from a
-targetted sequencing experiment or do they cover the whole genome?
+targeted sequencing experiment or do they cover the whole genome?
 
 #### WXS Calling Regions
 
@@ -100,7 +100,7 @@ describe a scenario where the user is able to use the same input for
 Another consideration the user might like to make is the removal of centromeres
 or other problematic regions. Internal testing has shown that removing high
 signal regions can save time and money with tools that do local realignment,
-such as Vardict.
+such as VarDict.
 
 ### Other Regions Files
 
@@ -173,11 +173,11 @@ All steps of the workflow are GATK/Picard:
 | Manta         | calling regions<br>- blacklist regions                                                                                     | calling regions<br>+ 100 padding<br>- blacklist regions                                        |
 | Mutect2       | calling regions<br>- blacklist regions<br>+ 80M bands<br>+ scattered                                                       | calling regions<br>+ 100 padding<br>- blacklist regions<br>+ scattered                         |
 | Strelka2      | calling regions<br>- blacklist regions                                                                                     | calling regions<br>+ 100 padding<br>- blacklist regions                                        |
-| Vardict       | calling regions<br>- blacklist regions<br>+ 20K bands<br>+ scattered<br>From tool: 150 padding                             | calling regions<br>+ 100 padding<br>- blacklist regions<br>+ scattered<br>From tool: 0 padding |
+| VarDict       | calling regions<br>- blacklist regions<br>+ 20K bands<br>+ scattered<br>From tool: 150 padding                             | calling regions<br>+ 100 padding<br>- blacklist regions<br>+ scattered<br>From tool: 0 padding |
 
 ### Whole Genome Sequencing (WGS) Interval Preparation
 
-WGS has three rounds of interval prepration:
+WGS has three rounds of interval preparation:
 1. The [first round](#whole-genome-calling-intervals) creates the intervals for all, except Lancet, SNV and SV callers
 1. The [second round](#exome-calling-intervals) creates the intervals for Lancet
 1. The [third round](#copy-number-calling-intervals) handles copy number intervals
@@ -194,7 +194,7 @@ From there we do the following:
 - Manta uses the unscattered intervals from 2.
 - Strelka2 uses the unscattered intervals from 2.
 - Mutect2 uses the scattered intervals from 3.
-- Vardict uses the scattered intervals from 4.
+- VarDict uses the scattered intervals from 4.
 
 For more information on the band size please see [this note](#wgs-scatter-band-size-difference).
 
@@ -203,7 +203,7 @@ For more information on the band size please see [this note](#wgs-scatter-band-s
 The second round of interval preparation kicks off after Strelka2 and Mutect2
 have finished. The sole purpose of the second round of interval preparation is
 to construct a set of calling intervals for Lancet. Lancet is capable of
-calling with the true whole genome intervalsi above; Lancet, however, is
+calling with the true whole genome intervals above; Lancet, however, is
 glacially slow when given these intervals. Even with scattering, running Lancet
 on the true whole genome intervals can take days. Given this issue, we run
 Lancet on what can be described as **EXOME+** intervals. The general idea
@@ -246,7 +246,7 @@ because they believe those regions are "inaccessable to sequencing".
 
 Control-FREEC provides, ironically, the least control when it comes to
 restricting the calling region. The tool provides no way to restrict calling
-with intervals. Calling can only be controled at the chromosome level using the
+with intervals. Calling can only be controlled at the chromosome level using the
 `chr_len` input.
 
 ### Whole Exome Sequencing (WXS) Interval Preparation
@@ -271,7 +271,7 @@ regions` for WXS:
 - Strelka2 uses the unscattered bed from 3.
 - Lancet uses the scattered beds from 4.
 - Mutect2 uses the scattered beds from 4.
-- Vardict uses the scattered beds from 4.
+- VarDict uses the scattered beds from 4.
 
 #### Unpadded Capture Regions
 
@@ -300,7 +300,7 @@ the `cnv_calling_regions` and `cnv_blacklist_regions` as-is.
 
 From the [CNVkit Documentation](https://cnvkit.readthedocs.io/en/master/quickstart.html?#build-a-reference-from-normal-samples-and-infer-tumor-copy-ratios).
 
-> target vs. bait BED files: For hybrid capture, the targeted regions (or
+> target vs bait BED files: For hybrid capture, the targeted regions (or
 > "primary targets") are the genomic regions your capture kit attempts to
 > ensure are well covered, e.g. exons of genes of interest. The baited regions
 > (or "capture targets") are the genomic regions your kit actually captures,
@@ -313,7 +313,7 @@ One of the more interesting things about the N masking assumption (that is:
 centromeres, telomeres, and highly repetitive regions are masked in the
 reference FASTA), is that it's entirely true for our standard reference FASTA.
 GATK's `Homo_sapiens_assembly38.fasta` reference does not N-mask its
-centromeres or high signal/repetitve regions found in [ENCODE's
+centromeres or high signal/repetitive regions found in [ENCODE's
 blacklist](https://github.com/Boyle-Lab/Blacklist/blob/master/lists/hg19-blacklist-README.pdf).
 
 ## WGS Scatter Band Size Difference
@@ -337,7 +337,7 @@ Using the above reasoning, we ultimately went with the following for band sizes:
   The reason we did not go smaller than that is because we noticed we were losing
   calls near the breaks. When we set the bands to 1M we noticed a loss of calls
   that compelled us to go larger and minimize the breaks.
-- Vardict: we chose bands of 20K bases because Vardict is extremely
+- VarDict: we chose bands of 20K bases because VarDict is extremely
   computationally expensive. Larger bands result cause RAM usage far outside
   what we were willing to allocate to the scattered tasks. 20K was the largest we
   could provide with the default 16 GB of RAM.
