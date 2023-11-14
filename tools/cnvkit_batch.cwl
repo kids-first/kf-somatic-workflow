@@ -33,6 +33,7 @@ arguments:
           }
           return cmd;
       }
+      $(inputs.access != null ? "--access " + inputs.access.path : "")
       $(inputs.input_sample.path)
       ${
           var cmd = "";
@@ -102,6 +103,7 @@ inputs:
   reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
   cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
+  access: { type: 'File?', doc: "Regions of accessible sequence on chromosomes (.bed), as output by the 'access' command." }
   capture_regions: {type: ['null', File], doc: "target regions for WES"}
   annotation_file: {type: ['null', File], doc: "refFlat.txt file,  needed if cnv kit cnn not already built"}
   output_basename: string
