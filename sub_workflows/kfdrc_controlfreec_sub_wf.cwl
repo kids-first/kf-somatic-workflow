@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 id: kfdrc_controlfreec_sub_wf
 
@@ -6,10 +6,13 @@ requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
   - class: SubworkflowFeatureRequirement
+  - class: StepInputExpressionRequirement
+  - class: InlineJavascriptRequirement
 
 inputs:
   input_tumor_aligned: {type: File, secondaryFiles: ['^.bai']}
   input_normal_aligned: {type: File, secondaryFiles: ['^.bai']}
+  wgs_or_wxs: {type: {type: enum, name: wgs_or_wxs, symbols: ["WGS", "WXS"]}, doc: "Select if this run is WGS or WXS"}
   input_tumor_name: {type: string, doc: "Sample name to put into the converted seg file"}
   threads: {type: int, doc: "Number of threads to run controlfreec.  Going above 16 is not recommended, there is no apparent added value"}
   output_basename: string
@@ -20,11 +23,9 @@ inputs:
   min_subclone_presence: {type: 'int?', doc: "Use if you want to detect sublones. Recommend 20 for WGS, 30 for WXS"}
   mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}], default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
-  capture_regions: {type: ['null', File], doc: "If not WGS, provide "}
-  indexed_reference_fasta: {type: File, secondaryFiles: [.fai]}
-  reference_fai: {type: File, doc: "fasta index file for seg file conversion"}
+  calling_regions: { type: File, doc: "BED containing the regions over which Control-FREEC should be run. For WXS, these are the bait intervals." }
+  indexed_reference_fasta: {type: File, secondaryFiles: [.fai], doc: "Reference FASTA file and associated FAI index." }
   b_allele: {type: ['null', File], doc: "germline calls, needed for BAF.  VarDict input recommended.  Tool will prefilter for germline and pass if expression given"}
-  chr_len: {type: File, doc: "TSV with chromsome names and lengths. Limit to chromosome you actually want analyzed"}
   coeff_var: {type: float, default: 0.05, doc: "Coefficient of variantion to set window size.  Default 0.05 recommended"}
   contamination_adjustment: {type: ['null', boolean], doc: "TRUE or FALSE to have ControlFreec estimate normal contam"}
   cfree_sex: {type: ['null', {type: enum, name: sex, symbols: ["XX", "XY"] }], doc: "If known, XX for female, XY for male"}
@@ -40,12 +41,22 @@ outputs:
   ctrlfreec_info: {type: File, outputSource: rename_outputs/ctrlfreec_info}
 
 steps:
+  awk_chrlen_builder:
+    run: ../tools/awk_chrlen_builder.cwl
+    in:
+      input_intervals: calling_regions
+      reference_fai:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.fai$/) != -1 })[0])
+    out: [chrlen]
+
   controlfreec_tumor_mini_pileup:
     run: ../tools/control_freec_mini_pileup.cwl
     in:
       input_reads: input_tumor_aligned
       threads:
-        valueFrom: ${return 16}
+        valueFrom: $(16)
       reference: indexed_reference_fasta
       snp_vcf: b_allele
     out:
@@ -56,18 +67,18 @@ steps:
     in:
       input_reads: input_normal_aligned
       threads:
-        valueFrom: ${return 16}
+        valueFrom: $(16)
       reference: indexed_reference_fasta
       snp_vcf: b_allele
     out:
       [pileup]
 
-  control_free_c: 
+  control_free_c:
     run: ../tools/control-freec-11-6-sbg.cwl
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.4xlarge
-    in: 
+    in:
       mate_copynumber_file_control: mate_copynumber_file_control
       mate_copynumber_file_sample: mate_copynumber_file_sample
       gem_mappability_file: gem_mappability_file
@@ -78,9 +89,12 @@ steps:
       mate_file_control: input_normal_aligned
       mate_orientation_control: mate_orientation_control
       mini_pileup_control: controlfreec_normal_mini_pileup/pileup
-      chr_len: chr_len
+      chr_len: awk_chrlen_builder/chrlen
       ploidy: ploidy
-      capture_regions: capture_regions
+      capture_regions:
+        source: [wgs_or_wxs, calling_regions]
+        valueFrom: |
+          $(self[0] == 'WXS' ? self[1] : null)
       max_threads: threads
       reference: indexed_reference_fasta
       snp_file: b_allele
@@ -96,11 +110,14 @@ steps:
       input_pngs: control_free_c/pngs
       output_basename: output_basename
     out: [ctrlfreec_cnvs, ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_baf, ctrlfreec_info]
-  
+
   convert_ratio_to_seg:
     run: ../tools/ubuntu_ratio2seg.cwl
     in:
-      reference_fai: reference_fai
+      reference_fai:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.fai$/) != -1 })[0])
       ctrlfreec_ratio: control_free_c/ratio
       sample_name: input_tumor_name
       output_basename: output_basename

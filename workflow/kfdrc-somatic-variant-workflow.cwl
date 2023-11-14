@@ -138,10 +138,6 @@ doc: |-
       - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz` from https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/ - variant effect predictor cache.
        Current production workflow uses this version.
       - `threads`: 16
-      - `chr_len`: hs38_chr.len, this a tsv file with chromosomes and their lengths. Should be limited to canonical chromosomes
-        The first column must be chromosomes, optionally the second can be an alternate format of chromosomes.
-        Last column must be chromosome length.
-        Using the `hg38_strelka_bed`, and removing chrM can be a good source for this.
       - `coeff_var`: 0.05
       - `contamination_adjustment`: FALSE
       - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots. This can be obtained from our cavatica reference project
@@ -287,12 +283,9 @@ inputs:
   old_normal_name: {type: 'string?', doc: "If `SM:` sample name in te align file is different than `input_normal_name`, you **must**
       provide it here"}
   calling_regions: { type: 'File', doc: "BED or INTERVALLIST file containing a set of genomic regions over which the callers will be run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for their analysis." }
-  blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions." }
-  cnv_calling_regions: { type: 'File', doc: "BED or INTERVALLIST file containing a set of genomic regions over which the CNV callers will be run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for their analysis." }
-  cnv_blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the CNV calling regions." }
+  blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions for SNV and SV calling." }
+  cnv_blacklist_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions for CNV calling only!" }
   coding_sequence_regions: { type: 'File?', doc: "BED or INTERVALLIST file containing the coding sequence regions for the provided reference. This input is used to create custom intervals for WGS Lancet Calling.", "sbg:suggestedValue": { class: File, path: 5f500135e4b0370371c051c0, name: GRCh38.gencode.v31.CDS.merged.bed }}
-  cfree_chr_len: {type: 'File', doc: "file with chromosome lengths", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c4,
-      name: hs38_chr.len}}
   cfree_ploidy: {type: 'int[]', doc: "Array of ploidy possibilities for ControlFreeC to try"}
   cnvkit_annotation_file: {type: 'File', doc: "refFlat.txt file", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c1,
       name: refFlat_HG38.txt}}
@@ -542,6 +535,8 @@ steps:
     when: $(inputs.wgs_or_wxs == 'WXS')
     in:
       wgs_or_wxs: wgs_or_wxs
+      run_tool:
+        source: [runtime_validator/run_mutect2, runtime_validator/run_strelka2, runtime_validator/run_vardict, runtime_validator/run_manta, runtime_validator/run_lancet]
       reference_dict:
         source: indexed_reference_fasta
         valueFrom: |
@@ -557,7 +552,11 @@ steps:
     out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
   prepare_regions_unpadded:
     run: ../sub_workflows/prepare_regions.cwl
+    when: $(inputs.wgs_or_wxs == 'WGS')
     in:
+      wgs_or_wxs: wgs_or_wxs
+      run_tool:
+        source: [runtime_validator/run_mutect2, runtime_validator/run_strelka2, runtime_validator/run_vardict, runtime_validator/run_manta]
       reference_dict:
         source: indexed_reference_fasta
         valueFrom: |
@@ -574,11 +573,27 @@ steps:
     when: $(inputs.wgs_or_wxs == 'WGS')
     in:
       wgs_or_wxs: wgs_or_wxs
+      run_tool: runtime_validator/run_vardict
       calling_regions: prepare_regions_unpadded/prescatter_intervallist
       break_bands_at_multiples_of:
         valueFrom: $(20000)
       scatter_count:
         valueFrom: $(50)
+    out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
+  prepare_regions_unpadded_cnv:
+    run: ../sub_workflows/prepare_regions.cwl
+    when: $(inputs.run_tool.some(function(e) { return e }))
+    in:
+      run_tool:
+        source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
+      reference_dict:
+        source: indexed_reference_fasta
+        valueFrom: |
+          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
+      calling_regions: calling_regions
+      blacklist_regions: cnv_blacklist_regions
+      scatter_count:
+        valueFrom: $(0)
     out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
   bedtools_intersect_germline:
     run: ../tools/bedtools_intersect.cwl
@@ -588,7 +603,7 @@ steps:
         source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_vcf: b_allele
       output_basename: output_basename
-      input_bed_file: prepare_regions_unpadded/prescatter_bed
+      input_bed_file: prepare_regions_unpadded_cnv/prescatter_bed
       flag: runtime_validator/out_i_flag
     out: [intersected_vcf]
   gatk_filter_germline:
@@ -833,22 +848,15 @@ steps:
       input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
       input_tumor_name: input_tumor_name
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      wgs_or_wxs: wgs_or_wxs
       threads: cfree_threads
       output_basename: output_basename
       ploidy: cfree_ploidy
       mate_orientation_sample: cfree_mate_orientation_sample
       mate_orientation_control: cfree_mate_orientation_control
-      capture_regions:
-        source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
-        valueFrom: |
-          $(self[0] == 'WXS' ? self[1] : null)
+      calling_regions: prepare_regions_unpadded_cnv/prescatter_bed
       indexed_reference_fasta: indexed_reference_fasta
-      reference_fai:
-        source: indexed_reference_fasta
-        valueFrom: |
-          $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.fai$/) != -1 })[0])
       b_allele: gatk_filter_germline/filtered_pass_vcf
-      chr_len: cfree_chr_len
       coeff_var: cfree_coeff_var
       contamination_adjustment: cfree_contamination_adjustment
       cfree_sex: cfree_sex
@@ -863,10 +871,8 @@ steps:
       input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
       reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
-      capture_regions:
-        source: [wgs_or_wxs, prepare_regions_unpadded/prescatter_bed]
-        valueFrom: |
-          $(self[0] == 'WXS' ? self[1] : null)
+      capture_regions: prepare_regions_unpadded_cnv/prescatter_bed
+      blacklist_regions: cnv_blacklist_regions
       wgs_mode: runtime_validator/out_cnvkit_wgs_mode
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
@@ -950,7 +956,7 @@ steps:
         source: indexed_reference_fasta
         valueFrom: |
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
-      input_interval_list: cnv_calling_regions
+      input_interval_list: calling_regions
       input_exclude_interval_list: cnv_blacklist_regions
       bin_length:
         source: wgs_or_wxs
