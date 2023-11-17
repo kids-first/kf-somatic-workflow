@@ -12,22 +12,22 @@ receive the same intervals as other SNV callers; all CNV callers should receive
 the same intervals as other CNV callers; all SV callers should receive the same
 intervals as other SV callers.
 
-This approach might be overly idealistic as each caller ultimately has final say
-on its calling regions, but, at least from our end, we seek to minimize that
-source of difference.
+This approach might be overly idealistic as each caller has final say on its
+calling regions, but, at least from our end, we seek to minimize that source of
+difference.
 
 ## Getting Started
 
 ### Define the Calling Regions
 
-The `calling_regions` and `cnv_calling_regions` are the most foundational
-inputs for variant calling. In order to make any calls, the user must define
-the regions they wish to call. The regions can be as generic or specific as the
-user likes. If you're reading this you likely fall into the group seeking the
-former. So what are the most generic calling regions? That depends on how the
-reads in the alignment file were created. In general, you're going to want to
-call all of the regions you sequenced and aligned. Are your reads from a
-targeted sequencing experiment or do they cover the whole genome?
+The `calling_regions` are the most foundational inputs for variant calling. In
+order to make any calls, the user must define the regions they wish to call.
+The regions can be as generic or specific as the user likes. If you're reading
+this you likely fall into the group seeking the former. So what are the most
+generic calling regions? That depends on how the reads in the alignment file
+were created. In general, you're going to want to call all of the regions you
+sequenced and aligned. Are your reads from a targeted sequencing experiment or
+do they cover the whole genome?
 
 #### WXS Calling Regions
 
@@ -43,7 +43,7 @@ oligonucleotide baits of ~150 bases that sufficiently cover your target region
 (the exome). Therefore, in a WXS experiment the most complete calling region
 are the regions covered by the baits. Any WXS experiment should include a BED
 file of the baits used to generate the reads. This BED file should be your
-input for `calling_regions` and `cnv_calling_regions`.
+input for `calling_regions`.
 
 For more on target vs bait BED files, see [this note](#target-vs-bait-bed-files) from CNVkit.
 
@@ -80,27 +80,27 @@ gatk ScatterIntervalsByNs
 awk -F'\t' '$1 ~ /^@/ || $1 ~ /^chr([12]?[0-9]|[XYM])$/ { print $line }' calling_regions.interval_list > wgs.calling_regions.interval_list
 ```
 
-Following the above you now have your `calling_regions`, but you might want to
-make one or two small adjustments for the `cnv_calling_regions`. First, `chrM`
-is not necessary for CNV calling. Second, if your sample is female, you can
-also drop `chrY`. To remove these from consideration, you have two options.
-First, you can simply remove them from the `cnv_calling_regions`. Second, you
-can use the blacklist...
+Following the above you now have your `calling_regions`. These will work just
+fine for SNV and SV calling but they might present problems for CNV calling.
+First, `chrM` is not necessary for CNV calling. Second, if your sample is
+female, you are also going to want to drop `chrY`. To remove these from
+consideration you can use the blacklist...
 
 ### Blacklist Regions
 
-Both our `calling_regions` and `cnv_calling_regions` inputs have a
-corresponding blacklist input, `blacklist_regions` and `cnv_blacklist_regions`.
-These inputs allow the user to subtract unnecessary or problematic regions from
-the calling regions. The use of these inputs is entirely optional. Above I
-describe a scenario where the user is able to use the same input for
-`calling_regions` and `cnv_calling_regions` through the use of the
-`cnv_blacklist_regions` input.
+Our `calling_regions` have two corresponding blacklist inputs,
+`blacklist_regions` and `cnv_blacklist_regions`. These inputs allow the user to
+subtract unnecessary or problematic regions from the calling regions. The use
+of these inputs is entirely optional but highly recommended for CNV. Above I
+describe the alterations that the user should be making to their
+`calling_regions` through the use of the `cnv_blacklist_regions` input
+(removing `chrM` for WGS, removing `chrY` for females, removing centromeres,
+telomeres, etc.).
 
-Another consideration the user might like to make is the removal of centromeres
-or other problematic regions. Internal testing has shown that removing high
-signal regions can save time and money with tools that do local realignment,
-such as VarDict.
+Most CNV software recommend the removal of centromeres and other difficult
+regions; moreover, internal testing has shown that removing high signal regions
+can save time and money with SNV and SV tools that do local realignment, such
+as VarDict.
 
 ### Other Regions Files
 
@@ -116,8 +116,8 @@ the scale of hours rather than days.
 
 The `chr_len` file is only relevant for calling with Control-FREEC. Control-FREEC
 is unique in that its calling regions can only be limited at the chromosome
-level. This file can be a cut down FAI with only the chromosomes that are in
-the user's experiment and they wish to call.
+level. The pipeline will make this file for the user based on the chromosomes
+found in the input intervals.
 
 ## Interval Processing in the Somatic Workflow
 
@@ -166,9 +166,9 @@ All steps of the workflow are GATK/Picard:
 
 | TOOL          | WHOLE GENOME                                                                                                               | WHOLE EXOME                                                                                    |
 |---------------|----------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
-| CNVkit        | No Intervals                                                                                                               | calling regions<br>- blacklist regions                                                         |
-| Control-FREEC | No Intervals                                                                                                               | calling regions<br>- blacklist regions                                                         |
-| GATK CNV      | cnv calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                                                   | cnv calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                       |
+| CNVkit        | accessible regions<br>- blacklist regions                                                                                  | calling regions<br>- blacklist regions                                                         |
+| Control-FREEC | chromosomes of calling regions<br>- blacklist regions                                                                      | calling regions<br>- blacklist regions                                                         |
+| GATK CNV      | calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                                                       | calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                       |
 | Lancet        | coding sequence regions<br>+ Mutect2 VCF<br>+ Strelka2 VCF<br>- calling blacklist<br>+ scattered<br>From tool: 300 padding | calling regions<br>+ 100 padding<br>- blacklist regions<br>From tool: 0 padding                |
 | Manta         | calling regions<br>- blacklist regions                                                                                     | calling regions<br>+ 100 padding<br>- blacklist regions                                        |
 | Mutect2       | calling regions<br>- blacklist regions<br>+ 80M bands<br>+ scattered                                                       | calling regions<br>+ 100 padding<br>- blacklist regions<br>+ scattered                         |
@@ -230,33 +230,34 @@ restricting calling.
 The easiest of these to understand is GATK CNV calling. The pipeline GATK has
 produced requires that the user provides intervals both at Panel of Normals
 (PON) creation as well as at sample processing. For GATK, we provide it both
-the `cnv_calling_regions` and `cnv_blacklist_regions` as-is.
+the `calling_regions` and `cnv_blacklist_regions` as-is.
 
 ##### CNVkit
 
 CNVkit handles its calling regions through its [access
-command](https://cnvkit.readthedocs.io/en/stable/pipeline.html#access). This
-command creates a BED file of the regions of the FASTA that do not have
-stretches of 5000 N bases. If this sounds familiar to you, it should. This is a
-much more generous version of the GATK `wgs_calling_regions.interval_list` (the
-GATK limits max Ns to 200, by contrast). The reasoning behind this removal is
-because they believe those regions are "inaccessable to sequencing".
+command](https://cnvkit.readthedocs.io/en/stable/pipeline.html#access). We run
+this command on the reference FASTA, exclude `cnv_blacklist_regions`, and
+tolerate streteches of 200 Ns. The resulting file is identical to the
+`wgs_calling_regions.interval_list` - `cnv_blacklist_regions`.  The reasoning
+behind this removal is because they believe those regions are "inaccessable to
+sequencing".
 
 ##### Control-FREEC
 
 Control-FREEC provides, ironically, the least control when it comes to
 restricting the calling region. The tool provides no way to restrict calling
-with intervals. Calling can only be controlled at the chromosome level using the
-`chr_len` input.
+with intervals. Calling can only be controlled at the chromosome level using a
+`chr_len`. Our pipeline will make this file based on the chromosomes present in
+the input intervals.
 
 ### Whole Exome Sequencing (WXS) Interval Preparation
 
 WXS also has three rounds of interval preparation:
-1. The [first round](#padded-capture-regions) creates the intervals for all SNV and SV callers
-2. The [second round](#unpadded-caputre-regions) creates the capture intervals for Control-FREEC and CNVkit
+1. The [first round](#snv-sv-bait-capture-regions) creates the intervals for all SNV and SV callers
+2. The [second round](#cnv-bait-caputre-regions) creates the capture intervals for Control-FREEC and CNVkit
 3. The [third round](#gatk-cnv-wxs) handles the intervals for GATK CNV
 
-#### Padded Capture Regions
+#### SNV SV Bait Capture Regionss
 
 As [discussed above](#wxs-calling-regions) exome sequencing starts from the
 bait regions. From there, unlike whole genome, we apply a padding of 100 bases
@@ -273,7 +274,7 @@ regions` for WXS:
 - Mutect2 uses the scattered beds from 4.
 - VarDict uses the scattered beds from 4.
 
-#### Unpadded Capture Regions
+#### CNV Bait Capture Regions
 
 A second set of intervals is created exclusively for Control-FREEC and CNVkit.
 For WXS, both of these programs have a specific input for capture regions. For
@@ -292,7 +293,7 @@ create the `unpadded caputre regions`:
 The easiest of these to understand is GATK CNV calling. The pipeline GATK has
 produced requires that the user provides intervals both at Panel of Normals
 (PON) creation as well as at sample processing. For GATK, we provide it both
-the `cnv_calling_regions` and `cnv_blacklist_regions` as-is.
+the `calling_regions` and `cnv_blacklist_regions` as-is.
 
 # Notes
 
