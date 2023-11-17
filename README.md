@@ -108,42 +108,32 @@ In order to perform variant calling, the user must provide some of these interva
 - `calling_regions`: genomic regions over which the SNV and SV callers will be run
 - `blacklist_regions`: genomic regions to remove from the SNV and SV calling regions
 - `coding_sequence_regions`: genomic regions covering the coding sequence regions of the genome to which the input BAM/CRAM/SAM was aligned
-- `cnv_calling_regions`: genomic regions over which the CNV callers will be run
 - `cnv_blacklist_regions`: genomic regions to remove from the CNV calling regions
-- `chr_len`: A list of chromosomes and their lengths
 
-The calling and blacklist files above are used as pairs. The blacklist regions
-first removed from the calling regions and the resulting regions are what are
-passed to callers. SNV and SV callers receive the regions that are
-`calling_regions` with `blacklist_regions` removed. CNV callers receive the
-regions that are `cnv_calling_regions` with `cnv_blacklist_regions` removed.
+The calling is the base calling regions for the sample. These regions are
+further modified by the two blacklist files. The blacklist regions first
+removed from the calling regions and the resulting regions are what are passed
+to callers. SNV and SV callers receive the regions that are `calling_regions`
+with `blacklist_regions` removed. CNV callers receive the regions that are
+`calling_regions` with `cnv_blacklist_regions` removed.
 
 In general, what is expected of the user to provide for these intervals is:
 - WGS
    - `calling_regions`: Whole genome calling regions (for GATK these are the regions of the FASTA on `chr1-22,X,Y` where there is no span of more than 200 Ns; for completeness we add `chrM`)
    - `blacklist_regions`: Regions that the user is confident are of no interest to SNV and SV calling, if any. Telomeres, centromeres, high signal regions, repetitive regions, etc.
+   - `cnv_blacklist_regions`: Regions of the `calling_regions` the user is confident are of no interest to CNV calling, if any. These regions include chrM, telomeres, centromeres, high signal regions, repetitive regions, etc.
    - `coding_sequence_regions`: Regions of the genome that GENCODE defines as CDS; can be determined from [their GTF](https://www.gencodegenes.org/human/)
-   - `cnv_calling_regions`: Whole genome calling regions (for GATK these are the regions of the FASTA on `chr1-22,X,Y` where there is no span of more than 200 Ns)
-   - `cnv_blacklist_regions`: Regions that the user is confident are of no interest to CNV calling, if any. Telomeres, centromeres, high signal regions, repetitive regions, etc.
-   - `chr_len`: Chromosome names and lengths for `chr1-22,X,Y`
 - WXS
-   - `calling_regions`: Unpadded capture regions for the WXS experiment
-   - `blacklist_regions`: Regions of the capture region that the user is confident are of no interest to SNV and SV calling, if any
-   - `coding_sequence_regions`: This input is not used in WXS runs. Providing it does nothing
-   - `cnv_calling_regions`: Unpadded capture regions for the WXS experiment
+   - `calling_regions`: The experimental bait capture regions
+   - `blacklist_regions`: Regions of the `calling_regions` that the user is confident are of no interest to SNV and SV calling, if any
    - `cnv_blacklist_regions` Regions of the capture region that the user is confident are of no interest to CNV calling, if any
-   - `chr_len`: Chromosome names and lengths for all chromosomes found in the capture regions
+   - `coding_sequence_regions`: This input is not used in WXS runs. Providing it does nothing
 
 The coding sequence regions are only relevant for calling WGS data using
 Lancet. Presenting Lancet with intervals spanning the whole genome will lead to
 extreme runtime and cost. By starting from an limited calling region and
 supplementing with calls from Mutect2 and/or Strelka2, Lancet is able to run on
 the scale of hours rather than days.
-
-The `chr_len` file is only relevant for calling with Control-FREEC. Control-FREEC
-is unique in that its calling regions can only be limited at the chromosome
-level. This file can be a cut down FAI with only the chromosomes that are in
-your experiment and you wish to call.
 
 There's a lot more to talk about with intervals, how they are prepared, and
 some finer details. If you are interested, see our [interval preparation walkthrough](./docs/interval_preparation_walkthrough.md).
@@ -198,7 +188,6 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
    - `reference_dict`: [Homo_sapiens_assembly38.dict](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
    - `calling_regions`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK. **To create our canonical calling intervals, edit this file by leaving only entries related to chr1-22,X,Y,M. M may need to be added.**
    - `coding_sequence_regions`: `GRCh38.gencode.v31.CDS.merged.bed` For Lancet WGS, it's highly recommended to use CDS bed as the starting point and supplement with the regions of calls from Strelka2 & Mutect2. Our CDS regions were obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this GTF file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
-   - `chr_len`: `hs38_chr.len`, this a TSV file with chromosomes and their lengths. Should be limited to canonical chromosomes. The first column must be chromosomes, optionally the second can be an alternate format of chromosomes. Last column must be chromosome length.
    - `cnvkit_annotation_file`: [refFlat_HG38.txt](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refFlat.txt.gz) gunzip this file from UCSC
    - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
    - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
