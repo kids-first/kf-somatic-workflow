@@ -148,9 +148,9 @@ These inputs, and their behavior, are as follows:
 - `run_vardict`: Set to false to disable VarDict.
     - **Warning!** Enabling THeTa2 with VarDict disabled will throw an error!
 - `run_mutect2`: Set to false to disable Mutect2.
-    - **Warning!** Enabling Lancet in WGS mode with Mutect2 disabled will throw an error!
+    - **Warning!** Enabling Lancet in WGS mode with Mutect2 and Strelka2 disabled will throw an error!
 - `run_strelka2`: Set to false to disable Strelka2.
-    - **Warning!** Enabling Lancet in WGS mode with Strelka2 disabled will throw an error!
+    - **Warning!** Enabling Lancet in WGS mode with Strelka2 and Mutect2 disabled will throw an error!
 - `run_lancet`: Set to false to disable Lancet.
 - `run_controlfreec`: Set to false to disable Control-FREEC.
 - `run_cnvkit`: Set to false to disable CNVkit.
