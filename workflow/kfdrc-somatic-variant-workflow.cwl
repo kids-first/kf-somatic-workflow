@@ -532,7 +532,7 @@ steps:
     out: [bam_file]
   prepare_regions_padded:
     run: ../sub_workflows/prepare_regions.cwl
-    when: $(inputs.wgs_or_wxs == 'WXS')
+    when: $(inputs.wgs_or_wxs == 'WXS' && inputs.run_tool.some(function(e) { return e }))
     in:
       wgs_or_wxs: wgs_or_wxs
       run_tool:
@@ -552,7 +552,7 @@ steps:
     out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
   prepare_regions_unpadded:
     run: ../sub_workflows/prepare_regions.cwl
-    when: $(inputs.wgs_or_wxs == 'WGS')
+    when: $(inputs.wgs_or_wxs == 'WGS' && inputs.run_tool.some(function(e) { return e }))
     in:
       wgs_or_wxs: wgs_or_wxs
       run_tool:
@@ -570,7 +570,7 @@ steps:
     out: [ prescatter_intervallist, prescatter_bed, prescatter_bedgz, scattered_intervallists, scattered_beds ]
   prepare_regions_unpadded_minibands:
     run: ../sub_workflows/prepare_regions.cwl
-    when: $(inputs.wgs_or_wxs == 'WGS')
+    when: $(inputs.wgs_or_wxs == 'WGS' && inputs.run_tool)
     in:
       wgs_or_wxs: wgs_or_wxs
       run_tool: runtime_validator/run_vardict
@@ -635,7 +635,8 @@ steps:
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       bed_invtl_split:
         source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded_minibands/scattered_beds]
-        pickValue: the_only_non_null
+        valueFrom: |
+          $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
       padding: runtime_validator/out_vardict_padding
       min_vaf: vardict_min_vaf
       select_vars_mode: select_vars_mode
@@ -679,7 +680,8 @@ steps:
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       bed_invtl_split:
         source: [prepare_regions_padded/scattered_beds, prepare_regions_unpadded/scattered_beds]
-        pickValue: first_non_null
+        valueFrom: |
+          $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
       af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
       exac_common_vcf: mutect2_exac_common_vcf
       input_tumor_aligned: input_tumor_aligned
@@ -732,7 +734,8 @@ steps:
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       hg38_strelka_bed:
         source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
-        pickValue: first_non_null
+        valueFrom: |
+          $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       input_normal_aligned: input_normal_aligned
@@ -772,9 +775,10 @@ steps:
     out: [strelka2_prepass_vcf, strelka2_protected_outputs, strelka2_public_outputs]
   prepare_regions_lancet_wgs:
     run: ../sub_workflows/prepare_regions.cwl
-    when: $(inputs.wgs_or_wxs == 'WGS')
+    when: $(inputs.wgs_or_wxs == 'WGS' && inputs.run_tool)
     in:
       wgs_or_wxs: wgs_or_wxs
+      run_tool: runtime_validator/run_lancet
       reference_dict:
         source: indexed_reference_fasta
         valueFrom: |
@@ -810,7 +814,8 @@ steps:
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       bed_invtl_split:
         source: [prepare_regions_lancet_wgs/scattered_beds, prepare_regions_padded/scattered_beds]
-        pickValue: the_only_non_null
+        valueFrom: |
+          $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
       ram: lancet_ram
       window: runtime_validator/out_lancet_window
       padding: runtime_validator/out_lancet_padding
@@ -930,7 +935,8 @@ steps:
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       hg38_strelka_bed:
         source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
-        pickValue: first_non_null
+        valueFrom: |
+          $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
       input_tumor_aligned: input_tumor_aligned
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
