@@ -10,28 +10,25 @@ requirements:
   - class: ResourceRequirement
     ramMin: 8000
     coresMin: 4
-baseCommand: ["/bin/bash", "-c"]
-arguments:
-  - position: 0
-    shellQuote: false
-    valueFrom: >-
-      set -eo pipefail
+  - class: InitialWorkDirRequirement
+    listing:
+      - entryname: select_pass.sh
+        entry: |
+          #!/usr/bin/env bash
 
-      ${
-        var run_mode = inputs.mode;
-        if (run_mode == 'grep' || run_mode == 'gatk'){
-          var in_vcf = inputs.input_vcf.path;
-          var out_vcf = inputs.output_basename + '.' + inputs.tool_name + '.PASS.vcf.gz';
-          var cmd = '/gatk SelectVariants --java-options "-Xmx8000m" -V ' + in_vcf +  ' -O ' + out_vcf + ' --exclude-filtered TRUE';
-          if (run_mode == 'grep'){
-            cmd = 'zcat ' + in_vcf + ' | grep -E "^#|PASS" | bgzip > ' + out_vcf + '; tabix ' + out_vcf;
-          }
-          return cmd;
-        }
-        else{
-          throw new Error(run_mode + ' is a not a valid mode.  Choices are gatk or grep.');
-        }
-      }
+          set -eo pipefail
+
+          if [[ $(inputs.mode) = gatk ]]
+          then
+            /gatk SelectVariants --java-options "-Xmx8000m" --exclude-filtered TRUE -V $(inputs.input_vcf.path) -O $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
+          elif [[ $(inputs.mode) = grep ]]
+          then
+            zcat $(inputs.input_vcf.path) | grep -E "^#|PASS" | bgzip > $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz && tabix $(inputs.output_basename).$(inputs.tool_name).PASS.vcf.gz
+          else
+            echo "$(inputs.mode) is not a valid mode. Choices are gatk or grep" >&2 && exit 1
+          fi
+
+baseCommand: ["/bin/bash", "-x", "select_pass.sh"]
 
 inputs:
   input_vcf: {type: File, secondaryFiles: [.tbi]}
