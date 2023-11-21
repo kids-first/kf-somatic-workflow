@@ -13,14 +13,10 @@ requirements:
 baseCommand: [/bin/bash, -c]
 arguments:
   - position: 1
-    shellQuote: false
+    shellQuote: true
     valueFrom: >-
       set -eo pipefail;
-      ${
-        var ram = Math.floor(inputs.ram/1.074 - 1);
-        var exp_cmd = "export VAR_DICT_OPTS='\"-Xms768m\" \"-Xmx" + ram + "g\"';";
-        return exp_cmd;
-      }
+      export VAR_DICT_OPTS='"-Xms768m" "-Xmx$(Math.floor(inputs.ram/1.074 - 1))g"';
       /VarDict-1.7.0/bin/VarDict
       -G $(inputs.reference.path) -f $(inputs.min_vaf) -th $(inputs.cpus) --nosv -N $(inputs.output_basename)
       -b '$(inputs.input_tumor_bam.path)|$(inputs.input_normal_bam.path)'
