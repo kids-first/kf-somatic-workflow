@@ -12,20 +12,13 @@ requirements:
 baseCommand: ["/bin/bash", "-c"]
 arguments:
   - position: 1
-    shellQuote: false
+    shellQuote: true
     valueFrom: >-
-      set -eo pipefail
+      set -eo pipefail;
 
-      ${
-        if (inputs.snp_vcf == null){
-          return "echo No vcf provided, skipping >&2 && exit 0;"
-        }
-        else{
-          return "echo Creating pileup >&2;";
-        }
-      }
+      $(inputs.snp_vcf == null ? "echo No vcf provided, skipping >&2 && exit 0" : "echo Creating pileup >&2");
 
-      zcat ${if (inputs.snp_vcf != null) {return inputs.snp_vcf.path}} | grep -v "#" | awk {'printf ("%s\t%s\t%s\t%s\t%s\n", $1,$2-1,$2,$4,$5)'} > snps.bed
+      zcat $(inputs.snp_vcf != null ? inputs.snp_vcf.path : "") | grep -v "#" | awk {'printf ("%s\t%s\t%s\t%s\t%s\n", $1,$2-1,$2,$4,$5)'} > snps.bed;
 
       /opt/sambamba_0.5.9/sambamba_v0.5.9 mpileup
       -t $(inputs.threads)
