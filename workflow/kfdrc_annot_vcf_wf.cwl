@@ -341,5 +341,5 @@ $namespaces:
 "sbg:license": Apache License 2.0
 "sbg:publisher": KFDRC
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v4.3.4'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.0.0'
   label: github-release

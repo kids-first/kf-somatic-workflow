@@ -119,7 +119,6 @@ steps:
 
   annotate:
     run: ../workflow/kfdrc_annot_vcf_wf.cwl
-    label: Annotate VCF
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_vcf: gatk_selectvariants_strelka2/pass_vcf
