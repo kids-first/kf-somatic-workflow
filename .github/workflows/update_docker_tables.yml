@@ -24,6 +24,7 @@ jobs:
         name: Make Docker Table for Consensus Workflow
         run: |
           python .github/scripts/workflow_to_docker_table.py --output_file docs/dockers_consensus.md workflow/kfdrc_consensus_calling.cwl
+      - id: cpr
         name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
