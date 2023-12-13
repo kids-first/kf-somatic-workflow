@@ -9,7 +9,7 @@ permissions:
 jobs:
   update-tables:
     name: Update Docker Tables
-    runs-on: ubuntu:22.04
+    runs-on: ubuntu-22.04
     steps:
       - id: checkout
         uses: actions/checkout@v3
