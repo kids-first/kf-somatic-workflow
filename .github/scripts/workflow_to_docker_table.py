@@ -28,8 +28,8 @@ def parse_workflow(filepath: str, pathdict: dict | None = None) -> dict:
         pathdict: Dict containing two lists. One of unique subworkflows; one of unique tools
     """ 
     if not pathdict: pathdict = {}
-    if "workflows" not in pathdict: pathdict["workflows"] = []
-    if "tools" not in pathdict: pathdict["tools"] = []
+    if "workflows" not in pathdict: pathdict["workflows"] = set()
+    if "tools" not in pathdict: pathdict["tools"] = set()
     inpath = pathlib.Path(filepath).resolve()
     with open(inpath) as fh:
         for line in fh:
@@ -38,10 +38,10 @@ def parse_workflow(filepath: str, pathdict: dict | None = None) -> dict:
             respath = relpath.resolve()
             if respath in pathdict["workflows"] or respath in pathdict["tools"]: continue
             if not respath.match('*/tools/*'):
-                pathdict["workflows"].append(respath)
+                pathdict["workflows"].add(respath)
                 pathdict = parse_workflow(respath, pathdict)
             else:
-                pathdict["tools"].append(respath)
+                pathdict["tools"].add(respath)
     return pathdict
 
 def get_docker(filepath: str) -> str:
