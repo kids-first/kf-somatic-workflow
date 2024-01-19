@@ -33,7 +33,8 @@ def parse_workflow(filepath: str, pathdict: dict | None = None) -> dict:
     inpath = pathlib.Path(filepath).resolve()
     with open(inpath) as fh:
         for line in fh:
-            if "run:" not in line: continue
+            if not line.strip().startswith('run:'): continue
+            if not line.strip().endswith('.cwl'): continue
             relpath = inpath.parent / line.strip().split(' ')[-1]
             respath = relpath.resolve()
             if respath in pathdict["workflows"] or respath in pathdict["tools"]: continue
