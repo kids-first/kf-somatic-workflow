@@ -129,7 +129,7 @@ reading. If not, please allow me to introduce...
 ### Prepare Regions: Our Interval Processing Engine
 
 At the core of our interval preparation is the
-[prepare_regions.cwl](../tools/prepare_regions.cwl) Common Workflow Language (CWL)
+[prepare_regions.cwl](../sub_workflows/prepare_regions.cwl) Common Workflow Language (CWL)
 workflow. This workflow can perform variable interval manipulation. As it first
 starts with a `calling_regions` file. From there what it does depends on user
 input:
