@@ -28,7 +28,7 @@ outputs:
 
 steps:
   bcftools_filter_combined_vcf:
-    run: ../tools/bcftools_filter_vcf.cwl
+    run: ../kf-annotation-tools/tools/bcftools_filter_vcf.cwl
     in:
       input_vcf: paired_vcf
       include_expression: combined_include_expression
