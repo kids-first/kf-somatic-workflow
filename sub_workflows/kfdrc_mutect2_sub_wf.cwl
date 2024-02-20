@@ -168,7 +168,7 @@ steps:
     out: [pass_vcf]
 
   annotate:
-    run: ../workflow/kfdrc_annot_vcf_wf.cwl
+    run: ../kf-annotation-tools/workflows/kfdrc-somatic-snv-annot-workflow.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_vcf: gatk_selectvariants_mutect2/pass_vcf

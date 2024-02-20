@@ -183,7 +183,7 @@ steps:
     out: [output]
 
   annotate:
-    run: ../workflow/kfdrc_annot_vcf_wf.cwl
+    run: ../kf-annotation-tools/workflows/kfdrc-somatic-snv-annot-workflow.cwl
     in:
       indexed_reference_fasta: indexed_reference_fasta
       input_vcf: consensus_merge/output
