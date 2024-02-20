@@ -52,7 +52,9 @@ doc: |
 
   #### SNV Annotation
 
-  Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using VEP, then added an additional MAF output using a modified version of MSKCC vcf2maf. The annotation workflow can be [found here](./workflow/kfdrc_annot_vcf_wf.cwl). For details, please refer to the [workflow documentation](./docs/kfdrc_annotation_wf.md).
+  Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using VEP, then added an additional MAF output using a modified version of MSKCC vcf2maf.
+
+  The somatic annotation workflow is included in this repository as a submodule [found here](./kf-annotation-tools/workflows/kfdrc-somatic-snv-annot-workflow.cwl). To get the necessary files when downloading the repository, make sure use recursive flag for git clone: `git clone --recursive`. For details on the workflow and its components, please refer to the [workflow documentation](./kf-annotation-tools/docs/SOMATIC_SNV_ANNOT_README.md). The source repository for the annotation workflows can be [found here](https://github.com/kids-first/kf-annotation-tools).
 
   ### SV Callers
 
@@ -539,7 +541,8 @@ inputs:
         name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to
       create a public version", default: "FILTER=\"PASS\"|INFO/HotSpotAllele=1"}
-  echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno", "sbg:suggestedValue": [{class: File, path: 65c64d847dab7758206248c6, name: gnomad.v3.1.1.custom.echtvar.zip}]}
+  echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno",
+    "sbg:suggestedValue": [{class: File, path: 65c64d847dab7758206248c6, name: gnomad.v3.1.1.custom.echtvar.zip}]}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to
       add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to
