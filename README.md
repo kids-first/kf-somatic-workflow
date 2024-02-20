@@ -47,7 +47,7 @@ Each caller has a different approach to variant calling, and together one can gl
 
 #### SNV Annotation
 
-Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using VEP, then added an additional MAF output using a modified version of MSKCC vcf2maf. The annotation workflow can be [found here](./workflow/kfdrc_annot_vcf_wf.cwl). For details, please refer to the [workflow documentation](./docs/kfdrc_annotation_wf.md).
+Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using VEP, then added an additional MAF output using a modified version of MSKCC vcf2maf. The annotation workflow can be [found here](./kf-annotation-tools/workflows/kfdrc-somatic-snv-annot-workflow.cwl). For details, please refer to the [workflow documentation](./kf-annotation-tools/docs/SOMATIC_SNV_ANNOT_README.md).
 
 ### SV Callers
 
