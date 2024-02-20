@@ -1,0 +1,3 @@
+[submodule "kf-annotation-tools"]
+	path = kf-annotation-tools
+	url = git@github.com:kids-first/kf-annotation-tools.git
