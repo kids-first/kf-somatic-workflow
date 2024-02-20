@@ -16,6 +16,7 @@ jobs:
         name: Checkout Repo
         with:
           ref: ${{ github.head_ref }}
+          submodules: true
       - id: make-somatic-table
         name: Make Docker Table for Somatic Workflow
         run: |
