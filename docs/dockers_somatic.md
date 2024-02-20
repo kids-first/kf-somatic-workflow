@@ -22,7 +22,7 @@ cnvkit_export_theta2.cwl|images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
 cnvkit_import_theta2.cwl|images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
 control-freec-11-6-sbg.cwl|images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
 control_freec_mini_pileup.cwl|images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
-echtvar_anno.cwl|pgc-images.sbgenomics.com/d3b-bixu/echtvar:0.1.9
+echtvar_anno.cwl|pgc-images.sbgenomics.com/d3b-bixu/echtvar:0.2.0
 expression_flatten_file_list.cwl|None
 expression_pickvalue_workaround.cwl|None
 gatk_Mutect2.cwl|pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
