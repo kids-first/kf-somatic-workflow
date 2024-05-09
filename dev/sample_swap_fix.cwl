@@ -83,11 +83,11 @@ inputs:
       {class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid positions corresponding to\
-      \ hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c,
+      \ hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6a,
         name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited\
       \ file(s) containing protein names and amino acid position ranges corresponding\
-      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d,
+      \ to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6f,
         name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   bcftools_annot_columns: {type: 'string?', doc: "csv string of columns from annotation\
       \ to port into the input vcf, i.e INFO/AF", default: "INFO/gnomad_3_1_1_AC:=INFO/AC,INFO/gnomad_3_1_1_AN:=INFO/AN,INFO/gnomad_3_1_1_AF:=INFO/AF,INFO/gnomad_3_1_1_nhomalt:=INFO/nhomalt,INFO/gnomad_3_1_1_AC_popmax:=INFO/AC_popmax,INFO/gnomad_3_1_1_AN_popmax:=INFO/AN_popmax,INFO/gnomad_3_1_1_AF_popmax:=INFO/AF_popmax,INFO/gnomad_3_1_1_nhomalt_popmax:=INFO/nhomalt_popmax,INFO/gnomad_3_1_1_AC_controls_and_biobanks:=INFO/AC_controls_and_biobanks,INFO/gnomad_3_1_1_AN_controls_and_biobanks:=INFO/AN_controls_and_biobanks,INFO/gnomad_3_1_1_AF_controls_and_biobanks:=INFO/AF_controls_and_biobanks,INFO/gnomad_3_1_1_AF_non_cancer:=INFO/AF_non_cancer,INFO/gnomad_3_1_1_primate_ai_score:=INFO/primate_ai_score,INFO/gnomad_3_1_1_splice_ai_consequence:=INFO/splice_ai_consequence"}
@@ -102,7 +102,7 @@ inputs:
       \ recommend: `vc.getGenotype('inputs.input_normal_name').getDP()\
       \ <= 7)`, `gnomad_3_1_1_AF > 0.001`]"}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
-  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File, path: 6480c8a61dfc710d24a3a368,
+  custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK", "sbg:suggestedValue": {class: File, path: 663d2bcc27374715fccd8c65,
         name: kf_isoform_override.tsv} }
 
   # annotation vars
