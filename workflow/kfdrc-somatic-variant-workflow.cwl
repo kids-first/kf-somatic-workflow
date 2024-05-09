@@ -359,7 +359,7 @@ inputs:
       of genomic regions to remove from the calling regions for SNV and SV calling."}
   cnv_blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing
       a set of genomic regions to remove from the calling regions for CNV calling
-      only!"}
+      only!", "sbg:suggestedValue": {class: File, path: 663d2bcc27374715fccd8c6d, name: somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.list}}
   coding_sequence_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing
       the coding sequence regions for the provided reference. This input is used to
       create custom intervals for WGS Lancet Calling.", "sbg:suggestedValue": {class: File,
@@ -534,10 +534,10 @@ inputs:
         class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited
       file(s) containing protein names and amino acid positions corresponding to hotspots",
-    "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552c, name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
+    "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6a, name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited
       file(s) containing protein names and amino acid position ranges corresponding
-      to hotspots", "sbg:suggestedValue": [{class: File, path: 645919782fe81458768c552d,
+      to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6f,
         name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to
       create a public version", default: "FILTER=\"PASS\"|INFO/HotSpotAllele=1"}
@@ -555,7 +555,7 @@ inputs:
       this task.", default: false}
   maf_center: {type: 'string?', doc: "Sequencing center of variant called", default: "."}
   custom_enst: {type: 'File?', doc: "Use a file with ens tx IDs for each gene to override
-      VEP PICK", "sbg:suggestedValue": {class: File, path: 6480c8a61dfc710d24a3a368,
+      VEP PICK", "sbg:suggestedValue": {class: File, path: 663d2bcc27374715fccd8c65,
       name: kf_isoform_override.tsv}}
 outputs:
   aa_summary: {type: 'File?', doc: "summary for all amplicons detected by AA", outputSource: amplicon_architect/aa_summary}
