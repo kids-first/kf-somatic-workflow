@@ -412,6 +412,7 @@ inputs:
   run_strelka2: {type: 'boolean?', default: true, doc: "Set to false to disable Strelka2.
       Warning: Strelka2 is required to run Lancet in WGS mode!"}
   run_lancet: {type: 'boolean?', default: true, doc: "Set to false to disable Lancet."}
+  lancet_input_vcf: { type: 'File[]?', doc: "A rare input, use only if you need to re-run lancet and have pre-existing strelka2 and/or mutect2 results"}
   run_controlfreec: {type: 'boolean?', default: true, doc: "Set to false to disable
       ControlFreeC."}
   run_cnvkit: {type: 'boolean?', default: true, doc: "Set to false to disable CNVkit.
@@ -638,6 +639,9 @@ steps:
       vardict: run_vardict
       mutect2: run_mutect2
       strelka2: run_strelka2
+      preexisting_vcf:
+        source: lancet_input_vcf
+        valueFrom: $(self != null)
       lancet: run_lancet
       controlfreec: run_controlfreec
       cnvkit: run_cnvkit
@@ -948,7 +952,7 @@ steps:
           $(self.secondaryFiles.filter(function(e) { return e.basename.search(/.dict$/) != -1 })[0])
       calling_regions: coding_sequence_regions
       supplement_vcfs:
-        source: [strelka2/strelka2_protected_outputs, mutect2/mutect2_protected_outputs]
+        source: [strelka2/strelka2_protected_outputs, mutect2/mutect2_protected_outputs, lancet_input_vcf]
         valueFrom: |
           $(self.filter(function(e) { return e != null }).map(function(e) { return e.filter(function(i) { return i.basename.search(/(.vcf|.vcf.gz)$/) != -1 })[0] }))
       blacklist_regions: blacklist_regions

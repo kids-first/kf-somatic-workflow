@@ -17,6 +17,7 @@ inputs:
   vardict: {type: 'boolean', doc: "Set to false to disable Vardict. Warning: Vardict is required to run Theta2!"}
   mutect2: {type: 'boolean', doc: "Set to false to disable Mutect2. Warning: Mutect2 or Strelka2 is required to run Lancet in WGS mode!"}
   strelka2: {type: 'boolean', doc: "Set to false to disable Strelka2. Warning: Strelka2 or Mutect2 is required to run Lancet in WGS mode!"}
+  preexisting_vcf: { type: 'boolean', doc: "Set to true if you're providing one mutect2 and/or strelka vcfs to run lancet alone in WGS mode"}
   lancet: {type: 'boolean', doc: "Set to false to disable Lancet."}
   controlfreec: {type: 'boolean', doc: "Set to false to disable ControlFreeC."}
   cnvkit: {type: 'boolean', doc: "Set to false to disable CNVkit. Warning: CNVkit is required to run both Amplicon Architect and Theta2!"}
@@ -62,7 +63,7 @@ outputs:
           if (!inputs.lancet || !inputs.is_wgs) {
             return inputs.lancet;
           }
-          if (!(inputs.mutect2 || inputs.strelka2)) {
+          if (!(inputs.mutect2 || inputs.strelka2 || inputs.preexisting_vcf)) {
             throw new Error('Running Lancet in WGS Mode requires either Mutect2 or Strelka2!');
           }
           return true;
