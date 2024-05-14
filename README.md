@@ -164,7 +164,7 @@ These inputs, and their behavior, are as follows:
 - `run_gatk_cnv`: Set to false to disable GATK CNV.
 
 The first step of the workflow will check the user inputs and throw errors for impossible scenarios:
-- Enabling Lancet in WGS without enabling either Mutect2 or Strelka2
+- Enabling Lancet in WGS without enabling either Mutect2 or Strelka2 or user providing existing calls to the `lancet_input_vcf` input
 - Enabling AmpliconArchitect without enabling CNVkit or providing the Mosek config file
 - Enabling THeTa2 without enabling both VarDict and CNVkit
 - Enabling GATK CNV without providing a Panel of Normals
@@ -179,6 +179,8 @@ The first step of the workflow will check the user inputs and throw errors for i
 
 1. As a CAVATICA app, default references for hg38 are already pre-populated, as well as some default settings - i.e., number of threads, coefficient of variation input for Control-FREEC, and `PASS` filter tool mode.
 
+1. If running Lancet for WGS, and you have existing variant calls that you'd like to use from a previous Strelka2 and/or Mutect2 run for example, provide them to `lancet_input_vcf` input. Otherwise you _must_ also enable `run_strelka2` and/or `run_mutect2`
+
 1. `select_vars_mode`: On occasion, using GATK's `SelectVariants` tool will fail, so a simple `grep` mode on `PASS` can be used instead.
 Related, `bcftools_filter_vcf` is built in as a convenience in case your b allele frequency file has not been filtered on `PASS`.
 You can use the `include_expression` `Filter="PASS"` to achieve this.
@@ -189,6 +191,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
    - `reference_fasta`: [Homo_sapiens_assembly38.fasta](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
    - `reference_dict`: [Homo_sapiens_assembly38.dict](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
    - `calling_regions`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK. **To create our canonical calling intervals, edit this file by leaving only entries related to chr1-22,X,Y,M. M may need to be added.**
+   - `cnv_blacklist_regions`: `somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.list` Blacklist regions that include centromeres to exclude from CNV calling
    - `coding_sequence_regions`: `GRCh38.gencode.v31.CDS.merged.bed` For Lancet WGS, it's highly recommended to use CDS bed as the starting point and supplement with the regions of calls from Strelka2 & Mutect2. Our CDS regions were obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this GTF file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
    - `cnvkit_annotation_file`: [refFlat_HG38.txt](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refFlat.txt.gz) gunzip this file from UCSC
    - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
