@@ -879,7 +879,7 @@ steps:
       supplement_vcfs:
         source: [strelka2/strelka2_protected_outputs, mutect2/mutect2_protected_outputs, lancet_input_vcf]
         valueFrom: |
-          $(self.filter(function(e) { return e != null }).map(function(e) { return e.filter(function(i) { return i.basename.search(/(.vcf|.vcf.gz)$/) != -1 })[0] }))
+          $(self.filter(function(e) { return e != null }).map(function(e) { return e.filter(function(i) { return i.basename.search(/(.vcf|.vcf.gz)$/) != -1 }) }).reduce(function(a,c) { return a.concat(c) }))
       blacklist_regions: blacklist_regions
       break_bands_at_multiples_of:
         valueFrom: $(0)
