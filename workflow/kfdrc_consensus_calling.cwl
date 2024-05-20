@@ -138,11 +138,8 @@ inputs:
       \ needed to avoid conflict, i.e INFO/AF"}
   echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno",
     "sbg:suggestedValue": [{class: File, path: 65c64d847dab7758206248c6, name: gnomad.v3.1.1.custom.echtvar.zip}]}
-  bcftools_public_info: {type: 'string?', doc: "Will hard filter final result to
-      create a public version", default: INFO/HotSpotAllele=1}
-  bcftools_public_filter: { type: 'string?', doc: "Add values from FILTER field to subset on", default: "PASS"} 
-  gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to
-      add"}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to
+      create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to\
       \ add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]"}
   gatk_filter_expression: {type: 'string[]', doc: "Array of filter expressions to\
@@ -199,7 +196,6 @@ steps:
       retain_ann: retain_ann
       echtvar_anno_zips: echtvar_anno_zips
       bcftools_strip_columns: bcftools_strip_columns
-      bcftools_public_info: bcftools_public_info
       bcftools_public_filter: bcftools_public_filter
       dbnsfp: dbnsfp
       dbnsfp_fields: dbnsfp_fields
@@ -227,5 +223,5 @@ $namespaces:
 "sbg:publisher": KFDRC
 
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.0.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.1.0'
   label: github-release
