@@ -222,7 +222,7 @@ doc: |
 
   1. There are some flags that need to be set by the user at runtime. These are our recommendations:
      - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression.
-     - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "gnomad_3_1_1_AF != '.' && gnomad_3_1_1_AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](./docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. For more information on filter expressions, see the [GATK JEXL docs](https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration).
+     - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "gnomad_3_1_1_AF != '.' && gnomad_3_1_1_AF > 0.001  && gnomad_3_1_1_FILTER=='PASS'"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](./docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. For more information on filter expressions, see the [GATK JEXL docs](https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration).
      - `extra_arg`: This can be used to add special params to Strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 10000` can balance performance and consistency in results
 
   1. Output files (Note, all VCF files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
@@ -405,6 +405,7 @@ inputs:
   run_theta2: {type: 'boolean?', default: true, doc: "Set to false to disable Theta2."}
   run_manta: {type: 'boolean?', default: true, doc: "Set to false to disable Manta."}
   run_gatk_cnv: {type: 'boolean?', default: true, doc: "Set to false to disable GATK CNV."}
+  run_calmd_bam: { type: 'boolean?', default: false, doc: "Override logic to skip calmd when input is not cram" }
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing annotations for AnnotSV", "sbg:fileTypes": "TAR,
       TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
   cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any
@@ -487,8 +488,8 @@ inputs:
       positions corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6a, name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino
       acid position ranges corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6f, name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
-  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to create a public version", default: "FILTER=\"PASS\"\
-      |INFO/HotSpotAllele=1"}
+  bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to
+      create a public version", default: FILTER="PASS"|INFO/HotSpotAllele=1}
   echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno", "sbg:suggestedValue": [{class: File, path: 65c64d847dab7758206248c6,
         name: gnomad.v3.1.1.custom.echtvar.zip}]}
   gatk_filter_name: {type: 'string[]', doc: "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"\
@@ -601,10 +602,11 @@ steps:
       run_manta, run_gatk_cnv, out_exome_flag, out_cnvkit_wgs_mode, out_i_flag, out_lancet_padding, out_lancet_window, out_vardict_padding]
   samtools_cram2bam_plus_calmd_tumor:
     run: ../tools/samtools_calmd.cwl
-    when: $(inputs.run_tool.some(function(e) { return e }))
+    when: $(inputs.run_tool.some(function(e) { return e }) && (inputs.input_reads.basename.search(/.cram$/) != -1 || inputs.run_anyway) )
     in:
       run_tool:
         source: [runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
+      run_anyway: run_calmd_bam
       input_reads: input_tumor_aligned
       threads:
         valueFrom: ${return 16;}
@@ -612,10 +614,11 @@ steps:
     out: [bam_file]
   samtools_cram2bam_plus_calmd_normal:
     run: ../tools/samtools_calmd.cwl
-    when: $(inputs.run_tool.some(function(e) { return e }))
+    when: $(inputs.run_tool.some(function(e) { return e }) && (inputs.input_reads.basename.search(/.cram$/) != -1 || inputs.run_anyway) )
     in:
       run_tool:
         source: [runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
+      run_anyway: run_calmd_bam
       input_reads: input_normal_aligned
       threads:
         valueFrom: ${return 16;}
@@ -714,10 +717,14 @@ steps:
     in:
       run_vardict: runtime_validator/run_vardict
       indexed_reference_fasta: indexed_reference_fasta
-      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
-      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       input_normal_name: input_normal_name
       old_normal_name: old_normal_name
       output_basename: output_basename
@@ -892,10 +899,14 @@ steps:
     in:
       run_lancet: runtime_validator/run_lancet
       indexed_reference_fasta: indexed_reference_fasta
-      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
-      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       input_normal_name: input_normal_name
       old_normal_name: old_normal_name
       output_basename: output_basename
@@ -942,9 +953,13 @@ steps:
     when: $(inputs.run_controlfreec)
     in:
       run_controlfreec: runtime_validator/run_controlfreec
-      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       input_tumor_name: input_tumor_name
-      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       wgs_or_wxs: wgs_or_wxs
       threads: cfree_threads
       output_basename: output_basename
@@ -963,9 +978,13 @@ steps:
     when: $(inputs.run_cnvkit)
     in:
       run_cnvkit: runtime_validator/run_cnvkit
-      input_tumor_aligned: samtools_cram2bam_plus_calmd_tumor/bam_file
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       tumor_sample_name: input_tumor_name
-      input_normal_aligned: samtools_cram2bam_plus_calmd_normal/bam_file
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
       capture_regions: prepare_regions_unpadded_cnv/prescatter_bed
