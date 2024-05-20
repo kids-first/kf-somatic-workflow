@@ -217,7 +217,7 @@ You can use the `include_expression` `Filter="PASS"` to achieve this.
 
 1. There are some flags that need to be set by the user at runtime. These are our recommendations:
    - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression.
-   - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "gnomad_3_1_1_AF != '.' && gnomad_3_1_1_AF > 0.001"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](./docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. For more information on filter expressions, see the [GATK JEXL docs](https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration).
+   - `gatk_filter_expression`: `["vc.getGenotype('<input_normal_name> ').getDP() <= 7"), "gnomad_3_1_1_AF != '.' && gnomad_3_1_1_AF > 0.001 && gnomad_3_1_1_FILTER=='PASS'"]`. Array of filter expressions to establish criteria to tag variants with. See [annotation subworkflow docs](./docs/kfdrc_annotation_subworkflow.md) for a more detailed explanation. For more information on filter expressions, see the [GATK JEXL docs](https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration).
    - `extra_arg`: This can be used to add special params to Strelka2. It is currently more of an "unsticking param". For edge cases where strelka2 seems to hang, setting this to `--max-input-depth 10000` can balance performance and consistency in results
 
 1. Output files (Note, all VCF files that don't have an explicit index output have index files output as as secondary file.  In other words, they will be captured at the end of the workflow):
