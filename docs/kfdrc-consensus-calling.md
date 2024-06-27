@@ -4,6 +4,7 @@ This workflow is used by the Kids First (KF) Data Resource Center (DRC) to creat
 ![data service logo](https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png)
 
 This workflow takes the protected vcf outputs from the [Kids First DRC Somatic Workflow](workflow/kfdrc-somatic-variant-workflow.cwl) and creates protected and public consensus VCF and MAF files.
+Benchmarking of our SNV callers and [consensus methods](docs/kfdrc-consensus-calling.md) can be found [here](../docs/SOMATIC_SNV_BENCHMARK.md).
 The general outline is as follows:
 
 1. Prep MNP Variants
