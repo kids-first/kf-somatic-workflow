@@ -5,6 +5,7 @@
 </p>
 
 This repository contains the Kids First Data Resource Center (DRC) Somatic Variant Workflow, which includes somatic variant (SNV), copy number variation (CNV), and structural variant (SV) calls.
+Benchmarking of our SNV callers and [consensus methods](docs/kfdrc-consensus-calling.md) can be found [here](docs/SOMATIC_SNV_BENCHMARK.md).
 The [somatic variant workflow](./workflow/kfdrc-somatic-variant-workflow.cwl) takes aligned cram input and performs somatic variant calling using Strelka2, Mutect2, Lancet, and VarDict Java, CNV estimation using Control-FREEC, CNVkit, and GATK, and SV calls using Manta.
 For whole genome sequencing data, the workflow will also predict extra chromosomal DNA (ecDNA) using AmpliconArchitect
 Somatic variant call results are annotated with hotspots, assigned population frequencies using gnomAD AF, calculated gene models using Variant Effect Predictor (VEP), then added an additional MAF output using a modified version of Memorial Sloan Kettering Cancer Center's (MSKCC) vcf2maf.
