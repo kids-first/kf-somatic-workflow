@@ -13,12 +13,12 @@ BAM files relevant to our workflow (BWA-aligned) were called using our standard 
 1. Gold standard VCFs were downloaded from https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/v1.2/ with [SNV](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/v1.2/sSNV.MSDUKT.superSet.v1.2.vcf.gz) and [INDEL](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/v1.2/sINDEL.MDKT.superSet.v1.2.vcf.gz) VCFs merged into a single VCF
 1. Merged gold standard VCF was then subset to BWA hits and broken up into call sets matching samples (parse `calledSamples` `INFO` field)
 1. Next, a custom [benchmark script](https://github.com/kids-first/kfdrc-benchmark/blob/main/scripts/benchmark_vcf_calls.py), which collected the following metrics:
- - True Positive
- - False Positive
- - False Negative
- - F1 Score
- - Precision
- - Accuracy
+   - True Positive
+   - False Positive
+   - False Negative
+   - F1 Score
+   - Precision
+   - Accuracy
 
 ## Cell Line Consensus Call Method Benchmarking Results
  Results were collated into the following tables, broken down by confidence level aggregations for the cell line data:
