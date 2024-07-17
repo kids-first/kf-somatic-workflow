@@ -203,7 +203,7 @@ doc: |
      - `exac_common_vcf`: [small_exac_common_3.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
      - `vep_cache`: `homo_sapiens_merged_vep_105_indexed_GRCh38.tar.gz` from [VEP release 105](https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/) - variant effect predictor cache. Current production workflow uses this version.
      - `genomic_hotspots`: `tert.bed`. Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots
-     - `protein_snv_hotspots`: [protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to TSV
+     - `protein_snv_hotspots`: [kfdrc_protein_snv_cancer_hotspots_20240718.txt](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots. Recommend pulling the two relevant columns for SNVs only, and convert to TSV
      - `protein_indel_hotspots`: [protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv](https://www.cancerhotspots.org/files/hotspots_v2.xls). Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots.
      - `echtvar_anno_zips`: `gnomad_3_1_1.vwb_subset.echtvar_0_1_9.zip`.Echtvar annotation ZIP file. For more info on how this file was created, see our [Ectvar documentation](./docs/echtvar_gnomad_annotation.md).
      - `custom_enst`: `kf_isoform_override.tsv`. As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects MAF file output and may results in representative protein changes that defy historical expectations
@@ -485,7 +485,7 @@ inputs:
   genomic_hotspots: {type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to
       hotspots", "sbg:suggestedValue": [{class: File, path: 607713829360f10e3982a423, name: tert.bed}]}
   protein_snv_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid
-      positions corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6a, name: protein_snv_cancer_hotspots_v2.ENS105_liftover.tsv}]}
+      positions corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 66980e845a58091951d53984, name: kfdrc_protein_snv_cancer_hotspots_20240718.txt}]}
   protein_indel_hotspots: {type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino
       acid position ranges corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6f, name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   bcftools_public_filter: {type: 'string?', doc: "Will hard filter final result to
