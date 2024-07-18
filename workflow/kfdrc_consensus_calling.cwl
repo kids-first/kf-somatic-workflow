@@ -199,5 +199,5 @@ $namespaces:
 "sbg:publisher": KFDRC
 
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.1.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.1.1'
   label: github-release
