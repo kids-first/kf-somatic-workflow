@@ -93,3 +93,7 @@ outputs:
     type: File[]
     outputBinding:
       glob: '$(inputs.patient_id)/tumor_TelomerCnt_$(inputs.patient_id)/$(inputs.patient_id)*'
+
+'sbg:links':
+- id: 'https://github.com/kids-first/kf-somatic-workflow/tree/master/tools/telomerehunter.cwl'
+  label: source-code
