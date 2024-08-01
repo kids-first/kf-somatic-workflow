@@ -27,12 +27,12 @@ arguments:
     shellQuote: false
     prefix: "&&"
     valueFrom: >-
-      find $(inputs.output_basename)/control_TelomerCnt_$(inputs.output_basename)/ | sed 'p;s/$(inputs.output_basename)/$(inputs.output_basename)_normal/' | xargs -n2 mv
+      find $(inputs.patient_id)/control_TelomerCnt_$(inputs.patient_id)/ -type f -maxdepth 1 | sed 'p;s/\(.*\)$(inputs.patient_id)/\1$(inputs.patient_id)_normal/' | xargs -n2 mv
   - position: 20
     shellQuote: false
     prefix: "&&"
     valueFrom: >-
-      find $(inputs.output_basename)/tumor_TelomerCnt_$(inputs.output_basename)/ | sed 'p;s/$(inputs.output_basename)/$(inputs.output_basename)_tumor/' | xargs -n2 mv
+      find $(inputs.patient_id)/tumor_TelomerCnt_$(inputs.patient_id)/ -type f -maxdepth 1 | sed 'p;s/\(.*\)$(inputs.patient_id)/\1$(inputs.patient_id)_tumor/' | xargs -n2 mv
 
 inputs:
   input_bam_tumor: {type: File, inputBinding: { position: 2, prefix: "--inputBamTumor" }, secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false}], doc: "Path to the indexed input BAM file of the tumor sample" }
@@ -80,16 +80,16 @@ outputs:
   telomerehunter_merged_plots:
     type: File
     outputBinding:
-      glob: '$(inputs.output_basename)/$(inputs.output_basename)_merged_plots.$(inputs.plot_file_format)'
+      glob: '$(inputs.patient_id)/$(inputs.patient_id)_all_plots_merged.$(inputs.plot_file_format)'
   telomerehunter_summary:
     type: File
     outputBinding:
-      glob: '$(inputs.output_basename)/$(inputs.output_basename)_summary.tsv'
+      glob: '$(inputs.patient_id)/$(inputs.patient_id)_summary.tsv'
   telomerehunter_control_telomere_cnt:
     type: File[]
     outputBinding:
-      glob: '$(inputs.output_basename)/control_TelomerCnt_$(inputs.output_basename)/*'
+      glob: '$(inputs.patient_id)/control_TelomerCnt_$(inputs.patient_id)/$(inputs.patient_id)*'
   telomerehunter_tumor_telomere_cnt:
     type: File[]
     outputBinding:
-      glob: '$(inputs.output_basename)/tumor_TelomerCnt_$(inputs.output_basename)/*'
+      glob: '$(inputs.patient_id)/tumor_TelomerCnt_$(inputs.patient_id)/$(inputs.patient_id)*'
