@@ -6,7 +6,7 @@ aa_classifier.cwl|jluebeck/prepareaa:v0.1203.10
 add_strelka2_fields.cwl|pgc-images.sbgenomics.com/d3b-bixu/add-strelka2-fields:1.0.0
 amplicon_architect.cwl|jluebeck/prepareaa:v0.1203.10
 annotsv.cwl|pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
-awk_chrlen_builder.cwl|ubuntu:22.04
+awk_chrlen_builder.cwl|staphb/bcftools:1.20
 awk_min_seg_length.cwl|ubuntu:20.04
 bcbio_filter_vardict_somatic.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcbio_vardict_filter
 bcftools_filter_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcftools:1.20
