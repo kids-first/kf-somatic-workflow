@@ -117,7 +117,7 @@ the scale of hours rather than days.
 The `chr_len` file is only relevant for calling with Control-FREEC. Control-FREEC
 is unique in that its calling regions can only be limited at the chromosome
 level. The pipeline will make this file for the user based on the chromosomes
-found in the input intervals.
+found in the input intervals and, optionally, the `b_allele` VCF file.
 
 ## Interval Processing in the Somatic Workflow
 
@@ -167,8 +167,8 @@ All steps of the workflow are GATK/Picard:
 | TOOL          | WHOLE GENOME                                                                                                               | WHOLE EXOME                                                                                    |
 |---------------|----------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
 | CNVkit        | accessible regions<br>- blacklist regions                                                                                  | calling regions<br>- blacklist regions                                                         |
-| Control-FREEC | chromosomes of calling regions<br>- blacklist regions                                                                      | calling regions<br>- blacklist regions                                                         |
-| GATK CNV      | calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                                                       | calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                       |
+| Control-FREEC | chromosomes of calling regions<br>- blacklist regions<br>- chromosomes not found in b_allele                               | calling regions<br>- blacklist regions                                                         |
+| GATK CNV      | calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                                                       | calling regions<br>- cnv blacklist regions<br>From tool: 250 padding                           |
 | Lancet        | coding sequence regions<br>+ Mutect2 VCF<br>+ Strelka2 VCF<br>- calling blacklist<br>+ scattered<br>From tool: 300 padding | calling regions<br>+ 100 padding<br>- blacklist regions<br>From tool: 0 padding                |
 | Manta         | calling regions<br>- blacklist regions                                                                                     | calling regions<br>+ 100 padding<br>- blacklist regions                                        |
 | Mutect2       | calling regions<br>- blacklist regions<br>+ 80M bands<br>+ scattered                                                       | calling regions<br>+ 100 padding<br>- blacklist regions<br>+ scattered                         |
@@ -249,6 +249,12 @@ restricting the calling region. The tool provides no way to restrict calling
 with intervals. Calling can only be controlled at the chromosome level using a
 `chr_len`. Our pipeline will make this file based on the chromosomes present in
 the input intervals.
+
+The `chr_len` file is further restricted when providing a `b_allele` input.
+Control-FREEC uses the `b_allele` VCF for B-allele frequency (BAF) calculations.
+If your `b_allele` VCF has zero calls on a chromosome present in the `chr_len`
+file, Control-FREEC will throw an error. To circumvent this error, the pipeline
+will remove any chromosomes in the `chr_len` file not found in the `b_allele` VCF.
 
 ### Whole Exome Sequencing (WXS) Interval Preparation
 

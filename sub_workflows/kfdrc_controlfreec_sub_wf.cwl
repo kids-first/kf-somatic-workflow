@@ -45,6 +45,7 @@ steps:
     run: ../tools/awk_chrlen_builder.cwl
     in:
       input_intervals: calling_regions
+      input_variants: b_allele
       reference_fai:
         source: indexed_reference_fasta
         valueFrom: |
