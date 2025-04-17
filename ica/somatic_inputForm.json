@@ -1,0 +1,982 @@
+{
+  "fields": [
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "id": "indexed_reference_fasta",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "tumor BAM or CRAM",
+      "id": "input_tumor_aligned",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "helpText": "Desired sample name for tumor in output VCFs",
+      "id": "input_tumor_name",
+      "minValues": 1,
+      "type": "textbox"
+    },
+    {
+      "helpText": "If `SM:` sample name in te align file is different than `input_tumor_name`, you **must** provide it here",
+      "id": "old_tumor_name",
+      "type": "textbox"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "normal BAM or CRAM",
+      "id": "input_normal_aligned",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "helpText": "Desired sample name for normal in output VCFs",
+      "id": "input_normal_name",
+      "minValues": 1,
+      "type": "textbox"
+    },
+    {
+      "helpText": "If `SM:` sample name in te align file is different than `input_normal_name`, you **must** provide it here",
+      "id": "old_normal_name",
+      "type": "textbox"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "BED or INTERVALLIST file containing a set of genomic regions over which the callers will be run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for their analysis.",
+      "id": "calling_regions",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions for SNV and SV calling.",
+      "id": "blacklist_regions",
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling regions for CNV calling only!",
+      "id": "cnv_blacklist_regions",
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "BED or INTERVALLIST file containing the coding sequence regions for the provided reference. This input is used to create custom intervals for WGS Lancet Calling.",
+      "id": "coding_sequence_regions",
+      "type": "data"
+    },
+    {
+      "helpText": "Array of ploidy possibilities for ControlFreeC to try",
+      "id": "cfree_ploidy",
+      "maxValues": 1000,
+      "minValues": 1,
+      "type": "integer"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "refFlat.txt file",
+      "id": "cnvkit_annotation_file",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "helpText": "Add special options to config file, i.e. --max-input-depth 10000",
+      "id": "extra_arg",
+      "type": "textbox"
+    },
+    {
+      "helpText": "Adjust number of cores used to run strelka2",
+      "id": "strelka2_cores",
+      "type": "integer",
+      "value": 18
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "id": "mutect2_af_only_gnomad_vcf",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "id": "mutect2_exac_common_vcf",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "helpText": "String value to use as basename for outputs",
+      "id": "output_basename",
+      "minValues": 1,
+      "type": "textbox"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "WGS",
+          "value": "WGS"
+        },
+        {
+          "selected": false,
+          "text": "WXS",
+          "value": "WXS"
+        }
+      ],
+      "helpText": "Select if this run is WGS or WXS",
+      "id": "wgs_or_wxs",
+      "type": "select"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Path to read-count PoN created by the panel workflow. Significantly reduces quality of calling if not provided!",
+      "id": "count_panel_of_normals",
+      "type": "data"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "If true, run Funcotator on the called copy-ratio segments. This will generate both a simple TSV and a gene list.",
+      "id": "run_funcotatesegments",
+      "type": "select"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Path to tar.gz containing the data sources for Funcotator to create annotations.",
+      "id": "funcotator_data_sources_tgz",
+      "type": "data"
+    },
+    {
+      "helpText": "The minimum number of bases for a variant to be annotated as a segment. Recommended to be changed only for use with FuncotateSegments. If you encounter 'Variant context does not represent a copy number segment' error, set this value lower than the length of the failed segment.",
+      "id": "funcotator_minimum_segment_size",
+      "type": "integer"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/",
+      "id": "aa_data_repo",
+      "type": "data"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "GRCh38",
+          "value": "GRCh38"
+        },
+        {
+          "selected": false,
+          "text": "hg19",
+          "value": "hg19"
+        },
+        {
+          "selected": false,
+          "text": "GRCh37",
+          "value": "GRCh37"
+        },
+        {
+          "selected": false,
+          "text": "mm10",
+          "value": "mm10"
+        },
+        {
+          "selected": false,
+          "text": "GRCm38",
+          "value": "GRCm38"
+        }
+      ],
+      "helpText": "Genome version in data repo to use",
+      "id": "aa_data_ref_version",
+      "minValues": 0,
+      "type": "select"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "This tool uses some software that requires a license file. Only provide if input is WGS. You can get a personal or institutional one from https://www.mosek.com/license/request/.",
+      "id": "mosek_license_file",
+      "type": "data"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Vardict. Warning: Vardict is required to run Theta2!",
+      "id": "run_vardict",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Mutect2. Warning: Mutect2 is required to run Lancet in WGS mode!",
+      "id": "run_mutect2",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Strelka2. Warning: Strelka2 is required to run Lancet in WGS mode!",
+      "id": "run_strelka2",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Lancet.",
+      "id": "run_lancet",
+      "type": "select"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Use only if you need to re-run lancet and have pre-existing strelka2 and/or mutect2 results",
+      "id": "lancet_input_vcf",
+      "maxValues": 1000,
+      "type": "data"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable ControlFreeC.",
+      "id": "run_controlfreec",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable CNVkit. Warning: CNVkit is required to run both Amplicon Architect and Theta2!",
+      "id": "run_cnvkit",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Amplicon Architect.",
+      "id": "run_amplicon_architect",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Theta2.",
+      "id": "run_theta2",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable Manta.",
+      "id": "run_manta",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to false to disable GATK CNV.",
+      "id": "run_gatk_cnv",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": true,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Override logic to skip calmd when input is not cram",
+      "id": "run_calmd_bam",
+      "type": "select"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "TAR.GZ'd Directory containing annotations for AnnotSV",
+      "id": "annotsv_annotations_dir_tgz",
+      "type": "data"
+    },
+    {
+      "helpText": "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any advantage",
+      "id": "cfree_threads",
+      "type": "integer",
+      "value": 16
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "0",
+          "value": "0"
+        },
+        {
+          "selected": true,
+          "text": "FR",
+          "value": "FR"
+        },
+        {
+          "selected": false,
+          "text": "RF",
+          "value": "RF"
+        },
+        {
+          "selected": false,
+          "text": "FF",
+          "value": "FF"
+        }
+      ],
+      "helpText": "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)",
+      "id": "cfree_mate_orientation_control",
+      "minValues": 0,
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "0",
+          "value": "0"
+        },
+        {
+          "selected": true,
+          "text": "FR",
+          "value": "FR"
+        },
+        {
+          "selected": false,
+          "text": "RF",
+          "value": "RF"
+        },
+        {
+          "selected": false,
+          "text": "FF",
+          "value": "FF"
+        }
+      ],
+      "helpText": "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)",
+      "id": "cfree_mate_orientation_sample",
+      "minValues": 0,
+      "type": "select"
+    },
+    {
+      "helpText": "Adjust in rare circumstances in which 12 GB is not enough",
+      "id": "lancet_ram",
+      "type": "integer",
+      "value": 12
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "gatk",
+          "value": "gatk"
+        },
+        {
+          "selected": false,
+          "text": "grep",
+          "value": "grep"
+        }
+      ],
+      "helpText": "Choose 'gatk' for SelectVariants tool, or 'grep' for grep expression",
+      "id": "select_vars_mode",
+      "minValues": 0,
+      "type": "select"
+    },
+    {
+      "helpText": "Minimum fraction of genome with copy umber alterations.  Default is 0.05, recommend 0.01",
+      "id": "min_theta2_frac",
+      "type": "number",
+      "value": 0.01
+    },
+    {
+      "helpText": "Number of CPUs for Vardict to use",
+      "id": "vardict_cpus",
+      "type": "integer",
+      "value": 8
+    },
+    {
+      "helpText": "Min variant allele frequency for vardict to consider. Recommend 0.05",
+      "id": "vardict_min_vaf",
+      "type": "number",
+      "value": 0.05
+    },
+    {
+      "helpText": "GB of RAM to allocate to Vardict (hard-capped)",
+      "id": "vardict_ram",
+      "type": "integer",
+      "value": 16
+    },
+    {
+      "helpText": "Whether to run in exome mode for callers. Y for WXS, N for WGS",
+      "id": "exome_flag",
+      "type": "textbox"
+    },
+    {
+      "helpText": "Window size for lancet.  Recommend 500 for WGS; 600 for exome+",
+      "id": "lancet_window",
+      "type": "integer"
+    },
+    {
+      "helpText": "Recommend 0 if interval file padded already, half window size if not. Recommended: 0 for WXS; 300 for WGS",
+      "id": "lancet_padding",
+      "type": "integer"
+    },
+    {
+      "helpText": "Padding to add to input intervals, recommend 0 if intervals already padded such as in WXS, 150 if not such as in WGS",
+      "id": "vardict_padding",
+      "type": "integer"
+    },
+    {
+      "helpText": "for WGS mode, input Y. leave blank for WXS/hybrid mode",
+      "id": "cnvkit_wgs_mode",
+      "type": "textbox"
+    },
+    {
+      "helpText": "Flag to intersect germline calls on padded regions. Use N if you want to skip this or have a WGS run",
+      "id": "i_flag",
+      "type": "textbox"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "germline calls, needed for BAF.  GATK HC VQSR input recommended.  Tool will prefilter for germline and pass if expression given",
+      "id": "b_allele",
+      "type": "data"
+    },
+    {
+      "helpText": "Coefficient of variation to set window size.  Default 0.05 recommended",
+      "id": "cfree_coeff_var",
+      "type": "number",
+      "value": 0.05
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "TRUE or FALSE to have ControlFreec estimate normal contam",
+      "id": "cfree_contamination_adjustment",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "XX",
+          "value": "XX"
+        },
+        {
+          "selected": false,
+          "text": "XY",
+          "value": "XY"
+        }
+      ],
+      "helpText": "If known, XX for female, XY for male",
+      "id": "cfree_sex",
+      "minValues": 0,
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "x",
+          "value": "x"
+        },
+        {
+          "selected": false,
+          "text": "y",
+          "value": "y"
+        }
+      ],
+      "helpText": "Sex, for simplicity x for female y for male",
+      "id": "cnvkit_sex",
+      "minValues": 0,
+      "type": "select"
+    },
+    {
+      "helpText": "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed, default set for VarDict Java for VarDict",
+      "id": "combined_include_expression",
+      "type": "textbox",
+      "value": "FILTER=\"PASS\" && (INFO/STATUS=\"Germline\" | INFO/STATUS=\"StrongSomatic\")"
+    },
+    {
+      "helpText": "Theta2 Purity value: Filter expression if vcf has non-PASS combined calls, use as-needed",
+      "id": "combined_exclude_expression",
+      "type": "textbox"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": true,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Should the program use the small indels output from Manta in Strelka2 calling?",
+      "id": "use_manta_small_indels",
+      "type": "select"
+    },
+    {
+      "helpText": "GB of memory to allocate to GATK LearnReadOrientationModel; defaults to 4 (hard-capped)",
+      "id": "learnorientation_memory",
+      "type": "integer"
+    },
+    {
+      "helpText": "GB of memory to allocate to GATK GetPileupSummaries; defaults to 2 (hard-capped)",
+      "id": "getpileup_memory",
+      "type": "integer"
+    },
+    {
+      "helpText": "GB of memory to allocate to GATK FilterMutectCalls; defaults to 4 (hard-capped)",
+      "id": "filtermutectcalls_memory",
+      "type": "integer"
+    },
+    {
+      "helpText": "GB of memory to allocate to Manta; defaults to 10 (soft-capped)",
+      "id": "manta_memory",
+      "type": "integer"
+    },
+    {
+      "helpText": "Number of cores to allocate to Manta; defaults to 18",
+      "id": "manta_cores",
+      "type": "integer"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "tar gzipped cache from ensembl/local converted cache",
+      "id": "vep_cache",
+      "minValues": 1,
+      "type": "data"
+    },
+    {
+      "helpText": "In GB, may need to increase this value depending on the size/complexity of input",
+      "id": "vep_ram",
+      "type": "integer",
+      "value": 32
+    },
+    {
+      "helpText": "Number of cores to use. May need to increase for really large inputs",
+      "id": "vep_cores",
+      "type": "integer",
+      "value": 16
+    },
+    {
+      "helpText": "Increase or decrease to balance speed and memory usage",
+      "id": "vep_buffer_size",
+      "type": "integer",
+      "value": 5000
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "VEP-formatted plugin file, index, and readme file containing dbNSFP annotations",
+      "id": "dbnsfp",
+      "type": "data"
+    },
+    {
+      "helpText": "csv string with desired fields to annotate. Use ALL to grab all",
+      "id": "dbnsfp_fields",
+      "type": "textbox",
+      "value": "clinvar_id,clinvar_clnsig,clinvar_trait,clinvar_review,clinvar_var_source,clinvar_MedGen_id,clinvar_OMIM_id,clinvar_Orphanet_id,Interpro_domain,GTEx_V8_gene,GTEx_V8_tissue"
+    },
+    {
+      "choices": [
+        {
+          "selected": true,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Set to true if merged cache used",
+      "id": "merged",
+      "type": "select"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "VEP-formatted plugin file and index containing CADD indel annotations",
+      "id": "cadd_indels",
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "VEP-formatted plugin file and index containing CADD SNV annotations",
+      "id": "cadd_snvs",
+      "type": "data"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Run the check_existing flag for cache",
+      "id": "run_cache_existing",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": false,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Run the allele frequency flags for cache",
+      "id": "run_cache_af",
+      "type": "select"
+    },
+    {
+      "helpText": "csv string with INFO fields that you want to keep, i.e. for strelka2 `MQ,MQ0,QSI,HotSpotAllele`",
+      "id": "strelka2_retain_info",
+      "type": "textbox",
+      "value": "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,gnomad_3_1_1_AF_non_cancer_afr,gnomad_3_1_1_AF_non_cancer_ami,gnomad_3_1_1_AF_non_cancer_asj,gnomad_3_1_1_AF_non_cancer_eas,gnomad_3_1_1_AF_non_cancer_fin,gnomad_3_1_1_AF_non_cancer_mid,gnomad_3_1_1_AF_non_cancer_nfe,gnomad_3_1_1_AF_non_cancer_oth,gnomad_3_1_1_AF_non_cancer_raw,gnomad_3_1_1_AF_non_cancer_sas,gnomad_3_1_1_AF_non_cancer_amr,gnomad_3_1_1_AF_non_cancer_popmax,gnomad_3_1_1_AF_non_cancer_all_popmax,gnomad_3_1_1_FILTER,MQ,MQ0,QSI,HotSpotAllele"
+    },
+    {
+      "helpText": "csv string with FORMAT fields that you want to keep",
+      "id": "strelka2_retain_fmt",
+      "type": "textbox"
+    },
+    {
+      "helpText": "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF",
+      "id": "strelka2_retain_ann",
+      "type": "textbox",
+      "value": "HGVSg"
+    },
+    {
+      "helpText": "csv string with INFO fields that you want to keep, i.e. for mutect2 `MBQ,TLOD,HotSpotAllele`",
+      "id": "mutect2_retain_info",
+      "type": "textbox",
+      "value": "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,gnomad_3_1_1_AF_non_cancer_afr,gnomad_3_1_1_AF_non_cancer_ami,gnomad_3_1_1_AF_non_cancer_asj,gnomad_3_1_1_AF_non_cancer_eas,gnomad_3_1_1_AF_non_cancer_fin,gnomad_3_1_1_AF_non_cancer_mid,gnomad_3_1_1_AF_non_cancer_nfe,gnomad_3_1_1_AF_non_cancer_oth,gnomad_3_1_1_AF_non_cancer_raw,gnomad_3_1_1_AF_non_cancer_sas,gnomad_3_1_1_AF_non_cancer_amr,gnomad_3_1_1_AF_non_cancer_popmax,gnomad_3_1_1_AF_non_cancer_all_popmax,gnomad_3_1_1_FILTER,MBQ,TLOD,HotSpotAllele"
+    },
+    {
+      "helpText": "csv string with FORMAT fields that you want to keep",
+      "id": "mutect2_retain_fmt",
+      "type": "textbox"
+    },
+    {
+      "helpText": "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF",
+      "id": "mutect2_retain_ann",
+      "type": "textbox",
+      "value": "HGVSg"
+    },
+    {
+      "helpText": "csv string with INFO fields that you want to keep, i.e. for lancet `MS,FETS,HotSpotAllele`",
+      "id": "lancet_retain_info",
+      "type": "textbox",
+      "value": "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,gnomad_3_1_1_AF_non_cancer_afr,gnomad_3_1_1_AF_non_cancer_ami,gnomad_3_1_1_AF_non_cancer_asj,gnomad_3_1_1_AF_non_cancer_eas,gnomad_3_1_1_AF_non_cancer_fin,gnomad_3_1_1_AF_non_cancer_mid,gnomad_3_1_1_AF_non_cancer_nfe,gnomad_3_1_1_AF_non_cancer_oth,gnomad_3_1_1_AF_non_cancer_raw,gnomad_3_1_1_AF_non_cancer_sas,gnomad_3_1_1_AF_non_cancer_amr,gnomad_3_1_1_AF_non_cancer_popmax,gnomad_3_1_1_AF_non_cancer_all_popmax,gnomad_3_1_1_FILTER,MS,FETS,HotSpotAllele"
+    },
+    {
+      "helpText": "csv string with FORMAT fields that you want to keep",
+      "id": "lancet_retain_fmt",
+      "type": "textbox"
+    },
+    {
+      "helpText": "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF",
+      "id": "lancet_retain_ann",
+      "type": "textbox",
+      "value": "HGVSg"
+    },
+    {
+      "helpText": "csv string with INFO fields that you want to keep, i.e. for consensus `MSI,MSILEN,SOR,SSF,HotSpotAllele`",
+      "id": "vardict_retain_info",
+      "type": "textbox",
+      "value": "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,gnomad_3_1_1_AF_non_cancer_afr,gnomad_3_1_1_AF_non_cancer_ami,gnomad_3_1_1_AF_non_cancer_asj,gnomad_3_1_1_AF_non_cancer_eas,gnomad_3_1_1_AF_non_cancer_fin,gnomad_3_1_1_AF_non_cancer_mid,gnomad_3_1_1_AF_non_cancer_nfe,gnomad_3_1_1_AF_non_cancer_oth,gnomad_3_1_1_AF_non_cancer_raw,gnomad_3_1_1_AF_non_cancer_sas,gnomad_3_1_1_AF_non_cancer_amr,gnomad_3_1_1_AF_non_cancer_popmax,gnomad_3_1_1_AF_non_cancer_all_popmax,gnomad_3_1_1_FILTER,MSI,MSILEN,SOR,SSF,HotSpotAllele"
+    },
+    {
+      "helpText": "csv string with FORMAT fields that you want to keep",
+      "id": "vardict_retain_fmt",
+      "type": "textbox"
+    },
+    {
+      "helpText": "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF",
+      "id": "vardict_retain_ann",
+      "type": "textbox",
+      "value": "HGVSg"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots",
+      "id": "genomic_hotspots",
+      "maxValues": 1000,
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots",
+      "id": "protein_snv_hotspots",
+      "maxValues": 1000,
+      "type": "data"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Column-name-containing, tab-delimited file(s) containing protein names and amino acid position ranges corresponding to hotspots",
+      "id": "protein_indel_hotspots",
+      "maxValues": 1000,
+      "type": "data"
+    },
+    {
+      "helpText": "Will hard filter final result to create a public version",
+      "id": "bcftools_public_filter",
+      "type": "textbox",
+      "value": "FILTER=\"PASS\"|INFO/HotSpotAllele=1"
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Annotation ZIP files for echtvar anno",
+      "id": "echtvar_anno_zips",
+      "maxValues": 1000,
+      "type": "data"
+    },
+    {
+      "helpText": "Array of names for each filter tag to add, recommend: [\"NORM_DP_LOW\", \"GNOMAD_AF_HIGH\"]",
+      "id": "gatk_filter_name",
+      "maxValues": 1000,
+      "minValues": 1,
+      "type": "textbox"
+    },
+    {
+      "helpText": "Array of filter expressions to establish criteria to tag variants with. See https://gatk.broadinstitute.org/hc/en-us/articles/360036730071-VariantFiltration, recommend: [`vc.getGenotype('inputs.input_normal_name').getDP() <= 7)`, `gnomad_3_1_1_AF > 0.001`]",
+      "id": "gatk_filter_expression",
+      "maxValues": 1000,
+      "minValues": 1,
+      "type": "textbox"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": true,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Disable Hotspot Annotation and skip this task.",
+      "id": "disable_hotspot_annotation",
+      "type": "select"
+    },
+    {
+      "choices": [
+        {
+          "selected": false,
+          "text": "True",
+          "value": true
+        },
+        {
+          "selected": true,
+          "text": "False",
+          "value": false
+        }
+      ],
+      "helpText": "Disable VEP Annotation and skip this task.",
+      "id": "disable_vep_annotation",
+      "type": "select"
+    },
+    {
+      "helpText": "Sequencing center of variant called",
+      "id": "maf_center",
+      "type": "textbox",
+      "value": "."
+    },
+    {
+      "dataFilter": {
+        "dataType": "file"
+      },
+      "helpText": "Use a file with ens tx IDs for each gene to override VEP PICK",
+      "id": "custom_enst",
+      "type": "data"
+    }
+  ]
+}
