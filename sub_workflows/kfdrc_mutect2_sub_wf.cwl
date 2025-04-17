@@ -60,7 +60,7 @@ inputs:
   disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.", default: false }
 outputs:
   mutect2_filtered_stats: {type: 'File', outputSource: filter_mutect2_vcf/stats_table}
-  mutect2_filtered_vcf: { type: 'File', outputSource: pickvalue_workaround/output }
+  mutect2_filtered_vcf: { type: 'File', outputSource: pickvalue_workaround/output_file }
   mutect2_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   mutect2_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -150,18 +150,18 @@ steps:
     out: [reheadered_vcf]
 
   pickvalue_workaround:
-    run: ../tools/expression_pickvalue_workaround.cwl
+    run: ../tools/clt_file_to_file.cwl
     in:
       input_file:
         source: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf]
         pickValue: first_non_null
-    out: [output]
+    out: [output_file]
 
   gatk_selectvariants_mutect2:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select PASS
     in:
-      input_vcf: pickvalue_workaround/output
+      input_vcf: pickvalue_workaround/output_file
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode

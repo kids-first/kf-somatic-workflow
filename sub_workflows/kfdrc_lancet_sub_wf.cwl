@@ -55,7 +55,7 @@ inputs:
   custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK" }
   disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.",default: false}
 outputs:
-  lancet_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
+  lancet_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output_file}
   lancet_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   lancet_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -105,18 +105,18 @@ steps:
     out: [reheadered_vcf]
 
   pickvalue_workaround:
-    run: ../tools/expression_pickvalue_workaround.cwl
+    run: ../tools/clt_file_to_file.cwl
     in:
       input_file:
         source: [rename_vcf_samples/reheadered_vcf, sort_merge_lancet_vcf/merged_vcf]
         pickValue: first_non_null
-    out: [output]
+    out: [output_file]
 
   gatk_selectvariants_lancet:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Lancet PASS
     in:
-      input_vcf: pickvalue_workaround/output
+      input_vcf: pickvalue_workaround/output_file
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode

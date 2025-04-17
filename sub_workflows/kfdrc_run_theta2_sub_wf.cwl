@@ -7,6 +7,7 @@ requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
   - class: SubworkflowFeatureRequirement
+  - class: InlineJavascriptRequirement
 
 inputs:
   tumor_cns: {type: 'File', doc: "CNVkit output cns file"}

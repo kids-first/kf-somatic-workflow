@@ -527,7 +527,7 @@ outputs:
   cnvkit_diagram: {type: 'File?', outputSource: cnvkit/cnvkit_diagram}
   theta2_calls: {type: 'File?', outputSource: theta2_purity/theta2_adjusted_cns}
   theta2_seg: {type: 'File?', outputSource: theta2_purity/theta2_adjusted_seg}
-  theta2_subclonal_results: {type: 'File[]?', outputSource: expression_flatten_subclonal_results/output}
+  theta2_subclonal_results: {type: 'File[]?', outputSource: clt_flatten_subclonal_results/output}
   theta2_subclonal_cns: {type: 'File[]?', outputSource: theta2_purity/theta2_subclonal_cns}
   theta2_subclone_seg: {type: 'File[]?', outputSource: theta2_purity/theta2_subclone_seg}
   strelka2_public_outputs: {type: 'File[]', outputSource: strelka2/strelka2_public_outputs}
@@ -1028,8 +1028,8 @@ steps:
       min_theta2_frac: min_theta2_frac
       output_basename: output_basename
     out: [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
-  expression_flatten_subclonal_results:
-    run: ../tools/expression_flatten_file_list.cwl
+  clt_flatten_subclonal_results:
+    run: ../tools/clt_flatten_file_list.cwl
     when: $(inputs.input_list != null)
     in:
       input_list: theta2_purity/theta2_subclonal_results

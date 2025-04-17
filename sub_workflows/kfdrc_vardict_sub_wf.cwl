@@ -55,7 +55,7 @@ inputs:
   custom_enst: { type: 'File?', doc: "Use a file with ens tx IDs for each gene to override VEP PICK" }
   disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.",default: false}
 outputs:
-  vardict_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
+  vardict_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output_file}
   vardict_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   vardict_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -112,17 +112,17 @@ steps:
     out: [reheadered_vcf]
 
   pickvalue_workaround:
-    run: ../tools/expression_pickvalue_workaround.cwl
+    run: ../tools/clt_file_to_file.cwl
     in:
       input_file:
         source: [rename_vcf_samples/reheadered_vcf, sort_merge_vardict_vcf/merged_vcf]
         pickValue: first_non_null
-    out: [output]
+    out: [output_file]
 
   bcbio_filter_fp_somatic:
     run: ../tools/bcbio_filter_vardict_somatic.cwl
     in:
-      input_vcf: pickvalue_workaround/output
+      input_vcf: pickvalue_workaround/output_file
       output_basename: output_basename
     out: [filtered_vcf]
 
