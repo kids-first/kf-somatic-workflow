@@ -98,25 +98,28 @@ steps:
 
   gatk_intervallisttools_concat_supplement:
     run: ../tools/gatk_intervallisttools.cwl
-    when: $(inputs.input[3] != null)
+    when: $(inputs.run_step != null)
     in:
+      run_step: supplement_vcfs
       input:
         source: [gatk_intervallisttools_pad_calling/output, gatk_bedtointervallist_calling/output, calling_regions, supplement_vcfs]
         valueFrom: |
-          $(self[3].concat(self.filter(function(e) { return e != null})[0]))
+          $(self[3] != null ? self[3].concat(self.filter(function(e) { return e != null})[0]) : null)
       unique:
         valueFrom: $(1 == 1)
       include_filtered:
         valueFrom: $(1 == 1)
-      output_name:
+      outrun_step:
         source: calling_regions
         valueFrom: $(self.basename.replace(/(.bed|.bed.gz|.interval_list)$/,".supplemented.interval_list"))
     out: [output, count_output]
 
   gatk_intervallisttools_subtract_blacklist:
     run: ../tools/gatk_intervallisttools.cwl
-    when: $(inputs.second_input.some(function(e) { return e != null }))
+    when: $(inputs.run_step.some(function(e) { return e != null }))
     in:
+      run_step:
+        source: [gatk_bedtointervallist_blacklist/output, blacklist_regions]
       input:
         source: [gatk_intervallisttools_concat_supplement/output, gatk_intervallisttools_pad_calling/output, gatk_bedtointervallist_calling/output, calling_regions]
         valueFrom: |

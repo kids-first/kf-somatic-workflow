@@ -15,25 +15,25 @@ baseCommand: []
 arguments:
 - position: 0
   shellQuote: false
-  valueFrom: >
+  valueFrom: >-
     gatk IntervalListToBed
 - position: 10
   shellQuote: false
   prefix: '&&'
-  valueFrom: >
+  valueFrom: >-
     bgzip --stdout --threads  $(inputs.cpu)
 - position: 19
   shellQuote: false
-  valueFrom: >
+  valueFrom: >-
     $(inputs.output_filename) > $(inputs.output_filename).gz
 - position: 20
   shellQuote: false
   prefix: '&&'
-  valueFrom: >
+  valueFrom: >-
     tabix --preset bed
 - position: 28
   shellQuote: false
-  valueFrom: >
+  valueFrom: >-
     $(inputs.output_filename).gz
 
 inputs:
