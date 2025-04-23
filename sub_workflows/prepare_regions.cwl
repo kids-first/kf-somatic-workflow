@@ -77,7 +77,8 @@ steps:
     in:
       input_bed: blacklist_regions
       output_filename:
-        valueFrom: $(inputs.input_bed.basename.replace(/(.bed|.bed.gz)$/,".interval_list"))
+        valueFrom: |
+          $(inputs.input_bed != null ? inputs.input_bed.basename.replace(/(.bed|.bed.gz)$/,".interval_list") : null)
       reference_dict: reference_dict
     out: [output]
 

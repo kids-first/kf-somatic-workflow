@@ -35,8 +35,8 @@ inputs:
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
-  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
-  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  run_cache_existing: { type: 'boolean?', doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: 'boolean?', doc: "Run the allele frequency flags for cache" }
   # annotation vars
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
   protein_snv_hotspots: { type: 'File[]?', doc: "Column-name-containing, tab-delimited file(s) containing protein names and amino acid positions corresponding to hotspots" }
