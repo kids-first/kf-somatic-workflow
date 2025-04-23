@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: strelka2
 requirements:
@@ -58,29 +58,11 @@ inputs:
   use_manta_small_indels: { type: 'boolean?', default: false, doc: "Should the program use the small indels file? Defaults to false" }
   input_tumor_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{pattern: '.bai', required: false}, {pattern: '^.bai', required: false}, {pattern: '.crai', required: false}, {pattern: '^.crai', required: false}]
     doc: "tumor BAM or CRAM"
   input_normal_aligned:
     type: File
-    secondaryFiles: |
-      ${
-        var dpath = self.location.replace(self.basename, "")
-        if(self.nameext == '.bam'){
-          return {"location": dpath+self.nameroot+".bai", "class": "File"}
-        }
-        else{
-          return {"location": dpath+self.basename+".crai", "class": "File"}
-        }
-      }
+    secondaryFiles: [{pattern: '.bai', required: false}, {pattern: '^.bai', required: false}, {pattern: '.crai', required: false}, {pattern: '^.crai', required: false}]
     doc: "normal BAM or CRAM"
   cores: {type: ['null', int], default: 16}
   extra_arg: {type: 'string?', doc: "Add special options to config file, i.e. --max-input-depth 1000"}
