@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: gatk4_mergevcfs
 label: GATK Merge VCF
@@ -36,7 +36,7 @@ inputs:
       items: File
       inputBinding:
         prefix: -I
-    secondaryFiles: [.tbi]
+    secondaryFiles: [{pattern: '.tbi', required: false}]
     inputBinding:
       position: 1
   reference_dict: File
