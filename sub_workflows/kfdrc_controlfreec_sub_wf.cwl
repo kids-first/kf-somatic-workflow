@@ -107,7 +107,9 @@ steps:
   rename_outputs:
     run: ../tools/ubuntu_rename_outputs.cwl
     in:
-      input_files: [control_free_c/cnvs, control_free_c/cnvs_pvalue, control_free_c/config_script, control_free_c/ratio, control_free_c/sample_BAF, control_free_c/info_txt]
+      input_files:
+        source: [control_free_c/cnvs, control_free_c/cnvs_pvalue, control_free_c/config_script, control_free_c/ratio, control_free_c/sample_BAF, control_free_c/info_txt]
+        pickValue: all_non_null
       input_pngs: control_free_c/pngs
       output_basename: output_basename
     out: [ctrlfreec_cnvs, ctrlfreec_pval, ctrlfreec_config, ctrlfreec_pngs, ctrlfreec_bam_ratio, ctrlfreec_baf, ctrlfreec_info]

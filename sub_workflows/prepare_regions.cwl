@@ -173,7 +173,9 @@ steps:
     when: $(inputs.input_intervallist != null)
     scatter: [input_intervallist]
     in:
-      input_intervallist: gatk_intervallisttools_scatter/output
+      input_intervallist:
+        source: gatk_intervallisttools_scatter/output
+        default: []
       output_filename:
         valueFrom: $(inputs.input_intervallist.nameroot).bed
     out: [outbed, outbedgz]

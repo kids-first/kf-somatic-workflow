@@ -28,11 +28,7 @@ arguments:
       SelectVariants
       --exclude-filtered TRUE
       -select-type SNP
-      ${
-        if (inputs.input_vcf != null){
-          return "-V " + inputs.input_vcf.path;
-        }
-      }
+      $(inputs.input_vcf != null ? "-V " + inputs.input_vcf.path : "")
       -O snp_pass.vcf.gz
 
       /gatk VariantFiltration

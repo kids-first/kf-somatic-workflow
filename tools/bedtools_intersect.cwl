@@ -25,10 +25,10 @@ arguments:
             return "echo No vcf provided, skipping >&2 && exit 0;"
           }
           if (inputs.flag != "N"){
-            cmd += "bedtools intersect -a " + inputs.input_vcf.path + " -b " + inputs.input_bed_file.path + " -header -wa > " + out_vcf + " && ";
+            cmd += "bedtools intersect -a " + (inputs.input_vcf ? inputs.input_vcf.path : "") + " -b " + inputs.input_bed_file.path + " -header -wa > " + out_vcf + " && ";
             cmd +=  "bgzip " + out_vcf + " && tabix " + out_vcf + ".gz;";
           }else{
-            cmd += " >&2 echo Value N given, passing through vcf; cp " + inputs.input_vcf.path + " " + out_vcf + ".gz;"
+            cmd += " >&2 echo Value N given, passing through vcf; cp " + (inputs.input_vcf ? inputs.input_vcf.path : "") + " " + out_vcf + ".gz;"
             cmd += "tabix " + out_vcf + ".gz;"
           }
           return cmd;

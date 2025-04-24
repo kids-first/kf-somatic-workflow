@@ -19,7 +19,7 @@ arguments:
         fai = open("$(inputs.reference_fai.path)")
         h = {}
         for line in fai:
-            f = line.split("\t")
+            f = line.split(chr(9))
             if f == "chrM":
                 break
             f[0] = f[0].replace("chr","")
@@ -30,11 +30,11 @@ arguments:
 
         ratio_file = open("$(inputs.ctrlfreec_ratio.path)")
         out = open("$(inputs.output_basename).controlfreec.seg", "w")
-        out.write("ID\tchrom\tloc.start\tloc.end\tnum.mark\tseg.mean\n") 
+        out.write(chr(9).join(["ID","chrom","loc.start","loc.end","num.mark","seg.mean"]) + chr(10))
         head = next(ratio_file)
         count = 0
         for line in ratio_file:
-            data = line.rstrip("\n").split("\t")
+            data = line.rstrip(chr(10)).split(chr(9))
             (chrom, pos, ratio, meanRatio) = (data[0], data[1], data[2], data[3])
             if float(meanRatio) == -1:
                 continue
@@ -45,21 +45,21 @@ arguments:
                 on_chr = chrom
             else:
                 if chrom != on_chr:
-                    out.write("\t".join((smp, "chr" + on_chr, start, h[on_chr], str(count))) + "\t")
+                    out.write(chr(9).join((smp, "chr" + on_chr, start, h[on_chr], str(count))) + chr(9))
                     if float(seg_ratio) != 0:
-                        out.write(str(math.log(float(seg_ratio), 2)) + "\n")
+                        out.write(str(math.log(float(seg_ratio), 2)) + chr(10))
                     else:
-                        out.write(str(math.log(float(seg_ratio) + 1, 2)) + "\n")
+                        out.write(str(math.log(float(seg_ratio) + 1, 2)) + chr(10))
                     start = pos
                     seg_ratio = meanRatio
                     on_chr = chrom
                     count = 1
                 elif meanRatio != seg_ratio:
-                    out.write("\t".join((smp, "chr" + chrom, start, str(int(pos)-1), str(count))) + "\t")
+                    out.write(chr(9).join((smp, "chr" + chrom, start, str(int(pos)-1), str(count))) + chr(9))
                     if float(seg_ratio) != 0:
-                        out.write(str(math.log(float(seg_ratio), 2)) + "\n")
+                        out.write(str(math.log(float(seg_ratio), 2)) + chr(10))
                     else:
-                        out.write(str(math.log(float(seg_ratio) + 1, 2)) + "\n")
+                        out.write(str(math.log(float(seg_ratio) + 1, 2)) + chr(10))
                     start = pos
                     seg_ratio = meanRatio
                     count = 1

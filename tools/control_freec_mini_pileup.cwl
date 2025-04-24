@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: controlfreec_mini_pileup
 requirements:
@@ -26,7 +26,7 @@ arguments:
       --samtools -f $(inputs.reference.path) -d 8000 -Q 0 -q 1 -l snps.bed
 
 inputs:
-  input_reads: {type: File, secondaryFiles: ['^.bai']}
+  input_reads: {type: File, secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.bai', required: false}]}
   threads:
     type: ['null', int]
     default: 16
