@@ -805,6 +805,7 @@ requirements:
   - class: InitialWorkDirRequirement
     listing:
       - entryname: config.txt
+        writable: true
         entry: |-
           ${
 
@@ -925,7 +926,6 @@ requirements:
 
               return content
           }
-        writable: false
       - entryname: split_fasta.py
         entry: |-
           import sys

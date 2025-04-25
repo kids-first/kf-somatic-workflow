@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: kfdrc-manta-sv
 label: Manta sv caller
@@ -37,8 +37,8 @@ arguments:
 inputs:
     reference: {type: 'File', secondaryFiles: [^.dict, .fai]}
     hg38_strelka_bed: {type: 'File', secondaryFiles: [.tbi]}
-    input_tumor_cram: {type: ["null", File], secondaryFiles: [.crai]}
-    input_normal_cram: {type: ["null", File], secondaryFiles: [.crai]}
+    input_tumor_cram: {type: ["null", File], secondaryFiles: [{pattern: '.crai', required: false}, {pattern: '^.crai', required: false}, {pattern: '.bai', required: false}, {pattern: '^.bai', required: false}]}
+    input_normal_cram: {type: ["null", File], secondaryFiles: [{pattern: '.crai', required: false}, {pattern: '^.crai', required: false}, {pattern: '.bai', required: false}, {pattern: '^.bai', required: false}]}
     cores: {type: ['null', int], default: 18}
     ram: {type: 'int?', default: 10, doc: "GB of RAM an instance must have to run the task"}
     output_basename: string

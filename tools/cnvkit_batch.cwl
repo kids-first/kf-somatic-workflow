@@ -1,5 +1,5 @@
 ## this tool is made to run wgs or wes, germline/somatic or paired, using the batch method (no panel of normals needed)
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: cnvkit-batch
 requirements: 
@@ -37,7 +37,7 @@ arguments:
       $(inputs.input_sample.path)
       ${
           var cmd = "";
-          if (inputs.capture_regions != null) {
+          if (inputs.capture_regions != null && inputs.wgs_mode != 'Y') {
               cmd = "--targets " + inputs.capture_regions.path;
           }
           return cmd;
@@ -98,8 +98,8 @@ arguments:
 
 
 inputs:
-  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
-  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
+  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: 'bai', required: false}]}
+  input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: 'bai', required: false}]}
   reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
   cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
