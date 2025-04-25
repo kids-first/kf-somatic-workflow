@@ -1030,9 +1030,10 @@ steps:
     out: [theta2_adjusted_cns, theta2_adjusted_seg, theta2_subclonal_results, theta2_subclonal_cns, theta2_subclone_seg]
   clt_flatten_subclonal_results:
     run: ../tools/clt_flatten_file_list.cwl
-    when: $(inputs.input_list != null)
     in:
-      input_list: theta2_purity/theta2_subclonal_results
+      input_list:
+        source: theta2_purity/theta2_subclonal_results
+        pickValue: all_non_null
     out: [output]
   manta:
     run: ../sub_workflows/kfdrc_manta_sub_wf.cwl
