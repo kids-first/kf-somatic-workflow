@@ -1,0 +1,14 @@
+{
+  "calling_regions": {
+    "class": "File",
+    "path": "/home/ubuntu/volume/Ref/wgs_calling_regions.hg38.interval_list"
+  },
+  "blacklist_regions": {
+    "class": "File",
+    "path": "/home/ubuntu/volume/Ref/hg38-blacklist.v2.bed.gz"
+  },
+  "reference_dict": {
+    "class": "File",
+    "path": "/home/ubuntu/volume/Ref/Homo_sapiens_assembly38.dict"
+  }
+}
