@@ -12,10 +12,11 @@ requirements:
     coresMin: $(inputs.threads)
   - class: InitialWorkDirRequirement
     listing: 
-      - $(inputs.data_repo)
+      - entry: $(inputs.data_repo)
+        writable: true
       - entryname: setup_vars.sh
         entry: |-
-          export AA_DATA_REPO=$(inputs.data_repo.path)
+          export AA_DATA_REPO=$(inputs.data_repo.basename)
           if [ ${ return inputs.mosek_license_file ? "MOSEK_YES" : null; } != null ];
           then 
           mkdir licenses && cp ${ return inputs.mosek_license_file ? inputs.mosek_license_file.path : ""; } licenses \

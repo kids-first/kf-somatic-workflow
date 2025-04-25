@@ -1003,7 +1003,9 @@ steps:
       run_amplicon_architect: runtime_validator/run_amplicon_architect
       aa_data_repo: aa_data_repo
       aa_data_ref_version: aa_data_ref_version
-      tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
+      tumor_align_file:
+        source: [samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       output_basename: output_basename
       mosek_license_file: mosek_license_file
       reference: indexed_reference_fasta
