@@ -10630,6 +10630,11 @@
                     "class": "InlineJavascriptRequirement"
                 },
                 {
+                    "class": "ResourceRequirement",
+                    "ramMin": "$(inputs.ram * 1000)",
+                    "coresMin": "$(inputs.cpu)"
+                },
+                {
                     "class": "DockerRequirement",
                     "dockerPull": "ubuntu:20.04"
                 }
@@ -10649,12 +10654,30 @@
                         "null",
                         "int"
                     ],
+                    "default": 1,
+                    "doc": "CPUs to allocate to this task.",
+                    "id": "#awk_min_seg_length.cwl/cpu"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
                     "default": 150,
                     "id": "#awk_min_seg_length.cwl/default_min_len"
                 },
                 {
                     "type": "File",
                     "id": "#awk_min_seg_length.cwl/input_file"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 2,
+                    "doc": "GB of RAM to allocate to this task.",
+                    "id": "#awk_min_seg_length.cwl/ram"
                 }
             ],
             "outputs": [
@@ -13287,6 +13310,11 @@
                     "class": "ShellCommandRequirement"
                 },
                 {
+                    "class": "ResourceRequirement",
+                    "ramMin": "$(inputs.max_memory*1000)",
+                    "coresMin": "$(inputs.cpu)"
+                },
+                {
                     "class": "DockerRequirement",
                     "dockerPull": "broadinstitute/gatk:4.2.4.1"
                 }
@@ -13334,6 +13362,24 @@
                         "prefix": "-I"
                     },
                     "id": "#gatk_callcopyratiosegments.cwl/copy_ratio_segments"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 4,
+                    "doc": "Number of CPUs to allocate to this task.",
+                    "id": "#gatk_callcopyratiosegments.cwl/cpu"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 16,
+                    "doc": "Maximum GB of RAM to allocate for this tool.",
+                    "id": "#gatk_callcopyratiosegments.cwl/max_memory"
                 },
                 {
                     "type": [
@@ -14031,6 +14077,11 @@
                     "class": "ShellCommandRequirement"
                 },
                 {
+                    "class": "ResourceRequirement",
+                    "ramMin": "$(inputs.max_memory*1000)",
+                    "coresMin": "$(inputs.cpu)"
+                },
+                {
                     "class": "DockerRequirement",
                     "dockerPull": "broadinstitute/gatk:4.2.4.1"
                 }
@@ -14084,6 +14135,24 @@
                         "prefix": "--count-panel-of-normals"
                     },
                     "id": "#gatk_denoisereadcounts.cwl/count_panel_of_normals"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 4,
+                    "doc": "Number of CPUs to allocate to this task.",
+                    "id": "#gatk_denoisereadcounts.cwl/cpu"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 16,
+                    "doc": "Maximum GB of RAM to allocate for this tool.",
+                    "id": "#gatk_denoisereadcounts.cwl/max_memory"
                 },
                 {
                     "type": [
@@ -14363,6 +14432,7 @@
                 },
                 {
                     "class": "ResourceRequirement",
+                    "coresMin": "$(inputs.cpu)",
                     "ramMin": "$(inputs.max_memory*1000)"
                 },
                 {
@@ -14447,6 +14517,15 @@
                         "position": 3
                     },
                     "id": "#gatk_funcotatesegments.cwl/annotation_override"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 4,
+                    "doc": "CPUs to allocate to this tool.",
+                    "id": "#gatk_funcotatesegments.cwl/cpu"
                 },
                 {
                     "type": [
@@ -14693,7 +14772,7 @@
                         "null",
                         "int"
                     ],
-                    "default": 20,
+                    "default": 16,
                     "doc": "Maximum GB of RAM to allocate for this tool.",
                     "id": "#gatk_funcotatesegments.cwl/max_memory"
                 },
@@ -15984,6 +16063,7 @@
                 },
                 {
                     "class": "ResourceRequirement",
+                    "coresMin": "$(inputs.cpu)",
                     "ramMin": "$(inputs.max_memory*1000)"
                 },
                 {
@@ -16034,6 +16114,15 @@
                         "prefix": "--allelic-counts"
                     },
                     "id": "#gatk_modelsegments.cwl/allelic_counts"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 4,
+                    "doc": "Number of CPUs to allocate to this task.",
+                    "id": "#gatk_modelsegments.cwl/cpu"
                 },
                 {
                     "type": [
@@ -16124,7 +16213,7 @@
                         "null",
                         "int"
                     ],
-                    "default": 20,
+                    "default": 16,
                     "doc": "Maximum GB of RAM to allocate for this tool.",
                     "id": "#gatk_modelsegments.cwl/max_memory"
                 },
@@ -16457,7 +16546,9 @@
                     "class": "ShellCommandRequirement"
                 },
                 {
-                    "class": "ResourceRequirement"
+                    "class": "ResourceRequirement",
+                    "ramMin": "$(inputs.max_memory*1000)",
+                    "coresMin": "$(inputs.cpu)"
                 },
                 {
                     "class": "DockerRequirement",
@@ -16493,6 +16584,15 @@
                 {
                     "type": [
                         "null",
+                        "int"
+                    ],
+                    "default": 2,
+                    "doc": "Number of CPUs to allocate to this task.",
+                    "id": "#gatk_plotdenoisedcopyratios.cwl/cpu"
+                },
+                {
+                    "type": [
+                        "null",
                         "File"
                     ],
                     "doc": "Input file containing denoised copy ratios (output of DenoiseReadCounts).",
@@ -16501,6 +16601,15 @@
                         "prefix": "--denoised-copy-ratios"
                     },
                     "id": "#gatk_plotdenoisedcopyratios.cwl/denoised_copy_ratios"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 8,
+                    "doc": "Maximum GB of RAM to allocate for this tool.",
+                    "id": "#gatk_plotdenoisedcopyratios.cwl/max_memory"
                 },
                 {
                     "type": [
@@ -16619,7 +16728,9 @@
                     "class": "ShellCommandRequirement"
                 },
                 {
-                    "class": "ResourceRequirement"
+                    "class": "ResourceRequirement",
+                    "ramMin": "$(inputs.max_memory*1000)",
+                    "coresMin": "$(inputs.cpu)"
                 },
                 {
                     "class": "DockerRequirement",
@@ -16667,6 +16778,15 @@
                 {
                     "type": [
                         "null",
+                        "int"
+                    ],
+                    "default": 2,
+                    "doc": "Number of CPUs to allocate to this task.",
+                    "id": "#gatk_plotmodeledsegments.cwl/cpu"
+                },
+                {
+                    "type": [
+                        "null",
                         "File"
                     ],
                     "doc": "Input file containing denoised copy ratios (output of DenoiseReadCounts).",
@@ -16675,6 +16795,15 @@
                         "prefix": "--denoised-copy-ratios"
                     },
                     "id": "#gatk_plotmodeledsegments.cwl/denoised_copy_ratios"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 8,
+                    "doc": "Maximum GB of RAM to allocate for this tool.",
+                    "id": "#gatk_plotmodeledsegments.cwl/max_memory"
                 },
                 {
                     "type": [
@@ -17736,6 +17865,11 @@
                 },
                 {
                     "type": "boolean",
+                    "doc": "B Allele file is present. Warning: B Allele is required to run GATK CNV!",
+                    "id": "#runtime_validator.cwl/b_allele_present"
+                },
+                {
+                    "type": "boolean",
                     "doc": "Set to false to disable CNVkit. Warning: CNVkit is required to run both Amplicon Architect and Theta2!",
                     "id": "#runtime_validator.cwl/cnvkit"
                 },
@@ -17940,7 +18074,7 @@
                 {
                     "type": "boolean",
                     "outputBinding": {
-                        "outputEval": "${\n  if (!inputs.gatk_cnv) {\n    return false;\n  }\n  if (!inputs.pon_present) {\n    throw new Error('Running GATK CNV requires a Panel of Normals!');\n  }\n  return true;\n}"
+                        "outputEval": "${\n  if (!inputs.gatk_cnv) {\n    return false;\n  }\n  if (!inputs.pon_present) {\n    throw new Error('Running GATK CNV requires a Panel of Normals!');\n  }\n  if (!inputs.b_allele_present) {\n    throw new Error('Running GATK CNV requires a B Allele file!');\n  }\n  return true;\n}"
                     },
                     "id": "#runtime_validator.cwl/run_gatk_cnv"
                 },
@@ -21492,6 +21626,11 @@
                         {
                             "source": "#run_amplicon_architect",
                             "id": "#runtime_validator/amplicon_architect"
+                        },
+                        {
+                            "source": "#b_allele",
+                            "valueFrom": "$(self != null)\n",
+                            "id": "#runtime_validator/b_allele_present"
                         },
                         {
                             "source": "#run_cnvkit",

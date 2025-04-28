@@ -3,6 +3,9 @@ id: awk_min_seg_length
 requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
+  - class: ResourceRequirement
+    ramMin: $(inputs.ram * 1000)
+    coresMin: $(inputs.cpu)
   - class: DockerRequirement
     dockerPull: 'ubuntu:20.04'
 class: CommandLineTool
@@ -15,6 +18,8 @@ arguments:
 inputs:
   input_file: { type: 'File' }
   default_min_len: { type: 'int?', default: 150 }
+  cpu: {type: 'int?', default: 1, doc: "CPUs to allocate to this task."}
+  ram: {type: 'int?', default: 2, doc: "GB of RAM to allocate to this task."}
 outputs:
   output:
     type: 'int'

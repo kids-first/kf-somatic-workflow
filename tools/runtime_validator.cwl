@@ -27,6 +27,7 @@ inputs:
   gatk_cnv: {type: 'boolean', doc: "Set to false to disable GATK CNV."}
   mosek_present: {type: 'boolean', doc: "Mosek file is present. Warning: Mosek file is required to run Amplicon Architect!"}
   pon_present: {type: 'boolean', doc: "GATK CNV PON file is present. Warning: Panel of Normals is required to run GATK CNV!"}
+  b_allele_present: {type: 'boolean', doc: "B Allele file is present. Warning: B Allele is required to run GATK CNV!"}
   exome_flag: {type: 'string?', doc: "Whether to run in exome mode for callers."}
   cnvkit_wgs_mode: {type: 'string?', doc: "Entering Y will run cnvkit in WGS mode, otherwise it will run in hybrid mode. Defaults to Y in wgs mode."}
   i_flag: {type: 'string?', doc: "Flag to intersect germline calls on padded regions.  Use N if you want to skip this. Defaults to N in WGS mode."}
@@ -122,6 +123,9 @@ outputs:
           }
           if (!inputs.pon_present) {
             throw new Error('Running GATK CNV requires a Panel of Normals!');
+          }
+          if (!inputs.b_allele_present) {
+            throw new Error('Running GATK CNV requires a B Allele file!');
           }
           return true;
         }

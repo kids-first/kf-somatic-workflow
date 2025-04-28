@@ -592,6 +592,10 @@ steps:
         source: count_panel_of_normals
         valueFrom: |
           $(self != null)
+      b_allele_present:
+        source: b_allele
+        valueFrom: |
+          $(self != null)
       exome_flag: exome_flag
       cnvkit_wgs_mode: cnvkit_wgs_mode
       i_flag: i_flag

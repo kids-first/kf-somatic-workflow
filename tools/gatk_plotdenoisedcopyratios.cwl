@@ -6,6 +6,8 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: ResourceRequirement
+    ramMin: $(inputs.max_memory*1000)
+    coresMin: $(inputs.cpu)
   - class: DockerRequirement
     dockerPull: 'broadinstitute/gatk:4.2.4.1'
 baseCommand: []
@@ -55,6 +57,14 @@ inputs:
   output_prefix:
     type: 'string?'
     doc: "String to use as the prefix for the outputs."
+  max_memory:
+    type: 'int?'
+    default: 8
+    doc: "Maximum GB of RAM to allocate for this tool."
+  cpu:
+    type: 'int?'
+    default: 2
+    doc: "Number of CPUs to allocate to this task."
 outputs:
   denoised_plot: { type: 'File?', outputBinding: { glob: "*.denoised.png" } }
   delta_mad: { type: 'File?', outputBinding: { glob: "*.deltaMAD.txt" } }
