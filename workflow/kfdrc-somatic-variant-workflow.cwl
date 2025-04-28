@@ -196,7 +196,7 @@ doc: |
      - `reference_fasta`: [Homo_sapiens_assembly38.fasta](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
      - `reference_dict`: [Homo_sapiens_assembly38.dict](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK
      - `calling_regions`: [wgs_calling_regions.hg38.interval_list](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0?pli=1) - need a valid google account, this is a link to the resource bundle from Broad GATK. **To create our canonical calling intervals, edit this file by leaving only entries related to chr1-22,X,Y,M. M may need to be added.**
-     - `cnv_blacklist_regions`: `somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.list` Blacklist regions that include centromeres to exclude from CNV calling
+     - `cnv_blacklist_regions`: `somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.bed` Blacklist regions that include centromeres to exclude from CNV calling
      - `coding_sequence_regions`: `GRCh38.gencode.v31.CDS.merged.bed` For Lancet WGS, it's highly recommended to use CDS bed as the starting point and supplement with the regions of calls from Strelka2 & Mutect2. Our CDS regions were obtained from GENCODE, [release 31](https://www.gencodegenes.org/human/release_31.html) using this GTF file [gencode.v31.primary_assembly.annotation.gtf.gz](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_31/gencode.v31.primary_assembly.annotation.gtf.gz) and parsing features for `UTR`, `start codon`, `stop codon`, and `exon`, then using bedtools sort and merge after converting coordinates into bed format.
      - `cnvkit_annotation_file`: [refFlat_HG38.txt](http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/refFlat.txt.gz) gunzip this file from UCSC
      - `af_only_gnomad_vcf`: [af-only-gnomad.hg38.vcf.gz](https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38) - need a valid google account, this is a link to the best practices google bucket from Broad GATK.
@@ -358,7 +358,7 @@ inputs:
   blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling
       regions for SNV and SV calling."}
   cnv_blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling
-      regions for CNV calling only!", "sbg:suggestedValue": {class: File, path: 663d2bcc27374715fccd8c6d, name: somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.list}}
+      regions for CNV calling only!", "sbg:suggestedValue": {class: File, path: 665df995a193b420129c782f, name: somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.bed}}
   coding_sequence_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing the coding sequence regions for the provided
       reference. This input is used to create custom intervals for WGS Lancet Calling.", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c0,
       name: GRCh38.gencode.v31.CDS.merged.bed}}
