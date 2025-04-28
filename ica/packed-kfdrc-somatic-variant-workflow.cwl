@@ -16882,15 +16882,22 @@
                     "class": "ShellCommandRequirement"
                 },
                 {
+                    "class": "ResourceRequirement",
+                    "ramMin": "$(inputs.max_memory*1000)",
+                    "coresMin": "$(inputs.cpu)"
+                },
+                {
                     "class": "DockerRequirement",
                     "dockerPull": "broadinstitute/gatk:4.2.4.1"
                 }
             ],
-            "baseCommand": [
-                "gatk",
-                "PreprocessIntervals"
-            ],
+            "baseCommand": [],
             "arguments": [
+                {
+                    "position": 0,
+                    "shellQuote": false,
+                    "valueFrom": "gatk --java-options -Xmx$(Math.floor(inputs.max_memory*1000/1.074 - 1))M PreprocessIntervals"
+                },
                 {
                     "position": 1,
                     "shellQuote": false,
@@ -16908,6 +16915,15 @@
                         "prefix": "--bin-length"
                     },
                     "id": "#gatk_preprocessintervals.cwl/bin_length"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 1,
+                    "doc": "Number of CPUs to allocate to this task.",
+                    "id": "#gatk_preprocessintervals.cwl/cpu"
                 },
                 {
                     "type": [
@@ -17034,6 +17050,15 @@
                         "prefix": "-isr"
                     },
                     "id": "#gatk_preprocessintervals.cwl/interval_set_rule"
+                },
+                {
+                    "type": [
+                        "null",
+                        "int"
+                    ],
+                    "default": 4,
+                    "doc": "Maximum GB of RAM to allocate for this tool.",
+                    "id": "#gatk_preprocessintervals.cwl/max_memory"
                 },
                 {
                     "type": [

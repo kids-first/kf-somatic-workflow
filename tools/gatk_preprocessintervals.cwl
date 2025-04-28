@@ -5,10 +5,17 @@ doc: "Prepares bins for coverage collection"
 requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
+  - class: ResourceRequirement
+    ramMin: $(inputs.max_memory*1000)
+    coresMin: $(inputs.cpu)
   - class: DockerRequirement
     dockerPull: 'broadinstitute/gatk:4.2.4.1'
-baseCommand: [gatk, PreprocessIntervals]
+baseCommand: []
 arguments:
+  - position: 0
+    shellQuote: false
+    valueFrom: >-
+      gatk --java-options -Xmx$(Math.floor(inputs.max_memory*1000/1.074 - 1))M PreprocessIntervals
   - position: 1
     shellQuote: false
     prefix: "-O"
@@ -98,5 +105,13 @@ inputs:
     doc: "By default, the program will take the UNION of all intervals specified using -L and/or -XL. However, you can change this setting for -L, for example if you want to take the INTERSECTION of the sets instead. E.g. to perform the analysis only on chromosome 1 exomes, you could specify -L exomes.intervals -L 1 --interval-set-rule INTERSECTION. However, it is not possible to modify the merging approach for intervals passed using -XL (they will always be merged using UNION). Note that if you specify both -L and -XL, the -XL interval set will be subtracted from the -L interval set."
     inputBinding:
       prefix: "-isr"
+  max_memory:
+    type: 'int?'
+    default: 4
+    doc: "Maximum GB of RAM to allocate for this tool."
+  cpu:
+    type: 'int?'
+    default: 1
+    doc: "Number of CPUs to allocate to this task."
 outputs:
   output: { type: 'File', outputBinding: { glob: '*interval_list' } }
