@@ -12,10 +12,11 @@ requirements:
     coresMin: $(inputs.threads)
   - class: InitialWorkDirRequirement
     listing:
-      - $(inputs.data_repo)
+      - entry: $(inputs.data_repo)
+        writable: true
       - entryname: setup_vars.sh
         entry: |-
-          export AA_DATA_REPO=$(inputs.data_repo.path) \
+          export AA_DATA_REPO=$(inputs.data_repo.basename) \
           && mkdir licenses && cp $(inputs.mosek_license_file.path) licenses \
           && export MOSEKLM_LICENSE_FILE=$PWD/licenses;
           if [ ${ return inputs.ref_cache ? "REF_CACHE_YES" : null; } != null ];

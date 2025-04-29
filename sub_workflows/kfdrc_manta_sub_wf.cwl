@@ -31,7 +31,7 @@ inputs:
       TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
 
 outputs:
-  manta_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output}
+  manta_prepass_vcf: {type: 'File', outputSource: pickvalue_workaround/output_file}
   manta_pass_vcf: {type: 'File', outputSource: gatk_selectvariants_manta/pass_vcf}
   manta_small_indels: {type: 'File', outputSource: manta/small_indels}
   annotsv_annotated_calls: {type: 'File?', outputSource: annotsv/annotated_calls}
@@ -68,18 +68,18 @@ steps:
     out: [reheadered_vcf]
 
   pickvalue_workaround:
-    run: ../tools/expression_pickvalue_workaround.cwl
+    run: ../tools/clt_file_to_file.cwl
     in:
       input_file:
         source: [rename_manta_samples/reheadered_vcf, manta/output_sv]
         pickValue: first_non_null
-    out: [output]
+    out: [output_file]
 
   gatk_selectvariants_manta:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select Manta PASS
     in:
-      input_vcf: pickvalue_workaround/output
+      input_vcf: pickvalue_workaround/output_file
       output_basename: output_basename
       tool_name:
         valueFrom: ${return "manta"}

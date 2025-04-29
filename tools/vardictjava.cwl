@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: vardictjava
 requirements:
@@ -31,9 +31,9 @@ arguments:
 
 inputs:
   reference: {type: File, secondaryFiles: [^.dict, .fai]}
-  input_tumor_bam: {type: File, secondaryFiles: [^.bai]}
+  input_tumor_bam: {type: File, secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.bai', required: false}]}
   input_tumor_name: string
-  input_normal_bam: {type: File, secondaryFiles: [^.bai]}
+  input_normal_bam: {type: File, secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.bai', required: false}]}
   input_normal_name: string
   cpus: {type: ['null', int], default: 8}
   ram: {type: ['null', int], default: 16, doc: "In GB"}

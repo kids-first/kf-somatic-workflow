@@ -6,6 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: ResourceRequirement
+    coresMin: $(inputs.cpu)
     ramMin: $(inputs.max_memory*1000)
   - class: DockerRequirement
     dockerPull: 'broadinstitute/gatk:4.2.4.1'
@@ -181,8 +182,12 @@ inputs:
     doc: "String to use as the prefix for the outputs."
   max_memory:
     type: 'int?'
-    default: 20
+    default: 16
     doc: "Maximum GB of RAM to allocate for this tool."
+  cpu:
+    type: 'int?'
+    default: 4
+    doc: "Number of CPUs to allocate to this task."
 outputs:
   allele_fraction_legacy_segments: { type: 'File?', outputBinding: { glob: "*.af.igv.seg" } }
   allele_fraction_parameters: { type: 'File?', outputBinding: { glob: "*.modelFinal.af.param" } }

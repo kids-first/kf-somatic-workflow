@@ -38,8 +38,8 @@ inputs:
   merged: { type: 'boolean?', doc: "Set to true if merged cache used", default: true }
   cadd_indels: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD indel annotations" }
   cadd_snvs: { type: 'File?', secondaryFiles: [.tbi], doc: "VEP-formatted plugin file and index containing CADD SNV annotations" }
-  run_cache_existing: { type: boolean, doc: "Run the check_existing flag for cache" }
-  run_cache_af: { type: boolean, doc: "Run the allele frequency flags for cache" }
+  run_cache_existing: { type: 'boolean?', doc: "Run the check_existing flag for cache" }
+  run_cache_af: { type: 'boolean?', doc: "Run the allele frequency flags for cache" }
 
   # annotation vars
   genomic_hotspots: { type: 'File[]?', doc: "Tab-delimited BED formatted file(s) containing hg38 genomic positions corresponding to hotspots" }
@@ -60,7 +60,7 @@ inputs:
   disable_vep_annotation: { type: 'boolean?', doc: "Disable VEP Annotation and skip this task.", default: false }
 outputs:
   mutect2_filtered_stats: {type: 'File', outputSource: filter_mutect2_vcf/stats_table}
-  mutect2_filtered_vcf: { type: 'File', outputSource: pickvalue_workaround/output }
+  mutect2_filtered_vcf: { type: 'File', outputSource: pickvalue_workaround/output_file }
   mutect2_protected_outputs: {type: 'File[]', outputSource: annotate/annotated_protected}
   mutect2_public_outputs: {type: 'File[]', outputSource: annotate/annotated_public}
 
@@ -150,18 +150,18 @@ steps:
     out: [reheadered_vcf]
 
   pickvalue_workaround:
-    run: ../tools/expression_pickvalue_workaround.cwl
+    run: ../tools/clt_file_to_file.cwl
     in:
       input_file:
         source: [rename_vcf_samples/reheadered_vcf, filter_mutect2_vcf/filtered_vcf]
         pickValue: first_non_null
-    out: [output]
+    out: [output_file]
 
   gatk_selectvariants_mutect2:
     run: ../tools/gatk_selectvariants.cwl
     label: GATK Select PASS
     in:
-      input_vcf: pickvalue_workaround/output
+      input_vcf: pickvalue_workaround/output_file
       output_basename: output_basename
       tool_name: tool_name
       mode: select_vars_mode

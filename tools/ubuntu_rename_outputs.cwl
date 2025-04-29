@@ -81,10 +81,10 @@ outputs:
     outputBinding:
       glob: '*.info.txt'
   ctrlfreec_tumor_cpn:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.sample.cpn'
   ctrlfreec_normal_cpn:
-    type: File
+    type: File?
     outputBinding:
       glob: '*.control.cpn'

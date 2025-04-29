@@ -689,15 +689,15 @@ arguments:
 
 
           if (inputs.mate_file_sample) {
-              filepath = inputs.mate_file_sample.path
-              filename = filepath.split("/").pop()
+              var filepath = inputs.mate_file_sample.path
+              var filename = filepath.split("/").pop()
           } else {
-              filepath = inputs.mate_copynumber_file_sample.path
-              filename = filepath.split("/").pop()
+              var filepath = (inputs.mate_copynumber_file_sample ? inputs.mate_copynumber_file_sample.path : "")
+              var filename = filepath.split("/").pop()
           }
 
-          CNVs = filename + "_CNVs"
-          ratio = filename + "_ratio" + ".txt"
+          var CNVs = filename + "_CNVs"
+          var ratio = filename + "_ratio" + ".txt"
 
 
           return "cat assess_significance.R | 1>&2 R --slave --args " + CNVs + " " + ratio
@@ -728,14 +728,14 @@ arguments:
     valueFrom: |-
       ${
           if (inputs.mate_file_sample) {
-              filepath = inputs.mate_file_sample.path
-              filename = filepath.split("/").pop()
+              var filepath = inputs.mate_file_sample.path
+              var filename = filepath.split("/").pop()
           } else {
-              filepath = inputs.mate_copynumber_file_sample.path
-              filename = filepath.split("/").pop()
+              var filepath = (inputs.mate_copynumber_file_sample ? inputs.mate_copynumber_file_sample.path : "")
+              var filename = filepath.split("/").pop()
           }
 
-          ratio = filename + "_ratio" + ".txt"
+          var ratio = filename + "_ratio" + ".txt"
 
           return ratio
       }
@@ -744,37 +744,40 @@ arguments:
     valueFrom: |-
       ${
 
+          var new_filename = ""
+
           if (inputs.snp_file) {
 
-              sufix = "_BAF"
-              sufix_ext = ".txt"
+              var sufix = "_BAF"
+              var sufix_ext = ".txt"
 
               if (inputs.mate_file_sample) {
-                  filepath = inputs.mate_file_sample.path
-                  filename = filepath.split("/").pop()
+                  var filepath = inputs.mate_file_sample.path
+                  var filename = filepath.split("/").pop()
               } else {
-                  filepath = inputs.mate_copynumber_file_sample.path
-                  filename = filepath.split("/").pop()
+                  var filepath = (inputs.mate_copynumber_file_sample ? inputs.mate_copynumber_file_sample.path : "")
+                  var filename = filepath.split("/").pop()
               }
 
 
               new_filename = filename + sufix + sufix_ext
 
-              return new_filename
           }
+
+          return new_filename
       }
   - position: 114
     shellQuote: false
     valueFrom: |-
       ${ //conversion of file names
-
+          var com = ''
           if (inputs.mate_file_control) {
               if (inputs.mate_file_control.path.split('.').pop() != 'pileup') {
-                  com = ''
                   com += '&& mv sample.pileup '
 
               }
           }
+          return ''
 
 
       }
@@ -798,11 +801,11 @@ requirements:
           }
       }
   - class: DockerRequirement
-    dockerImageId: caf6947244fa
     dockerPull: 'images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1'
   - class: InitialWorkDirRequirement
     listing:
       - entryname: config.txt
+        writable: true
         entry: |-
           ${
 
@@ -822,7 +825,7 @@ requirements:
               }
 
               // General section
-              content = "[general]\n\n"
+              var content = "[general]\n\n"
               content = makeline(content, "BedGraphOutput", inputs.bed_graph_output)
               content = content.concat("bedtools = /opt/bedtools2/bin/bedtools\n")
               content = makeline(content, "chrLenFile", inputs.chr_len)
@@ -923,7 +926,6 @@ requirements:
 
               return content
           }
-        writable: false
       - entryname: split_fasta.py
         entry: |-
           import sys

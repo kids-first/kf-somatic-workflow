@@ -6,6 +6,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: ResourceRequirement
+    coresMin: $(inputs.cpu)
     ramMin: $(inputs.max_memory*1000)
   - class: DockerRequirement
     dockerPull: 'broadinstitute/gatk:4.2.4.1'
@@ -312,8 +313,12 @@ inputs:
       prefix: "--min-num-bases-for-segment-funcotation"
   max_memory:
     type: 'int?'
-    default: 20
+    default: 16
     doc: "Maximum GB of RAM to allocate for this tool."
+  cpu:
+    type: 'int?'
+    default: 4
+    doc: "CPUs to allocate to this tool."
 outputs:
   funcotated_seg_simple_tsv: { type: 'File?', outputBinding: { glob: "*.funcotated.tsv" } }
   funcotated_gene_list_tsv: { type: 'File?', outputBinding: { glob: "*.funcotated.tsv.gene_list.txt" } }

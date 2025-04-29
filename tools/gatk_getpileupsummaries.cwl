@@ -1,4 +1,4 @@
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: gatk4_getpileupsummary
 label: GATK Pileup
@@ -23,7 +23,7 @@ arguments:
       -O $(inputs.aligned_reads.nameroot).pileupsummary.table
 
 inputs:
-  aligned_reads: {type: 'File', secondaryFiles: ['.crai']}
+  aligned_reads: {type: 'File', secondaryFiles: [{pattern: '.bai', required: false}, {pattern: '^.bai', required: false}, {pattern: '.crai', required: false}, {pattern: '^.crai', required: false}]}
   reference: File
   interval_list: File
   exac_common_vcf: {type: 'File', secondaryFiles: [.tbi]}

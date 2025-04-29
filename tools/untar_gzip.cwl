@@ -1,6 +1,7 @@
 cwlVersion: v1.2
 id: untar_gzip
 requirements:
+  - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: 'ubuntu:20.04' 
   - class: InlineJavascriptRequirement

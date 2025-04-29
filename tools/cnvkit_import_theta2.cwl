@@ -26,7 +26,7 @@ arguments:
 
       cnvkit.py import-theta
       $(inputs.tumor_cns.path)
-      ${if (inputs.theta2_n2_results != null) {return inputs.theta2_n2_results.path;}}
+      $(inputs.theta2_n2_results != null ? inputs.theta2_n2_results.path : "")
       -d ./
 
       mv $(inputs.tumor_cns.basename.replace('.call.cns','')).call-1.cns ${return inputs.output_basename}.theta2.total.cns
@@ -39,7 +39,7 @@ arguments:
 
       cnvkit.py import-theta
       $(inputs.tumor_cns.path)
-      ${if (inputs.theta2_best_results != null) {return inputs.theta2_best_results.path;}}
+      $(inputs.theta2_best_results != null ? inputs.theta2_best_results.path : "")
       -d ./
 
       mv $(inputs.tumor_cns.basename.replace('.call.cns','')).call-1.cns ${return inputs.output_basename}.theta2.subclone1.cns

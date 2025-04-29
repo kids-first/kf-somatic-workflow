@@ -1,0 +1,22 @@
+{
+  "is_wgs": true,
+  "vardict": true,
+  "mutect2": true,
+  "strelka2": true,
+  "preexisting_vcf": true,
+  "lancet": true,
+  "controlfreec": true,
+  "cnvkit": true,
+  "amplicon_architect": true,
+  "theta2": true,
+  "manta": true,
+  "gatk_cnv": true,
+  "mosek_present": true,
+  "pon_present": false,
+  "exome_flag": null,
+  "cnvkit_wgs_mode": null,
+  "i_flag": null,
+  "lancet_padding": null,
+  "lancet_window": null,
+  "vardict_padding": null
+}

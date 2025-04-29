@@ -26,7 +26,7 @@ arguments:
         }
       }
 inputs:
-  input_sample: { type: File, doc: "tumor bam file", secondaryFiles: [^.bai], inputBinding: { position: 1}}
+  input_sample: { type: File, doc: "tumor bam file", secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.bai', required: false}], inputBinding: { position: 1}}
   input_control: { type: 'File?', doc: "normal bam file - can skip in .cnn file supplied", secondaryFiles: ['^.bai?', '.crai?'], inputBinding: { position: 2, prefix: "--normal"} }
   reference: { type: 'File?', doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai], inputBinding: { position: 2, prefix: "--fasta"} }
   cnvkit_cnn: { type: 'File?', doc: "If running using an existing .cnn, supply here", inputBinding: { position: 2, prefix: "--reference" } }
