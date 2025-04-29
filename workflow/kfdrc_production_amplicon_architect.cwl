@@ -210,8 +210,9 @@ steps:
 
   cnvkit_batch:
     run: ../tools/cnvkit_batch_only.cwl
-    when: $(inputs.cnvkit_cnn != null || inputs.input_control != null)
+    when: $(inputs.premade_cns == null)
     in:
+      premade_cns: cnvkit_cns
       input_sample:
         source: [samtools_calmd_tumor_cram_to_bam/bam_file, tumor_align_file]
         pickValue: first_non_null
