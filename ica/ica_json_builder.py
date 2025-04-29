@@ -1,11 +1,20 @@
 #/usr/bin/env python3
 
 import json
-import yaml
+from typing import Any
+import yaml # type: ignore
 import sys
 
 def interpret_string(in_type: str, default: str | None = None) -> dict[str, str]:
-    out = {}
+    """
+    Interpret a string type and return a dictionary with the appropriate ICA attributes.
+    Arguments:
+        in_type: The type of the input.
+        default: The default value for the input.
+    Returns:
+        A dictionary with the ICA attributes for the input type.
+    """
+    out: dict[str, Any] = {}
     if default:
         out["value"] = default
     if in_type.endswith("?"):
@@ -15,7 +24,7 @@ def interpret_string(in_type: str, default: str | None = None) -> dict[str, str]
     if "[]" in in_type:
         out["maxValues"] = 1000
         in_type = in_type.replace("[]", "")
-    converter = {
+    converter: dict[str, str] = {
         "string": "textbox",
         "float": "number",
         "int": "integer",
@@ -39,16 +48,39 @@ def interpret_string(in_type: str, default: str | None = None) -> dict[str, str]
 
 
 def interpret_enum(enum_type: dict[str, str], default: str | None = None) -> dict[str, str]:
-    out = {"type": "select",
+    """
+    Interpret an enum type and return a dictionary with the appropriate ICA attributes.
+    Arguments:
+        enum_type: A dictionary with the enum type.
+        default: The default value for the enum type.
+    Returns:
+        A dictionary with the ICA attributes for the enum type.
+    """
+    out: dict[str, Any] = {"type": "select",
            "choices": [{"value": i, "text": i, "selected": i == default} for i in enum_type["symbols"]]}
     return out
 
 def interpret_bool(default: str | None = None) -> dict[str, str]:
+    """
+    Interpret a boolean type and return a dictionary with the appropriate ICA attributes.
+    Arguments:
+        default: The default value for the boolean type.
+    Returns:
+        A dictionary with the ICA attributes for the boolean type.
+    """
     out = {"type": "select",
            "choices": [{"value": i, "text": str(i), "selected": i == default} for i in [True, False]]}
     return out
 
 def interpret_list(list_type: list[str], default: str | None = None) -> dict[str, str]:
+    """
+    Interpret a list type and return a dictionary with the appropriate ICA attributes.
+    Arguments:
+        list_type: A list with the types of the input.
+        default: The default value for the list type.
+    Returns:
+        A dictionary with the ICA attributes for the list type.
+    """
     out = {"minValues": 1}
     for t in list_type:
         if type(t) == str:
