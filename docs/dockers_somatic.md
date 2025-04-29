@@ -13,6 +13,8 @@ bcftools_filter_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcftools:1.20
 bcftools_reheader_samples_index.cwl|staphb/bcftools:1.17
 bcftools_strip_ann.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 bedtools_intersect.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
+clt_file_to_file.cwl|None
+clt_flatten_file_list.cwl|None
 clt_pass_file.cwl|None
 cns_to_aa_bed.cwl|jluebeck/prepareaa:v0.1203.10
 cnvkit_access.cwl|etal/cnvkit:0.9.3
@@ -23,8 +25,6 @@ cnvkit_import_theta2.cwl|images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
 control-freec-11-6-sbg.cwl|images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
 control_freec_mini_pileup.cwl|images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
 echtvar_anno.cwl|pgc-images.sbgenomics.com/d3b-bixu/echtvar:0.2.0
-expression_flatten_file_list.cwl|None
-expression_pickvalue_workaround.cwl|None
 gatk_Mutect2.cwl|pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
 gatk_bedtointervallist.cwl|broadinstitute/gatk:4.4.0.0
 gatk_calculatecontamination.cwl|pgc-images.sbgenomics.com/d3b-bixu/gatk:4.1.1.0
