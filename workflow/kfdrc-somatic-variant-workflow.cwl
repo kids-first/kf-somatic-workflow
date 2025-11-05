@@ -605,11 +605,9 @@ steps:
     when: $(inputs.run_tool.some(function(e) { return e }) && (inputs.input_reads.basename.search(/.cram$/) != -1 || inputs.run_anyway) )
     in:
       run_tool:
-        source: [runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
+        source: [runtime_validator/run_mutect2, runtime_validator/run_strelka2, runtime_validator/run_manta, runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       run_anyway: run_calmd_bam
       input_reads: input_tumor_aligned
-      threads:
-        valueFrom: ${return 16;}
       reference: indexed_reference_fasta
     out: [bam_file]
   samtools_cram2bam_plus_calmd_normal:
@@ -617,11 +615,9 @@ steps:
     when: $(inputs.run_tool.some(function(e) { return e }) && (inputs.input_reads.basename.search(/.cram$/) != -1 || inputs.run_anyway) )
     in:
       run_tool:
-        source: [runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
+        source: [runtime_validator/run_mutect2, runtime_validator/run_strelka2, runtime_validator/run_manta, runtime_validator/run_vardict, runtime_validator/run_lancet, runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       run_anyway: run_calmd_bam
       input_reads: input_normal_aligned
-      threads:
-        valueFrom: ${return 16;}
       reference: indexed_reference_fasta
     out: [bam_file]
   prepare_regions_padded:
@@ -783,10 +779,14 @@ steps:
           $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
       af_only_gnomad_vcf: mutect2_af_only_gnomad_vcf
       exac_common_vcf: mutect2_exac_common_vcf
-      input_tumor_aligned: input_tumor_aligned
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
-      input_normal_aligned: input_normal_aligned
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       input_normal_name: input_normal_name
       old_normal_name: old_normal_name
       exome_flag: runtime_validator/out_exome_flag
@@ -835,9 +835,13 @@ steps:
         source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
         valueFrom: |
           $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
-      input_tumor_aligned: input_tumor_aligned
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       input_tumor_name: input_tumor_name
-      input_normal_aligned: input_normal_aligned
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       input_normal_name: input_normal_name
       manta_small_indels: manta/manta_small_indels
       use_manta_small_indels: use_manta_small_indels
@@ -1048,10 +1052,14 @@ steps:
         source: [prepare_regions_padded/prescatter_bedgz, prepare_regions_unpadded/prescatter_bedgz]
         valueFrom: |
           $(self.some(function(e) { return e != null }) ? self.filter(function(e) { return e != null })[0] : null)
-      input_tumor_aligned: input_tumor_aligned
+      input_tumor_aligned:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
       input_tumor_name: input_tumor_name
       old_tumor_name: old_tumor_name
-      input_normal_aligned: input_normal_aligned
+      input_normal_aligned:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       input_normal_name: input_normal_name
       old_normal_name: old_normal_name
       vep_cache: vep_cache
@@ -1066,8 +1074,12 @@ steps:
     when: $(inputs.run_gatk_cnv)
     in:
       run_gatk_cnv: runtime_validator/run_gatk_cnv
-      input_aligned_reads_tumor: input_tumor_aligned
-      input_aligned_reads_normal: input_normal_aligned
+      input_aligned_reads_tumor:
+        source: [ samtools_cram2bam_plus_calmd_tumor/bam_file, input_tumor_aligned]
+        pickValue: first_non_null
+      input_aligned_reads_normal:
+        source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
+        pickValue: first_non_null
       reference_fasta: indexed_reference_fasta
       reference_dict:
         source: indexed_reference_fasta
