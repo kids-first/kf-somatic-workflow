@@ -6,14 +6,14 @@ doc: >-
       into a single consensus VCF
 requirements:
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/consensus-merge:1.1.0'
+    dockerPull: 'pgc-images.sbgenomics.com/danmiller/consensus-merge:1.1.1'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: ${ return inputs.ram * 1000 }
     coresMin: $(inputs.cores)
   - class: ShellCommandRequirement
 
-baseCommand: [/usr/bin/consensus_merge.py]
+baseCommand: [consensus_merge.py]
 
 inputs:
   strelka2_vcf:
