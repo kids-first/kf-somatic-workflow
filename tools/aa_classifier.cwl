@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
   - class: DockerRequirement
-    dockerPull: 'jluebeck/prepareaa:v0.1203.10'
+    dockerPull: 'jluebeck/ampliconsuite-pipeline:v1.5.1'
   - class: ResourceRequirement
     ramMin: 4000
     coresMin: 8
@@ -26,11 +26,13 @@ arguments:
     valueFrom: >-
       . ./setup_vars.sh
       && /home/programs/AmpliconClassifier-main/amplicon_classifier.py
+      -o $(inputs.output_basename ? inputs.output_basename : inputs.cycles.basename.replace("_cycles.txt", ""))
 inputs:
   data_repo: { type: Directory, doc: "Un-tarred reference obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
   data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 1, prefix: "--ref"} }
   cycles: { type: File, doc: "AA cycles file", inputBinding: { position: 1, prefix: "--cycles" } }
   graph: { type: File, doc: "AA graph file", inputBinding: { position: 1, prefix: "--graph"} }
+  output_basename: { type: 'string?' }
 outputs:
   amplicon_classification_profiles: 
     type: File
