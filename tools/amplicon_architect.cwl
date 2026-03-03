@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
   - class: DockerRequirement
-    dockerPull: 'jluebeck/ampliconsuite-pipeline:v1.5.0'
+    dockerPull: 'jluebeck/ampliconsuite-pipeline:v1.5.1'
   - class: ResourceRequirement
     ramMin: 16000
     coresMin: $(inputs.threads)
