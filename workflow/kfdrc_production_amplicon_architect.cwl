@@ -275,6 +275,7 @@ steps:
       data_ref_version: aa_data_ref_version
       cycles: amplicon_architect/cycles
       graph: amplicon_architect/graph
+      output_basename: output_basename
     scatter: [cycles, graph]
     scatterMethod: dotproduct
     out: [amplicon_classification_profiles, gene_list]
