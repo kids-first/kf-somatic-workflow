@@ -31,6 +31,7 @@ inputs:
   data_ref_version: { type: ['null', {type: enum, name: wgs_mode, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}], doc: "Genome version in data repo to use", default: "GRCh38", inputBinding: { position: 1, prefix: "--ref"} }
   cycles: { type: File, doc: "AA cycles file", inputBinding: { position: 1, prefix: "--cycles" } }
   graph: { type: File, doc: "AA graph file", inputBinding: { position: 1, prefix: "--graph"} }
+  output_basename: { type: string, inputBinding: { position: 1, prefix: "-o" } }
 outputs:
   amplicon_classification_profiles: 
     type: File
