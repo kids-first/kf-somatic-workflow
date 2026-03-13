@@ -37,14 +37,18 @@ inputs:
 
   # Driver Arguments
   cpu: { type: 'int?', default: 8, doc: "Number of CPUs to allocate to this task."}
+  indexed_reference_fasta: { type: 'File', secondaryFiles: [{ pattern: '.fai', required: true }, { pattern: '^.dict', required: true }],
+    inputBinding: { position: 2, prefix: "-r"}, doc: "Reference file (FASTA)", "sbg:fileTypes": "FA, FASTA"
+  }
 
   # TNfilter Arguments
-  tumor_sample_name: { type: 'string?', inputBinding: { position: 12, prefix: "--tumor_sample" }, doc: "sample name used for tumor sample in Map reads to reference stage" }
-  normal_sample_name: { type: 'string?', inputBinding: { position: 12, prefix: "--normal_sample" }, doc: "sample name used for normal sample in Map reads to reference stage" }
+  tumor_sample_name: { type: string, inputBinding: { position: 12, prefix: "--tumor_sample" }, doc: "sample name used for tumor sample in Map reads to reference stage" }
+  normal_sample_name: { type: string, inputBinding: { position: 12, prefix: "--normal_sample" }, doc: "sample name used for normal sample in Map reads to reference stage" }
   tmp_vcf: { type: 'File', inputBinding: { position: 12, prefix: "-v" }, doc: "Result vcf from TN Haplotyper 2", secondaryFiles: [{ pattern: '.tbi', required: false}, { pattern: '.idx', required: false} ] }
   contamination_table: { type: File, inputBinding: { position: 12, prefix: "--contamination" } }
   tumor_segments: { type: File, inputBinding: { position: 12, prefix: "--tumor_segments" } }
   orientation_priors: { type: File, inputBinding: { position: 12, prefix: "--orientation_priors" } }
+  stats: { type: File }
 
   ram: { type: 'int?', default: 16, doc: "GB size of RAM to allocate to this task." }
 

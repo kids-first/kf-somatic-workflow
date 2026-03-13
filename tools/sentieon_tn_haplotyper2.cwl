@@ -31,7 +31,7 @@ arguments:
       $(inputs.output_basename).TNhaplotyper2_intermediate.vcf.gz
       --algo OrientationBias
       --tumor_sample $(inputs.tumor_sample_name)
-      $(inputs.output_basename).f1r2_bias.tar.gz
+      $(inputs.output_basename).f1r2_bias
       --algo ContaminationModel
       --tumor_sample $(inputs.tumor_sample_name)
       --normal_sample $(inputs.normal_sample_name)
@@ -80,7 +80,11 @@ outputs:
   orientation_priors:
     type: File
     outputBinding:
-      glob: "*.f1r2_bias.tar.gz"
+      glob: "*.f1r2_bias"
+  stats:
+    type: File
+    outputBinding:
+      glob: "*.stats"
 
 $namespaces:
   sbg: https://sevenbridges.com
