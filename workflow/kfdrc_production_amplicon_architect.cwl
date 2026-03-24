@@ -149,6 +149,7 @@ inputs:
   tumor_align_file: {type: File, doc: "Tumor read alignment file. Can be cram or bam",
     secondaryFiles: [{pattern: '^.bai', required: false}, {pattern: '.crai',
         required: false}]}
+  samtools_calmd_threads: { type: 'int?', default: 16 }
   output_basename: {type: string, doc: "File name prefix for steps that require it"}
   mosek_license_file: {type: File, doc: "This tool uses some software that requires\
       \ a license file. You can get a personal or institutional one from https://www.mosek.com/license/request/."}
@@ -190,6 +191,7 @@ steps:
     in:
       input_reads: tumor_align_file
       reference: reference
+      threads: samtools_calmd_threads
     out: [bam_file]
 
   samtools_calmd_normal_cram_to_bam:
@@ -198,6 +200,7 @@ steps:
     in:
       input_reads: normal_align_file
       reference: reference
+      threads: samtools_calmd_threads
     out: [bam_file]
 
   untar_data_repo:
@@ -275,7 +278,6 @@ steps:
       data_ref_version: aa_data_ref_version
       cycles: amplicon_architect/cycles
       graph: amplicon_architect/graph
-      output_basename: output_basename
     scatter: [cycles, graph]
     scatterMethod: dotproduct
     out: [amplicon_classification_profiles, gene_list]
