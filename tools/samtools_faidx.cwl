@@ -7,7 +7,7 @@ doc: |-
   Finally the tool will return the input reference file with the index (generated or provided) as a secondaryFile.
 requirements:
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch'
   - class: InitialWorkDirRequirement
     listing: [$(inputs.input_fasta),$(inputs.input_index)]
   - class: InlineJavascriptRequirement
