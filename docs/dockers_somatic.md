@@ -21,7 +21,6 @@ cnvkit_batch_only.cwl|images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
 cnvkit_export_theta2.cwl|images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
 cnvkit_import_theta2.cwl|images.sbgenomics.com/milos_nikolic/cnvkit:0.9.3
 control-freec-11-6-sbg.cwl|images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
-control_freec_mini_pileup.cwl|images.sbgenomics.com/vojislav_varjacic/control-freec-11-6:v1
 echtvar_anno.cwl|pgc-images.sbgenomics.com/d3b-bixu/echtvar:0.2.0
 expression_flatten_file_list.cwl|None
 expression_pickvalue_workaround.cwl|None
@@ -58,6 +57,7 @@ normalize_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 prepare_aa.cwl|jluebeck/prepareaa:v0.1203.10
 runtime_validator.cwl|None
 samtools_calmd.cwl|pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
+samtools_mini_pileup.cwl|pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch
 strelka2.cwl|pgc-images.sbgenomics.com/d3b-bixu/strelka
 tar.cwl|ubuntu:18.04
 theta2_purity.cwl|pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1
