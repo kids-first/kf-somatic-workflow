@@ -5,7 +5,7 @@ doc: "Create mini pileup for ControlFreeC"
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/brownm28/samtools:1.20-multi-arch'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 16000
@@ -24,10 +24,8 @@ arguments:
   - position: 10
     shellQuote: false
     valueFrom: >-
-      split --number=l/8 snps.bed --additional-suffix=".bed" && ls xa*.bed > bed_list.txt;
-      
-      . /link_samtools.sh;
-      
+      split --number=l/$(inputs.threads) snps.bed --additional-suffix=".bed" -d regions && ls regions*.bed > bed_list.txt;
+
       cat bed_list.txt
       | xargs -IFN -P $(inputs.threads)
       samtools mpileup
