@@ -9,7 +9,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 16000
-    coresMin: $(inputs.threads)
+    coresMin: $(inputs.cpu)
 
 baseCommand: ["/bin/bash", "-c"]
 arguments:
@@ -24,10 +24,10 @@ arguments:
   - position: 10
     shellQuote: false
     valueFrom: >-
-      split --number=l/$(inputs.threads) snps.bed --additional-suffix=".bed" -d regions && ls regions*.bed > bed_list.txt;
+      split --number=l/$(inputs.cpu) snps.bed --additional-suffix=".bed" -d regions && ls regions*.bed > bed_list.txt;
 
       cat bed_list.txt
-      | xargs -IFN -P $(inputs.threads)
+      | xargs -IFN -P $(inputs.cpu)
       samtools mpileup
       -d 8000
       -Q 0
@@ -43,8 +43,8 @@ inputs:
   input_reads: {type: File, secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false}, {pattern: ".crai", required: false},
       {pattern: "^.crai", required: false}],
       inputBinding: { position: 19 } }
-  threads:
-    type: ['null', int]
+  cpu:
+    type: 'int?'
     default: 8
   reference: {type: File, secondaryFiles: [.fai],
     inputBinding: { position: 11, prefix: "-f"}}
