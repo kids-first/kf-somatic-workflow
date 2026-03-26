@@ -37,7 +37,7 @@ arguments:
   - position: 20
     shellQuote: false
     valueFrom: >-
-      && cat xa*.miniPileup > $(inputs.input_reads.nameroot).miniPileup
+      && cat regions*.miniPileup > $(inputs.input_reads.nameroot).miniPileup
 
 inputs:
   input_reads: {type: File, secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false}, {pattern: ".crai", required: false},
