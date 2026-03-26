@@ -57,7 +57,7 @@ manta.cwl|pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
 normalize_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 prepare_aa.cwl|jluebeck/prepareaa:v0.1203.10
 runtime_validator.cwl|None
-samtools_calmd.cwl|pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9
+samtools_calmd.cwl|pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch
 strelka2.cwl|pgc-images.sbgenomics.com/d3b-bixu/strelka
 tar.cwl|ubuntu:18.04
 theta2_purity.cwl|pgc-images.sbgenomics.com/d3b-bixu/theta2:0.7.1
