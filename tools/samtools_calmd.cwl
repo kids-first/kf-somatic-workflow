@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'staphb/samtools:1.21'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch'
   - class: ResourceRequirement
     ramMin: $(inputs.ram * 1000)
     coresMin: $(inputs.cpu)
