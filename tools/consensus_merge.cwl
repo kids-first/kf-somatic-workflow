@@ -6,7 +6,7 @@ doc: >-
       into a single consensus VCF
 requirements:
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/danmiller/consensus-merge:1.1.1'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/consensus-merge:1.2.0'
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: ${ return inputs.ram * 1000 }
