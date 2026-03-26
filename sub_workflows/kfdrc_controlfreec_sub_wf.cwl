@@ -53,22 +53,18 @@ steps:
     out: [chrlen]
 
   controlfreec_tumor_mini_pileup:
-    run: ../tools/control_freec_mini_pileup.cwl
+    run: ../tools/samtools_mini_pileup.cwl
     in:
       input_reads: input_tumor_aligned
-      threads:
-        valueFrom: $(16)
       reference: indexed_reference_fasta
       snp_vcf: b_allele
     out:
       [pileup]
 
   controlfreec_normal_mini_pileup:
-    run: ../tools/control_freec_mini_pileup.cwl
+    run: ../tools/samtools_mini_pileup.cwl
     in:
       input_reads: input_normal_aligned
-      threads:
-        valueFrom: $(16)
       reference: indexed_reference_fasta
       snp_vcf: b_allele
     out:
