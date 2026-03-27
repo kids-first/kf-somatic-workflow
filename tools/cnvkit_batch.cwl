@@ -1,5 +1,5 @@
 ## this tool is made to run wgs or wes, germline/somatic or paired, using the batch method (no panel of normals needed)
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 id: cnvkit-batch
 requirements: 
@@ -10,38 +10,17 @@ requirements:
   - class: ResourceRequirement
     ramMin: 32000
     coresMin: $(inputs.threads)
+  - class: InitialWorkDirRequirement
+    listing: [$(inputs.input_sample),$(inputs.input_control)]
+
 arguments: 
   - position: 1
     shellQuote: false
     valueFrom: >-
-      ln -s $(inputs.input_sample.path) .; ln -s $(inputs.input_sample.secondaryFiles[0].path) ./$(inputs.input_sample.basename).bai
-      
-      ${ 
-          var cmd = "";
-          if (inputs.input_control != null) {
-              cmd = "ln -s " + inputs.input_control.path + " .; ln -s " + inputs.input_control.secondaryFiles[0].path + " ./" + inputs.input_control.basename + ".bai"
-          }
-          return cmd;
-      }
-
-      cnvkit.py batch
-      -p $(inputs.threads)
-      ${
-          var cmd = "";
-          if (inputs.wgs_mode == 'Y') {
-              cmd = " -m wgs ";
-          }
-          return cmd;
-      }
-      $(inputs.access != null ? "--access " + inputs.access.path : "")
-      $(inputs.input_sample.path)
-      ${
-          var cmd = "";
-          if (inputs.capture_regions != null) {
-              cmd = "--targets " + inputs.capture_regions.path;
-          }
-          return cmd;
-      }
+      touch $(inputs.input_sample.secondaryFiles[0].path)
+      && cnvkit.py batch
+      --diagram 
+      --scatter
       ${
         if (inputs.cnvkit_cnn == null){
           var arg = "--output-reference " + inputs.output_basename + "_cnvkit_reference.cnn --fasta " + inputs.reference.path + " --annotate " + inputs.annotation_file.path;
@@ -58,17 +37,11 @@ arguments:
         }
         return arg;
       }
-      --diagram 
-      --scatter
-
-      cnvkit.py call $(inputs.input_sample.nameroot).cns
-      ${
-        var arg = "";
-        if (inputs.b_allele_vcf != null){
-          arg = "--vcf " + inputs.b_allele_vcf.path;
-        }
-        return arg;
-      }
+  - position: 10
+    shellQuote: false
+    valueFrom: >-
+      && cnvkit.py call
+      $(inputs.input_sample.nameroot).cns
       ${
         var arg = "--sample-sex " + inputs.sex;
         var msex = ['m','y','male','Male']
@@ -78,40 +51,38 @@ arguments:
         return arg;
       }
       -o $(inputs.output_basename).call.cns
-            
-      ln -s $(inputs.output_basename).call.cns $(inputs.tumor_sample_name).cns
-
-      cnvkit.py export seg $(inputs.tumor_sample_name).cns -o $(inputs.output_basename).call.seg
-
-      rm $(inputs.tumor_sample_name).cns
-
-      cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
+  - position: 20
+    shellQuote: false
+    valueFrom: >-
+      && cnvkit.py export seg $(inputs.output_basename).call.cns | sed -e 's$(inputs.output_basename).call/$(inputs.tumor_sample_name)/' > $(inputs.output_basename).call.seg
+      && cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
-
-      cnvkit.py gainloss $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
-
-      mv $(inputs.input_sample.nameroot).cnr $(inputs.output_basename).cnr
-
-      mv $(inputs.input_sample.nameroot)-diagram.pdf $(inputs.output_basename).diagram.pdf
-      
-      mv $(inputs.input_sample.nameroot)-scatter.pdf $(inputs.output_basename).scatter.pdf
-
+      && cnvkit.py gainloss $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
+      && mv $(inputs.input_sample.nameroot).cnr $(inputs.output_basename).cnr
+      && mv $(inputs.input_sample.nameroot)-diagram.pdf $(inputs.output_basename).diagram.pdf
+      && mv $(inputs.input_sample.nameroot)-scatter.pdf $(inputs.output_basename).scatter.pdf
 
 inputs:
-  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai]}
+  # batch params
+  threads: {type: 'int?', default: 16, inputBinding: { position: 2, prefix: "-p" } }
+  wgs_mode: { type: 'boolean?', doc: "for WGS mode, input Y. leave blank for hybrid mode",
+    inputBinding: { position: 2, prefix: "-m wgs", shellQuote: false} }
+  access: { type: 'File?', doc: "Regions of accessible sequence on chromosomes (.bed), as output by the 'access' command.",
+    inputBinding: { position: 2, prefix: "--access"} }
+  input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai],
+    inputBinding: { position: 3 } }
+  capture_regions: {type: ['null', File], doc: "target regions for WES",
+    inputBinding: {position: 2, prefix: "--target"} }
+  # call
+  b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available",
+    inputBinding: { position: 11, prefix: "--vcf"} }
   input_control: {type: ['null', File], doc: "normal bam file", secondaryFiles: [^.bai]}
+  # custom
   reference: {type: ['null', File], doc: "fasta file, needed if cnv kit cnn not already built", secondaryFiles: [.fai]}
   cnvkit_cnn: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
-  b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
-  access: { type: 'File?', doc: "Regions of accessible sequence on chromosomes (.bed), as output by the 'access' command." }
-  capture_regions: {type: ['null', File], doc: "target regions for WES"}
-  annotation_file: {type: ['null', File], doc: "refFlat.txt file,  needed if cnv kit cnn not already built"}
+  annotation_file: {type: ['null', File], doc: "refFlat.txt file, needed if cnv kit cnn not already built"}
   output_basename: string
   tumor_sample_name: string
-  wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
-  threads:
-    type: ['null', int]
-    default: 16
   sex: {type: ['null', {type: enum, name: sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "x"}
 outputs:
   output_cnr: 
