@@ -11,13 +11,14 @@ requirements:
 
 inputs:
   input_tumor_aligned: {type: File, secondaryFiles: ['^.bai']}
-  input_normal_aligned: {type: File, secondaryFiles: ['^.bai']}
+  input_normal_aligned: {type: 'File?', secondaryFiles: ['^.bai'],
+    doc: "Only needed if cnn file not available"}
   reference: {type: File, secondaryFiles: [.fai]}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
   wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
   capture_regions: {type: ['null', File], doc: "target regions for WES. These are the bait regions."}
   blacklist_regions: {type: 'File?', doc: "Regions of the genome over which CNVkit should not perform resequencing. CNVkit refers to these regions as inaccessible." }
-  annotation_file: {type: File, doc: "refFlat.txt file"}
+  annotation_file: {type: 'File?', doc: "refFlat.txt file. Needed if cnn doesn't already exist"}
   output_basename: string
   cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   threads: {type: ['null', int], default: 16}
@@ -37,9 +38,11 @@ outputs:
 
 steps:
   access:
+    when: $(inputs.capture_regions == null && inputs.blacklist_regions)
     run: ../tools/cnvkit_access.cwl
     in:
       reference_fasta: reference
+      capture_regions: capture_regions
       min_gap_size:
         valueFrom: $(200)
       exclude: blacklist_regions

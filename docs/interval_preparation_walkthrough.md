@@ -318,7 +318,7 @@ From the [CNVkit Documentation](https://cnvkit.readthedocs.io/en/master/quicksta
 
 One of the more interesting things about the N masking assumption (that is:
 centromeres, telomeres, and highly repetitive regions are masked in the
-reference FASTA), is that it's entirely true for our standard reference FASTA.
+reference FASTA), is that it's not entirely true for our standard reference FASTA.
 GATK's `Homo_sapiens_assembly38.fasta` reference does not N-mask its
 centromeres or high signal/repetitive regions found in [ENCODE's
 blacklist](https://github.com/Boyle-Lab/Blacklist/blob/master/lists/hg19-blacklist-README.pdf).
