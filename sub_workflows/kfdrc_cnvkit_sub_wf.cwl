@@ -22,7 +22,6 @@ inputs:
   cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
   threads: {type: ['null', int], default: 16}
   tumor_sample_name: {type: string, doc: "For seg file output and theta2 input"}
-  normal_sample_name:  {type: string, doc: "For theta2 input"}
   sex: {type: ['null', {type: enum, name: sex, symbols: ["x", "y"]}], doc: "Sex, for simplicity x for female y for male", default: "x"}
 
 outputs:
@@ -53,7 +52,10 @@ steps:
       reference: reference
       annotation_file: annotation_file
       output_basename: output_basename
-      wgs_mode: wgs_mode
+      wgs_mode:
+        source: wgs_mode
+        valueFrom: |
+          $(self == "Y" ? "wgs" : "hybrid")
       access: access/bed
       capture_regions: capture_regions
       b_allele_vcf: b_allele_vcf

@@ -408,8 +408,6 @@ inputs:
   run_calmd_bam: { type: 'boolean?', default: false, doc: "Override logic to skip calmd when input is not cram" }
   annotsv_annotations_dir_tgz: {type: 'File?', doc: "TAR.GZ'd Directory containing annotations for AnnotSV", "sbg:fileTypes": "TAR,
       TAR.GZ, TGZ", "sbg:suggestedValue": {class: File, path: 6328ab26d01163633dabcc2e, name: annotsv_311_plus_ens105_annotations_dir.tgz}}
-  cfree_threads: {type: 'int?', default: 16, doc: "For ControlFreeC. Recommend 16 max, as I/O gets saturated after that losing any
-      advantage"}
   cfree_mate_orientation_control: {type: ['null', {type: enum, name: mate_orientation_control, symbols: ["0", "FR", "RF", "FF"]}],
     default: "FR", doc: "0 (for single ends), RF (Illumina mate-pairs), FR (Illumina paired-ends), FF (SOLiD mate-pairs)"}
   cfree_mate_orientation_sample: {type: ['null', {type: enum, name: mate_orientation_sample, symbols: ["0", "FR", "RF", "FF"]}], default: "FR",
@@ -965,7 +963,8 @@ steps:
         source: [ samtools_cram2bam_plus_calmd_normal/bam_file, input_normal_aligned]
         pickValue: first_non_null
       wgs_or_wxs: wgs_or_wxs
-      threads: cfree_threads
+      threads:
+        valueFrom: $(8)
       output_basename: output_basename
       ploidy: cfree_ploidy
       mate_orientation_sample: cfree_mate_orientation_sample

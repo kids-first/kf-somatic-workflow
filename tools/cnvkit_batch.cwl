@@ -18,7 +18,12 @@ arguments:
     shellQuote: false
     valueFrom: >-
       touch $(inputs.input_sample.secondaryFiles[0].path)
-      && cnvkit.py batch
+
+      if [ -f $(inputs.input_control.secondaryFiles[0].path) ]; then
+        touch $(inputs.input_control.secondaryFiles[0].path)
+      fi
+
+      cnvkit.py batch
       --diagram 
       --scatter
       ${
@@ -54,7 +59,7 @@ arguments:
   - position: 20
     shellQuote: false
     valueFrom: >-
-      && cnvkit.py export seg $(inputs.output_basename).call.cns | sed -e 's$(inputs.output_basename).call/$(inputs.tumor_sample_name)/' > $(inputs.output_basename).call.seg
+      && cnvkit.py export seg $(inputs.output_basename).call.cns | sed -e 's/$(inputs.output_basename).call/$(inputs.tumor_sample_name)/' > $(inputs.output_basename).call.seg
       && cnvkit.py metrics $(inputs.input_sample.nameroot).cnr -s $(inputs.input_sample.nameroot).cns
       -o $(inputs.output_basename).metrics.txt
       && cnvkit.py gainloss $(inputs.input_sample.nameroot).cnr -o $(inputs.output_basename).gainloss.txt
@@ -65,14 +70,16 @@ arguments:
 inputs:
   # batch params
   threads: {type: 'int?', default: 16, inputBinding: { position: 2, prefix: "-p" } }
-  wgs_mode: { type: 'boolean?', doc: "for WGS mode, input Y. leave blank for hybrid mode",
-    inputBinding: { position: 2, prefix: "-m wgs", shellQuote: false} }
+  wgs_mode: { type: ['null', {type: enum, name: wgs_mode, symbols: ["hybrid", "wgs", "amplicon"]}],
+    default: "hybrid",
+    doc: "for WGS mode, input wgs. leave blank for hybrid mode",
+    inputBinding: { position: 2, prefix: "-m"} }
   access: { type: 'File?', doc: "Regions of accessible sequence on chromosomes (.bed), as output by the 'access' command.",
     inputBinding: { position: 2, prefix: "--access"} }
   input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai],
     inputBinding: { position: 3 } }
   capture_regions: {type: ['null', File], doc: "target regions for WES",
-    inputBinding: {position: 2, prefix: "--target"} }
+    inputBinding: {position: 2, prefix: "--targets"} }
   # call
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available",
     inputBinding: { position: 11, prefix: "--vcf"} }
