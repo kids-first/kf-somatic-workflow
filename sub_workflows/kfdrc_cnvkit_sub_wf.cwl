@@ -60,7 +60,10 @@ steps:
         valueFrom: |
           $(self == "Y" ? "wgs" : "hybrid")
       access: access/bed
-      capture_regions: capture_regions
+      capture_regions:
+        source: [cnvkit_cnn_input, capture_regions]
+        valueFrom: |
+          $(self[0] == null ? self[1] : null)
       b_allele_vcf: b_allele_vcf
       threads: threads
       sex: sex
