@@ -9,6 +9,7 @@ annotsv.cwl|pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
 awk_chrlen_builder.cwl|staphb/bcftools:1.20
 awk_min_seg_length.cwl|ubuntu:20.04
 bcbio_filter_vardict_somatic.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcbio_vardict_filter
+bcftools_annotate_rename_chr.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 bcftools_filter_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcftools:1.20
 bcftools_reheader_samples_index.cwl|staphb/bcftools:1.17
 bcftools_strip_ann.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
