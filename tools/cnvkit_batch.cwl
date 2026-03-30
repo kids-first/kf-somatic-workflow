@@ -19,9 +19,7 @@ arguments:
     valueFrom: >-
       touch $(inputs.input_sample.secondaryFiles[0].path)
 
-      if [ -f $(inputs.input_control.secondaryFiles[0].path) ]; then
-        touch $(inputs.input_control.secondaryFiles[0].path)
-      fi
+      $(inputs.input_control != null ? "touch " + inputs.input_control.secondaryFiles[0].path : "")
 
       cnvkit.py batch
       --diagram 
