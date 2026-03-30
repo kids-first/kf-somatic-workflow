@@ -43,4 +43,4 @@ outputs:
   bed:
     type: File
     outputBinding:
-      glob: $(inputs.otuput_filename)
+      glob: '*.bed'
