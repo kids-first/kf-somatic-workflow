@@ -25,14 +25,8 @@ arguments:
       INFO/ReadPosRankSum < -8.0 ||
       INFO/DP < 10"
       -O z
-      -o $(inputs.output_basename).$(inputs.tool).hardfiltered.PASS.vcf.gz
-  - position: 10
-    shellQuote: false
-    valueFrom: >-
-      && bcftools index
-      --threads $(inputs.threads)
-      -t
-      $(inputs.output_basename).$(inputs.tool).hardfiltered.PASS.vcf.gz
+      -o $(inputs.output_basename).$(inputs.tool_name).hardfiltered.PASS.vcf.gz
+      --write-index=tbi
 
 inputs:
     input_vcf: {type: 'File', secondaryFiles: ['.tbi'],
