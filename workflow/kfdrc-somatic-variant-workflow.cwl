@@ -356,7 +356,7 @@ inputs:
       run. For WGS, this should be the wgs_calling_regions.interval_list. For WXS, the user must provide the appropriate regions for
       their analysis."}
   blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling
-      regions for SNV and SV calling."}
+      regions for SNV and SV calling.", "sbg:suggestedValue": {class: File, path: 665df995a193b420129c7830, name: hg38-blacklist.v2.bed.gz}}
   cnv_blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling
       regions for CNV calling only!", "sbg:suggestedValue": {class: File, path: 663d2bcc27374715fccd8c6d, name: somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.list}}
   coding_sequence_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing the coding sequence regions for the provided
@@ -695,16 +695,15 @@ steps:
       input_bed_file: prepare_regions_unpadded_cnv/prescatter_bed
       flag: runtime_validator/out_i_flag
     out: [intersected_vcf]
-  gatk_filter_germline:
-    run: ../tools/gatk_filter_germline_variant.cwl
+  bcftools_gen_b_allele:
+    run: ../tools/bcftools_gen_b_allele.cwl
     when: $(inputs.run_tool.some(function(e) { return e }))
     in:
       run_tool:
         source: [runtime_validator/run_controlfreec, runtime_validator/run_cnvkit]
       input_vcf: bedtools_intersect_germline/intersected_vcf
-      reference_fasta: indexed_reference_fasta
       output_basename: output_basename
-    out: [filtered_vcf, filtered_pass_vcf]
+    out: [bcftools_b_allele_vcf]
   vardict:
     run: ../sub_workflows/kfdrc_vardict_sub_wf.cwl
     when: $(inputs.run_vardict)
@@ -971,7 +970,7 @@ steps:
       mate_orientation_control: cfree_mate_orientation_control
       calling_regions: prepare_regions_unpadded_cnv/prescatter_bed
       indexed_reference_fasta: indexed_reference_fasta
-      b_allele: gatk_filter_germline/filtered_pass_vcf
+      b_allele: bcftools_gen_b_allele/bcftools_b_allele_vcf
       coeff_var: cfree_coeff_var
       contamination_adjustment: cfree_contamination_adjustment
       cfree_sex: cfree_sex
@@ -996,7 +995,7 @@ steps:
         source: runtime_validator/out_cnvkit_wgs_mode
         valueFrom: |
           $(self == "Y" ? "wgs" : "hybrid")
-      b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
+      b_allele_vcf: bcftools_gen_b_allele/bcftools_b_allele_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename
       sex: cnvkit_sex
@@ -1133,5 +1132,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.2.3'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.3.0'
   label: github-release
