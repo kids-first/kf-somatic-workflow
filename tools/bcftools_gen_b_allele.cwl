@@ -7,7 +7,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
     ramMin: 16000
-    coresMin: 8
+    coresMin: $(inputs.threads)
   - class: DockerRequirement
     dockerPull: 'staphb/bcftools:1.20'
 
