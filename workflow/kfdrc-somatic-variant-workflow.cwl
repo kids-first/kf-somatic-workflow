@@ -358,7 +358,7 @@ inputs:
   blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling
       regions for SNV and SV calling.", "sbg:suggestedValue": {class: File, path: 665df995a193b420129c7830, name: hg38-blacklist.v2.bed.gz}}
   cnv_blacklist_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing a set of genomic regions to remove from the calling
-      regions for CNV calling only!", "sbg:suggestedValue": {class: File, path: 663d2bcc27374715fccd8c6d, name: somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.list}}
+      regions for CNV calling only!", "sbg:suggestedValue": {class: File, path: 691f597fbbaaa05f96b8ccda, name: somatic-hg38_CNV_and_centromere_blacklist.hg38liftover.bed}}
   coding_sequence_regions: {type: 'File?', doc: "BED or INTERVALLIST file containing the coding sequence regions for the provided
       reference. This input is used to create custom intervals for WGS Lancet Calling.", "sbg:suggestedValue": {class: File, path: 5f500135e4b0370371c051c0,
       name: GRCh38.gencode.v31.CDS.merged.bed}}
