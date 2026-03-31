@@ -990,9 +990,12 @@ steps:
         pickValue: first_non_null
       reference: indexed_reference_fasta
       normal_sample_name: input_normal_name
-      capture_regions: prepare_regions_unpadded_cnv/prescatter_bed
+      target_regions: prepare_regions_unpadded_cnv/prescatter_bed
       blacklist_regions: cnv_blacklist_regions
-      wgs_mode: runtime_validator/out_cnvkit_wgs_mode
+      run_mode:
+        source: runtime_validator/out_cnvkit_wgs_mode
+        valueFrom: |
+          $(self == "Y" ? "wgs" : "hybrid")
       b_allele_vcf: gatk_filter_germline/filtered_pass_vcf
       annotation_file: cnvkit_annotation_file
       output_basename: output_basename

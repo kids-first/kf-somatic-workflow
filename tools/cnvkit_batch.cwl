@@ -68,7 +68,7 @@ arguments:
 inputs:
   # batch params
   threads: {type: 'int?', default: 16, inputBinding: { position: 2, prefix: "-p" } }
-  wgs_mode: { type: ['null', {type: enum, name: wgs_mode, symbols: ["hybrid", "wgs", "amplicon"]}],
+  run_mode: { type: ['null', {type: enum, name: run_mode, symbols: ["hybrid", "wgs", "amplicon"]}],
     default: "hybrid",
     doc: "for WGS mode, input wgs. leave blank for hybrid mode",
     inputBinding: { position: 2, prefix: "-m"} }
@@ -76,7 +76,7 @@ inputs:
     inputBinding: { position: 2, prefix: "--access"} }
   input_sample: {type: File, doc: "tumor bam file", secondaryFiles: [^.bai],
     inputBinding: { position: 3 } }
-  capture_regions: {type: ['null', File], doc: "target regions for WES",
+  target_regions: {type: ['null', File], doc: "target regions for analysis. required for WES, useful if already masked for WGS",
     inputBinding: {position: 2, prefix: "--targets"} }
   # call
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available",

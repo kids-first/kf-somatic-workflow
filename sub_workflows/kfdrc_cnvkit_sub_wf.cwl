@@ -15,9 +15,12 @@ inputs:
     doc: "Only needed if cnn file not available"}
   reference: {type: File, secondaryFiles: [.fai]}
   b_allele_vcf: {type: ['null', File], doc: "b allele germline vcf, if available"}
-  wgs_mode: {type: ['null', string], doc: "for WGS mode, input Y. leave blank for hybrid mode"}
-  capture_regions: {type: ['null', File], doc: "target regions for WES. These are the bait regions."}
-  blacklist_regions: {type: 'File?', doc: "Regions of the genome over which CNVkit should not perform resequencing. CNVkit refers to these regions as inaccessible." }
+  run_mode: { type: ['null', {type: enum, name: run_mode, symbols: ["hybrid", "wgs", "amplicon"]}],
+    default: "hybrid",
+    doc: "for WGS mode, input wgs. leave blank for hybrid mode" }
+  target_regions: {type: ['null', File], doc: "target regions for analysis. required for WES, useful if already masked for WGS"}
+  blacklist_regions: {type: 'File?',
+    doc: "Regions of the genome over which CNVkit should not perform resequencing. CNVkit refers to these regions as inaccessible. Skipped if target_regions given" }
   annotation_file: {type: 'File?', doc: "refFlat.txt file. Needed if cnn doesn't already exist"}
   output_basename: string
   cnvkit_cnn_input: {type: ['null', File], doc: "If running using an existing .cnn, supply here"}
@@ -38,11 +41,11 @@ outputs:
 
 steps:
   access:
-    when: $(inputs.capture_regions == null && inputs.blacklist_regions)
+    when: $(inputs.target_regions == null && inputs.blacklist_regions)
     run: ../tools/cnvkit_access.cwl
     in:
       reference_fasta: reference
-      capture_regions: capture_regions
+      target_regions: target_regions
       min_gap_size:
         valueFrom: $(200)
       exclude: blacklist_regions
@@ -55,13 +58,10 @@ steps:
       reference: reference
       annotation_file: annotation_file
       output_basename: output_basename
-      wgs_mode:
-        source: wgs_mode
-        valueFrom: |
-          $(self == "Y" ? "wgs" : "hybrid")
+      run_mode: run_mode
       access: access/bed
-      capture_regions:
-        source: [cnvkit_cnn_input, capture_regions]
+      target_regions:
+        source: [cnvkit_cnn_input, target_regions]
         valueFrom: |
           $(self[0] == null ? self[1] : null)
       b_allele_vcf: b_allele_vcf
