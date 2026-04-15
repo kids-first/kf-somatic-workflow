@@ -58,27 +58,13 @@ inputs:
   reference: {type: 'File?', doc: "fasta file, needed if cram input or cnv kit cnn not already built", secondaryFiles: [.fai]}
   # If proper .cns file exists
   cnvkit_cns: {type: 'File?', doc: ".cns file from previous CNVkit run, if available. DO NOT USE .call.cns"}
-  # If CNVkit needs running and .cnn file exists
-#  cnvkit_cnn: {type: 'File?', doc: "If running using an existing .cnn, supply here"}
   # If CNVkit needs running and .cnn NOT available
   normal_align_file: {type: 'File?', doc: "Normal read alignment file. Can cram or bam", secondaryFiles: [{pattern: '^.bai', 
           required: false}, {pattern: '.crai', required: false}]}
-#  annotation_file: {type: 'File?', doc: "refFlat.txt file, needed if cnv kit cnn not\
-#      \ already built"}
-#  male_input_flag: { type: 'boolean?', doc: "Is the input male?", default: false }
   cnvkit_cpu: {type: 'int?', doc: "CPUs to allocate to CNVkit running"}
   cnvkit_ram: {type: 'int?', doc: "GB of RAM to allocate to CNVkit running"}
 
 outputs:
-  cnvkit_log: {type: 'File', outputSource: ampliconsuite_cnvkit/log}
-  cnvkit_timing_log: {type: 'File', outputSource: ampliconsuite_cnvkit/timing_log}
-  cnvkit_run_meta: {type: 'File', outputSource: ampliconsuite_cnvkit/run_meta}
-  cnvkit_results: {type: 'Directory', outputSource: ampliconsuite_cnvkit/cnvkit_results}
-  aa_ac_log: {type: 'File', outputSource: ampliconsuite_aa_ac/log}
-  aa_ac_timing_log: {type: 'File', outputSource: ampliconsuite_aa_ac/timing_log}
-  aa_ac_run_meta: {type: 'File', outputSource: ampliconsuite_aa_ac/run_meta}
-  aa_results: {type: 'Directory', outputSource: ampliconsuite_aa_ac/aa_results}
-  ac_results: {type: 'Directory', outputSource: ampliconsuite_aa_ac/ac_results}
   aa_cnv_seeds: {type: File, doc: "Bed file with candidate regions to search", outputSource: ampliconsuite_cnvkit/seeds}
   aa_summary: {type: File, doc: "summary for all amplicons detected by AA", outputSource: ampliconsuite_aa_ac/aa_summary}
   aa_cycles: {type: 'File', doc: "text file for each amplicon listing the edges in the breakpoint graph, their categorization (sequence,
