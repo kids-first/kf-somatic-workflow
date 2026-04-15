@@ -91,19 +91,19 @@ outputs:
     outputBinding:
       glob: 'results/*_AA_results/*_summary.txt'
   aa_graph:
-    type: 'File?'
+    type: 'File[]?'
     outputBinding:
       glob: 'results/*_AA_results/*_graph.txt'
   aa_cycles:
-    type: 'File?'
+    type: 'File[]?'
     outputBinding:
       glob: 'results/*_AA_results/*_cycles.txt'
   aa_sv_png:
-    type: 'File?'
+    type: 'File[]?'
     outputBinding:
       glob: 'results/*_AA_results/*.png'
   aa_sv_pdf:
-    type: 'File?'
+    type: 'File[]?'
     outputBinding:
       glob: 'results/*_AA_results/*.pdf'
   ac_results:
@@ -111,10 +111,10 @@ outputs:
     outputBinding:
       glob: 'results/*_classification'
   ac_profiles:
-    type: 'File?'
+    type: 'File[]?'
     outputBinding:
       glob: 'results/*_classification/*_amplicon_classification_profiles.tsv'
   ac_gene_list:
-    type: 'File?'
+    type: 'File[]?'
     outputBinding:
       glob: 'results/*_classification*_gene_list.tsv'
