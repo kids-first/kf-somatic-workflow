@@ -18,7 +18,7 @@ requirements:
       AA_SRC: '/home/programs/AmpliconArchitect-master/src'
       AC_SRC: '/home/programs/AmpliconClassifier-main'
       NCM_HOME: '/home/programs/NGSCheckMate-master'
-      AA_DATA_REPO: $(runtime.outdir)/$(inputs.data_repo.basename)
+      AA_DATA_REPO: $(runtime.outdir)/data_repo
       MOSEKLM_LICENSE_FILE: $(runtime.outdir)
       REF_CACHE: $(runtime.outdir)/cache/%2s/%2s/%s
 baseCommand: []
@@ -28,9 +28,11 @@ arguments:
     valueFrom: >-
       env >&2
       $(inputs.cram_reference ? "&& /usr/bin/seq_cache_populate.pl -root cache " + inputs.cram_reference.path : "")
+      && mkdir data_repo
+      && tar -C data_repo -xzf $(inputs.data_repo.path)
       && /home/programs/AmpliconSuite-pipeline-master/AmpliconSuite-pipeline.py --output_directory results
 inputs:
-  data_repo: { type: Directory, doc: "Un-tarred reference obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
+  data_repo: { type: File, doc: "Reference TAR obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
   ref_version: { type: 'string?', doc: "Reference genome version. Autodetected unless fastqs given as input." }
   mosek_license_file: { type: File, doc: "This tool uses some software that requires a license file. You can get a personal or institutional one from https://www.mosek.com/license/request/." }
 
@@ -43,17 +45,6 @@ inputs:
   sample_name: { type: 'string?', inputBinding: {position: 2, prefix: "--sample_name"}, doc: "Sample name" }
 
   extra_args: { type: 'string?', inputBinding: {position: 9, shellQuote: false}, doc: "Extra args for this task" }
-
-#  run_aa: { type: 'boolean?', doc: "Run AA after all files prepared. Default off." }
-#  run_ac: { type: 'boolean?', doc: "Run AmpliconClassifier after all files prepared. Default off." }
-#  no_qc: { type: 'boolean?', doc: "Skip QC on the BAM file. Do not adjust AA insert_sdevs for poor-quality insert size distribution" }
-#  align_only: { type: 'boolean?', doc: "Only perform the alignment stage (do not run CNV calling and seeding)" }
-#
-#  download_repo: { type: 'string?', doc: "Download the selected data repo to the $AA_DATA_REPO directory and exit. '_indexed' suffix indicates BWA index is included, which is useful if performing alignment with AmpliconSuite-pipeline, but has a larger filesize." }
-#
-#  cngain: { type: 'float?', doc: "CN gain threshold to consider for AA seeding" }
-#  cnsize_min: { type: 'int?', doc: "CN interval size (in bp) to consider for AA seeding" }
-#  no_filter: { type: 'boolean?', doc: "Do not run amplified_intervals.py to remove low confidence candidate seed regions overlapping repetitive parts of the genome" }
 
   cpu: { type: 'int?', default: 16, inputBinding: {position: 2, prefix: "--nthreads"}, doc: 'CPUs to allocate to this task'}
   ram: { type: 'int?', default: 32, doc: 'GB of RAM to allocate to this task' }

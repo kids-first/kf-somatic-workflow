@@ -104,18 +104,11 @@ steps:
       reference: reference
       threads: samtools_calmd_threads
     out: [bam_file]
-  untar_data_repo:
-    run: ../tools/untar_gzip.cwl
-    in:
-      input_tar: aa_data_repo
-      out_dir_name:
-        valueFrom: ${return "data_repo"}
-    out: [output]
   ampliconsuite_cnvkit:
     run: ../tools/ampliconsuite_pipeline.cwl
     when: $(inputs.normal_bam != null && inputs.cnv_bed == null)
     in:
-      data_repo: untar_data_repo/output
+      data_repo: aa_data_repo
       mosek_license_file: mosek_license_file
       sorted_tumor_bam:
         source: [samtools_calmd_tumor_cram_to_bam/bam_file, tumor_align_file]
@@ -138,7 +131,7 @@ steps:
       value: m6i.large
     run: ../tools/ampliconsuite_pipeline.cwl
     in:
-      data_repo: untar_data_repo/output
+      data_repo: aa_data_repo
       mosek_license_file: mosek_license_file
       sorted_tumor_bam:
         source: [samtools_calmd_tumor_cram_to_bam/bam_file, tumor_align_file]
