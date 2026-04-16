@@ -18,7 +18,7 @@ requirements:
       AA_SRC: '/home/programs/AmpliconArchitect-master/src'
       AC_SRC: '/home/programs/AmpliconClassifier-main'
       NCM_HOME: '/home/programs/NGSCheckMate-master'
-      AA_DATA_REPO: $(runtime.outdir)/$(inputs.data_repo.basename)
+      AA_DATA_REPO: $(runtime.outdir)/data_repo
       MOSEKLM_LICENSE_FILE: $(runtime.outdir)
       REF_CACHE: $(runtime.outdir)/cache/%2s/%2s/%s
 baseCommand: []
@@ -28,9 +28,11 @@ arguments:
     valueFrom: >-
       env >&2
       $(inputs.cram_reference ? "&& /usr/bin/seq_cache_populate.pl -root cache " + inputs.cram_reference.path : "")
+      && mkdir data_repo
+      && tar -C data_repo -xzf $(inputs.data_repo.path)
       && /home/programs/AmpliconSuite-pipeline-master/AmpliconSuite-pipeline.py --output_directory results
 inputs:
-  data_repo: { type: Directory, doc: "Un-tarred reference obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
+  data_repo: { type: File, doc: "Reference TAR obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
   ref_version: { type: 'string?', doc: "Reference genome version. Autodetected unless fastqs given as input." }
   mosek_license_file: { type: File, doc: "This tool uses some software that requires a license file. You can get a personal or institutional one from https://www.mosek.com/license/request/." }
 
