@@ -218,7 +218,6 @@ doc: |
      - `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
      - `disable_hotspot_annotation`: false
      - `maf_center`: `"."`. Sequencing center of variant called
-     - `aa_data_ref_version`: `"GRCh38"`. Genome reference version used
 
   1. There are some flags that need to be set by the user at runtime. These are our recommendations:
      - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression.
@@ -386,8 +385,6 @@ inputs:
       error, set this value lower than the length of the failed segment."}
   aa_data_repo: {type: 'File?', doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/",
     "sbg:suggestedValue": {class: File, path: 69e0eadb4b38c210e5c8604e, name: GRCh38_DEC012023.tar.gz}}
-  aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}],
-    doc: "Genome version in data repo to use", default: "GRCh38"}
   mosek_license_file: {type: 'File?', doc: "This tool uses some software that requires a license file. Only provide if input is WGS.
       You can get a personal or institutional one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {class: File,
       path: 62fcf4d40d34597148589e15, name: mosek.lic}}
@@ -1007,16 +1004,11 @@ steps:
     in:
       run_amplicon_architect: runtime_validator/run_amplicon_architect
       aa_data_repo: aa_data_repo
-      aa_data_ref_version: aa_data_ref_version
       tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
       output_basename: output_basename
       mosek_license_file: mosek_license_file
       reference: indexed_reference_fasta
       cnvkit_cns: cnvkit/cnvkit_cns
-      male_input_flag:
-        source: cnvkit_sex
-        valueFrom: "$(self == 'y' ? true : null)"
-      wgs_or_wxs: wgs_or_wxs
     out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_png, aa_classification_profiles, aa_gene_list]
   theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
