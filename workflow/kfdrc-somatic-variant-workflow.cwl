@@ -1124,5 +1124,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.3.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.4.0'
   label: github-release
