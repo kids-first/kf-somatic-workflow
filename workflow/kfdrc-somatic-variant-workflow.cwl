@@ -209,7 +209,7 @@ doc: |
      - `custom_enst`: `kf_isoform_override.tsv`. As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects MAF file output and may results in representative protein changes that defy historical expectations
      - `funcotator_data_sources_tgz`: [funcotator_dataSources.v1.6.20190124s.tar.gz](https://console.cloud.google.com/storage/browser/broad-public-datasets/funcotator) - need a valid google account, this is a link to pre-packaged datasources from the Broad Institute. Any of the tar.gz files will do.
      - `annotsv_annotations_dir_tgz`: [annotsv_311_annotations_dir.tgz] - These annotations are simply those from the install-human-annotation installation process run during AnnotSV installation. Specifically these are the annotations installed with v3.1.1 of the software. Newer or older annotations can be slotted in here as needed.
-     - `aa_data_repo`: [GRCh38_indexed.tar.gz](https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/) - AmpliconArchitect reference TAR ball. Only needed/used if input is WGS
+     - `aa_data_repo`: [GRCh38_DEC012023.tar.gz](https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/) - AmpliconArchitect reference TAR ball. Only needed/used if input is WGS
      - `mosek_license_file`: [mosek.lic](https://www.mosek.com/license/request/) - required if AmpliconArchitect is run. License is good for one year and is renewable
 
   1. There are some flags that we set as defaults. Feel free to alter these if your experiment calls for something else:
@@ -218,7 +218,6 @@ doc: |
      - `bcftools_public_filter`: `'FILTER="PASS"|INFO/HotSpotAllele=1'`. This phrase will allow `PASS` only **or** `HotSpotAllele` variants into the public version of variant call output.
      - `disable_hotspot_annotation`: false
      - `maf_center`: `"."`. Sequencing center of variant called
-     - `aa_data_ref_version`: `"GRCh38"`. Genome reference version used
 
   1. There are some flags that need to be set by the user at runtime. These are our recommendations:
      - `gatk_filter_name`: `["NORM_DP_LOW", "GNOMAD_AF_HIGH"]`. These correspond to the recommended filter expression.
@@ -385,9 +384,7 @@ inputs:
       to be changed only for use with FuncotateSegments. If you encounter 'Variant context does not represent a copy number segment'
       error, set this value lower than the length of the failed segment."}
   aa_data_repo: {type: 'File?', doc: "Reference tar ball obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/",
-    "sbg:suggestedValue": {class: File, path: 62fcf4d40d34597148589e14, name: GRCh38_indexed.tar.gz}}
-  aa_data_ref_version: {type: ['null', {type: enum, name: aa_data_ref_version, symbols: ["GRCh38", "hg19", "GRCh37", "mm10", "GRCm38"]}],
-    doc: "Genome version in data repo to use", default: "GRCh38"}
+    "sbg:suggestedValue": {class: File, path: 69e0eadb4b38c210e5c8604e, name: GRCh38_DEC012023.tar.gz}}
   mosek_license_file: {type: 'File?', doc: "This tool uses some software that requires a license file. Only provide if input is WGS.
       You can get a personal or institutional one from https://www.mosek.com/license/request/.", "sbg:suggestedValue": {class: File,
       path: 62fcf4d40d34597148589e15, name: mosek.lic}}
@@ -1007,16 +1004,11 @@ steps:
     in:
       run_amplicon_architect: runtime_validator/run_amplicon_architect
       aa_data_repo: aa_data_repo
-      aa_data_ref_version: aa_data_ref_version
       tumor_align_file: samtools_cram2bam_plus_calmd_tumor/bam_file
       output_basename: output_basename
       mosek_license_file: mosek_license_file
       reference: indexed_reference_fasta
       cnvkit_cns: cnvkit/cnvkit_cns
-      male_input_flag:
-        source: cnvkit_sex
-        valueFrom: "$(self == 'y' ? true : null)"
-      wgs_or_wxs: wgs_or_wxs
     out: [aa_cnv_seeds, aa_summary, aa_cycles, aa_graph, aa_sv_png, aa_classification_profiles, aa_gene_list]
   theta2_purity:
     run: ../sub_workflows/kfdrc_run_theta2_sub_wf.cwl
@@ -1132,5 +1124,5 @@ hints:
 - VCF
 - VEP
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.3.0'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.4.0'
   label: github-release

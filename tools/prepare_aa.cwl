@@ -6,7 +6,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement 
   - class: DockerRequirement
-    dockerPull: 'jluebeck/prepareaa:v0.1203.10'
+    dockerPull: 'jluebeck/ampliconsuite-pipeline:v1.5.1'
   - class: ResourceRequirement
     ramMin: 16000
     coresMin: $(inputs.threads)
@@ -39,7 +39,7 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      && /home/programs/PrepareAA-master/PrepareAA.py
+      && /home/programs/AmpliconSuite-pipeline-master/AmpliconSuite-pipeline.py
 
 inputs:
   data_repo: { type: Directory, doc: "Un-tarred reference obtained from https://datasets.genepattern.org/?prefix=data/module_support_files/AmpliconArchitect/" }
