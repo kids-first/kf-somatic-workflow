@@ -117,4 +117,4 @@ outputs:
   ac_gene_list:
     type: 'File[]?'
     outputBinding:
-      glob: 'results/*_classification*_gene_list.tsv'
+      glob: 'results/*_classification/*_gene_list.tsv'
