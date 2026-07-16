@@ -15,7 +15,7 @@ The general outline is as follows:
 1. Consensus merge
    - Calls are gathered from all four callers
    - By default, calls with support from 2+ callers OR calls that are marked as `HotSpotAllele` in the `INFO` field are retained
-   - Retained calls then have their `MQ` and `MQ0` values calculated from the input tumor cram
+   - Retained calls then have their `MQ` and `MQ0` values calculated from the input tumor bam/cram
    - `GT` fields are estimated as "majority rules," and when no majority exists, set as `0/1` by default
    - `AD`, `DP`, and `AF` are calculated as the average value between callers
    - `ADR`, `DPR`, and `AFR` fields are added as the range of values from the previous point, to give the observer a sense on confidence in the value
@@ -42,7 +42,7 @@ The general outline is as follows:
 - mutect2_vcf
 - lancet_vcf
 - vardict_vcf
-- cram #Tumor cram recommended for MQ score calculation
+- input_tumor_aligned #Tumor bam/cram recommended for MQ score calculation
 - input_tumor_name
 - input_normal_name
 - output_basename
@@ -56,7 +56,7 @@ The general outline is as follows:
 - bcftools_public_filter: `FILTER="PASS"|INFO/HotSpotAllele=1`
 - retain_info: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,gnomad_3_1_1_AF_non_cancer_afr,gnomad_3_1_1_AF_non_cancer_ami,gnomad_3_1_1_AF_non_cancer_asj,gnomad_3_1_1_AF_non_cancer_eas,gnomad_3_1_1_AF_non_cancer_fin,gnomad_3_1_1_AF_non_cancer_mid,gnomad_3_1_1_AF_non_cancer_nfe,gnomad_3_1_1_AF_non_cancer_oth,gnomad_3_1_1_AF_non_cancer_raw,gnomad_3_1_1_AF_non_cancer_sas,gnomad_3_1_1_AF_non_cancer_amr,gnomad_3_1_1_AF_non_cancer_popmax,gnomad_3_1_1_AF_non_cancer_all_popmax,gnomad_3_1_1_FILTER,MQ,MQ0,CAL,HotSpotAllele"
 - retain_fmt: # csv string with FORMAT fields that you want to keep
-- retain_ann: "HGVSg"
+- retain_ann: "HGVSg,APPRIS,MANE_SELECT,MANE_PLUS_CLINICAL"
 - maf_center: "."
 - `custom_enst`: `kf_isoform_override.tsv`. As of VEP 104, several genes have had their canonical transcripts redefined. While the VCF will have all possible isoforms, this affects maf file output and may results in representative protein changes that defy historical expectations
 
