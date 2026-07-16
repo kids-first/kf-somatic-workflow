@@ -8,11 +8,11 @@ annotsv.cwl|pgc-images.sbgenomics.com/d3b-bixu/annotsv:3.1.1
 awk_chrlen_builder.cwl|staphb/bcftools:1.20
 awk_min_seg_length.cwl|ubuntu:20.04
 bcbio_filter_vardict_somatic.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcbio_vardict_filter
-bcftools_annotate_rename_chr.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
+bcftools_annotate.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcftools:1.20
 bcftools_filter_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcftools:1.20
 bcftools_gen_b_allele.cwl|staphb/bcftools:1.20
+bcftools_norm.cwl|pgc-images.sbgenomics.com/d3b-bixu/bcftools:1.20
 bcftools_reheader_samples_index.cwl|staphb/bcftools:1.17
-bcftools_strip_ann.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 bedtools_intersect.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 clt_pass_file.cwl|None
 cnvkit_access.cwl|etal/cnvkit:0.9.3
@@ -51,7 +51,6 @@ hotspots_annotation.cwl|quay.io/biocontainers/pysam:0.21.0--py310h41dec4a_1
 kf_mskcc_vcf2maf.cwl|pgc-images.sbgenomics.com/d3b-bixu/kf_vcf2maf:v1.0.3
 lancet.cwl|pgc-images.sbgenomics.com/d3b-bixu/lancet:1.0.7
 manta.cwl|pgc-images.sbgenomics.com/d3b-bixu/manta:1.4.0
-normalize_vcf.cwl|pgc-images.sbgenomics.com/d3b-bixu/vcfutils:latest
 runtime_validator.cwl|None
 samtools_calmd.cwl|pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch
 samtools_mini_pileup.cwl|pgc-images.sbgenomics.com/d3b-bixu/samtools:1.20-multi-arch
