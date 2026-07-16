@@ -19,7 +19,7 @@ doc: |
   1. Consensus merge
      - Calls are gathered from all four callers
      - By default, calls with support from 2+ callers OR calls that are marked as `HotSpotAllele` in the `INFO` field are retained
-     - Retained calls then have their `MQ` and `MQ0` values calculated from the input tumor cram
+     - Retained calls then have their `MQ` and `MQ0` values calculated from the input tumor bam/cram
      - `GT` fields are estimated as "majority rules," and when no majority exists, set as `0/1` by default
      - `AD`, `DP`, and `AF` are calculated as the average value between callers
      - `ADR`, `DPR`, and `AFR` fields are added as the range of values from the previous point, to give the observer a sense on confidence in the value
@@ -46,7 +46,7 @@ doc: |
   - mutect2_vcf
   - lancet_vcf
   - vardict_vcf
-  - cram #Tumor cram recommended for MQ score calculation
+  - input_tumor_aligned #Tumor bam/cram recommended for MQ score calculation
   - input_tumor_name
   - input_normal_name
   - output_basename
@@ -83,7 +83,11 @@ inputs:
   mutect2_vcf: {type: 'File', secondaryFiles: ['.tbi']}
   lancet_vcf: {type: 'File', secondaryFiles: ['.tbi']}
   vardict_vcf: {type: 'File', secondaryFiles: ['.tbi']}
-  cram: {type: 'File', secondaryFiles: ['.crai'], doc: "Tumor cram recommended for MQ score calculation"}
+  input_tumor_aligned:
+    type: File
+    secondaryFiles: [{pattern: ".bai", required: false}, {pattern: "^.bai", required: false}, {pattern: ".crai", required: false},
+      {pattern: "^.crai", required: false}]
+    doc: "tumor BAM or CRAM for MQ score calculation"
   input_tumor_name: string
   input_normal_name: string
   output_basename: string
@@ -112,7 +116,7 @@ inputs:
       acid position ranges corresponding to hotspots", "sbg:suggestedValue": [{class: File, path: 663d2bcc27374715fccd8c6f, name: protein_indel_cancer_hotspots_v2.ENS105_liftover.tsv}]}
   retain_info: {type: 'string?', doc: "csv string with INFO fields that you want to keep", default: "gnomad_3_1_1_AC,gnomad_3_1_1_AN,gnomad_3_1_1_AF,gnomad_3_1_1_nhomalt,gnomad_3_1_1_AC_popmax,gnomad_3_1_1_AN_popmax,gnomad_3_1_1_AF_popmax,gnomad_3_1_1_nhomalt_popmax,gnomad_3_1_1_AC_controls_and_biobanks,gnomad_3_1_1_AN_controls_and_biobanks,gnomad_3_1_1_AF_controls_and_biobanks,gnomad_3_1_1_AF_non_cancer,gnomad_3_1_1_primate_ai_score,gnomad_3_1_1_splice_ai_consequence,gnomad_3_1_1_AF_non_cancer_afr,gnomad_3_1_1_AF_non_cancer_ami,gnomad_3_1_1_AF_non_cancer_asj,gnomad_3_1_1_AF_non_cancer_eas,gnomad_3_1_1_AF_non_cancer_fin,gnomad_3_1_1_AF_non_cancer_mid,gnomad_3_1_1_AF_non_cancer_nfe,gnomad_3_1_1_AF_non_cancer_oth,gnomad_3_1_1_AF_non_cancer_raw,gnomad_3_1_1_AF_non_cancer_sas,gnomad_3_1_1_AF_non_cancer_amr,gnomad_3_1_1_AF_non_cancer_popmax,gnomad_3_1_1_AF_non_cancer_all_popmax,gnomad_3_1_1_FILTER,MQ,MQ0,CAL,HotSpotAllele"}
   retain_fmt: {type: 'string?', doc: "csv string with FORMAT fields that you want to keep"}
-  retain_ann: {type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg"}
+  retain_ann: {type: 'string?', doc: "csv string of annotations (within the VEP CSQ/ANN) to retain as extra columns in MAF", default: "HGVSg,APPRIS,MANE_SELECT,MANE_PLUS_CLINICAL"}
   add_common_fields: {type: 'boolean?', doc: "Set to true if input is a strelka2 vcf that hasn't had common fields added", default: false}
   bcftools_strip_columns: {type: 'string?', doc: "csv string of columns to strip if needed to avoid conflict, i.e INFO/AF"}
   echtvar_anno_zips: {type: 'File[]?', doc: "Annotation ZIP files for echtvar anno", "sbg:suggestedValue": [{class: File, path: 65c64d847dab7758206248c6,
@@ -150,7 +154,7 @@ steps:
       mutect2_vcf: mutect2_vcf
       lancet_vcf: lancet_vcf
       vardict_vcf: vardict_vcf
-      cram: cram
+      cram: input_tumor_aligned
       ncallers: ncallers
       ram: consensus_ram
       reference: indexed_reference_fasta
@@ -199,5 +203,5 @@ $namespaces:
 "sbg:publisher": KFDRC
 
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.2.2'
+- id: 'https://github.com/kids-first/kf-somatic-workflow/releases/tag/v5.5.0'
   label: github-release
