@@ -27,13 +27,13 @@ arguments:
       split --number=l/$(inputs.cpu) snps.bed --additional-suffix=".bed" -d regions && ls regions*.bed > bed_list.txt;
 
       cat bed_list.txt
-      | xargs -IFN -P $(inputs.cpu)
+      | xargs -I{} -P $(inputs.cpu)
       samtools mpileup
       -d 8000
       -Q 0
       -q 1
-      -l FN
-      -o FN.miniPileup
+      -l {}
+      -o {}.miniPileup
   - position: 20
     shellQuote: false
     valueFrom: >-
